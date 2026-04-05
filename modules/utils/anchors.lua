@@ -38,6 +38,9 @@ ANCHORS = {
 	barrel = floorAnchor(10),
 	jar = floorAnchor(4),
 
+	-- Interagiveis
+	door = floorAnchor(20),
+
 	-- Inimigos
 	spider_duck = floorAnchor(14),
 	nuclear_cat = floorAnchor(16),
@@ -53,6 +56,7 @@ ANCHORS = {
 
 	-- Obstáculos
 	pillar = floorAnchor(24),
+	wall = floorAnchor(27.99), -- desempate com a porta
 }
 
 ----------------------------------------

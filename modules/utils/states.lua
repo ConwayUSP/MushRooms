@@ -29,6 +29,10 @@ BROKEN = "broken"
 ------------- INTERAGIVEIS -------------
 
 MOVING = "moving"
+OPEN = "open"
+OPENING = "opening"
+CLOSED = "closed"
+CLOSING = "closing"
 
 ------------ ELEMENTOS DE UI -----------
 

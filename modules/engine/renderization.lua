@@ -20,7 +20,7 @@ function renderRooms(camera)
 			end
 
 			love.graphics.setColor(r.color.r, r.color.g, r.color.b, r.color.a)
-			local roomViewPos = camera:viewPos(r.limits.p1)
+			local roomViewPos = addVec(camera:viewPos(r.limits.p1), vec(Room.spacing / 2, Room.spacing / 2))
 			love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 6, 6)
 
 			-- reseta a cor de renderização
@@ -55,6 +55,15 @@ function renderEntities(camera)
 				y = i.pos.y + getAnchor(i, FLOOR),
 				draw = function()
 					i:draw(camera)
+				end,
+			})
+		end
+		-- Adiciona portas
+		for _, d in pairs(r.doors) do
+			table.insert(drawList, {
+				y = d.pos.y + getAnchor(d, FLOOR),
+				draw = function()
+					d:draw(camera)
 				end,
 			})
 		end
@@ -223,6 +232,10 @@ function renderTriggers(camera, hitboxes, entity)
 end
 
 function renderByShape(camera, hitbox, entity)
+	-- if entity.type == ROOM then
+	-- 	return
+	-- end
+
 	local worldHb = buildWorldHitbox(hitbox, entity.pos)
 
 	if worldHb.shape.shape == CIRCLE then

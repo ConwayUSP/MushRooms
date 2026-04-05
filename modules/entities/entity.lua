@@ -6,6 +6,7 @@
 ---@field mass number
 ---@field speed number
 ---@field friction number
+---@field restitution number
 ---@field initialVel Vec
 ---@field initialAcc Vec
 ---@field speedRange range
@@ -16,10 +17,11 @@
 ---@param speedRange? range
 ---@param initialVel? Vec
 ---@param initialAcc? Vec
+---@param restitution? number
 ---@return PhysicsSettings
 -- cria uma configuração de propriedades físicas para o
 -- movimento e interação dinâmica entre entidades
-function physicsSettings(mass, speed, friction, speedRange, initialVel, initialAcc)
+function physicsSettings(mass, speed, friction, speedRange, initialVel, initialAcc, restitution)
 	return {
 		mass = mass or 1,
 		speed = speed or 0,
@@ -27,6 +29,7 @@ function physicsSettings(mass, speed, friction, speedRange, initialVel, initialA
 		speedRange = speedRange or range(0, math.huge),
 		initialVel = initialVel or vec(0, 0),
 		initialAcc = initialAcc or vec(0, 0),
+		restitution = restitution or 0,
 	}
 end
 
@@ -45,6 +48,8 @@ end
 ---@field vel Vec
 ---@field acc Vec
 ---@field speedRange range
+---@field restitution number
+---@field isStatic boolean
 Entity = {}
 Entity.__index = Entity
 
@@ -68,6 +73,8 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics)
 	self.vel = physics.initialVel
 	self.acc = physics.initialAcc
 	self.speedRange = physics.speedRange
+	self.restitution = physics.restitution or 0
+	self.isStatic = physics.mass == math.huge
 
 	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável

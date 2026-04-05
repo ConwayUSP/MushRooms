@@ -40,11 +40,15 @@ function Interactive.new(name, pos, hitboxes, room, physics, onInteract, update,
 	interactive.customUpdate = update
 	interactive.customEnter = customEnter
 	interactive.customExit = customExit
-	interactive.state = IDLE -- define o estado atual do objeto, pode ser usado de formas criativas em interagiveis
+	interactive.state = IDLE   -- define o estado atual do objeto, pode ser usado de formas criativas em interagiveis
 	interactive.spriteSheets = {} -- no tipo imagem do love
 	interactive.animations = {} -- as chaves são estados e os valores são Animações
 
-	table.insert(room.interactives, interactive)
+	if name == "door" then
+		table.insert(room.doors, interactive)
+	else
+		table.insert(room.interactives, interactive)
+	end
 	return interactive
 end
 

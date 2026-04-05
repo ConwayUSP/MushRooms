@@ -310,6 +310,9 @@ function Player:checkSpecialActions(key)
 	if key == "i" and love.keyboard.isDown(self.controls.act1) then
 		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
 	end
+	if key == "p" and love.keyboard.isDown(self.controls.act1) then
+		self.room:toggleDoors()
+	end
 end
 
 ---@param weapon any

@@ -53,6 +53,7 @@ EVENT_ROOM = "event room"
 ---@field enemies Enemy[]
 ---@field npcs Npc[]
 ---@field obstacles Obstacle[]
+---@field doors Interactive[]
 ---@field playersInRoom Set
 ---@field populate function
 ---@field visit function
@@ -60,8 +61,9 @@ EVENT_ROOM = "event room"
 
 Room = {}
 Room.__index = Room
-Room.stdDim = { width = 1536, height = 1536 }
 Room.type = ROOM
+Room.stdDim = { width = 1536, height = 1536 }
+Room.spacing = 64 * 6 -- tamanho do sprite de parede (pode mudar depois)
 
 ---@param pos Vec
 ---@param dimensions Size
@@ -75,23 +77,26 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	local room = setmetatable({}, Room)
 
 	-- atributos que variam
-	room.arrPos = pos -- posição da sala na array de salas
-	room.dimensions = dimensions -- largura e altura da sala
-	room.hb = hitboxes -- hitbox da sala
-	room.limits = limits -- limites da sala nas coordenadas de mundo
+	room.arrPos = pos                                -- posição da sala na array de salas
+	room.dimensions = dimensions                     -- largura e altura da sala
+	room.hb = hitboxes                               -- hitbox da sala
+	room.limits = limits                             -- limites da sala nas coordenadas de mundo
 	room.pos = midpoint(room.limits.p1, room.limits.p2) -- centro da sala nas coordenadas de mundo
-	room.color = blueprint.color -- cor da sala
-	room.sprites = sprites -- os sprites da sala em camadas
+	room.color = blueprint.color                     -- cor da sala
+	room.sprites = sprites                           -- os sprites da sala em camadas
 	-- atributos fixos na instanciação
-	room.adjacentRooms = {} -- salas adjacentes
-	room.explored = false -- se algum jogador já entrou na sala ou não
-	room.destructibles = {} -- lista de objetos destrutíveis da sala
-	room.interactives = {} -- lista de objetos interativos na sala
-	room.items = {} -- lista de itens dropados na sala
-	room.enemies = {} -- lista de inimigos na sala
-	room.npcs = {} -- lista de NPCs na sala
-	room.obstacles = {} -- lista de obstáculos na sala
-	room.playersInRoom = Set.new() -- lista de jogadores na sala
+	room.adjacentRooms = {}                          -- salas adjacentes
+	room.explored = false                            -- se algum jogador já entrou na sala ou não
+	room.destructibles = {}                          -- lista de objetos destrutíveis da sala
+	room.interactives = {}                           -- lista de objetos interativos na sala
+	room.doors = {}                                  -- lista de portas da sala
+	room.items = {}                                  -- lista de itens dropados na sala
+	room.enemies = {}                                -- lista de inimigos na sala
+	room.npcs = {}                                   -- lista de NPCs na sala
+	room.obstacles = {}                              -- lista de obstáculos na sala
+	room.playersInRoom = Set.new()                   -- lista de jogadores na sala
+
+	room:addWallsAndDoors()
 
 	return room
 end
@@ -106,6 +111,10 @@ function Room:update(dt)
 	-- atualiza objetos interativos
 	for _, i in pairs(self.interactives) do
 		i:update(dt)
+	end
+	-- atualiza portas
+	for _, d in pairs(self.doors) do
+		d:update(dt)
 	end
 	-- atualiza items
 	for _, item in pairs(self.items) do
@@ -199,10 +208,25 @@ end
 ---@param pos Vec
 -- instancia uma entidade e a insere na lista correspondente da sala
 function Room:spawn(entity, pos)
-	-- print("Tipo: " .. entity.type .. " Nome: " .. entity.name)
 	local constructor = CONSTRUCTORS[entity.type][entity.name]
 	local real_pos = addVec(pos, self.pos)
 	constructor(real_pos, self) -- instancia a entidade na sala
+end
+
+-- coloca paredes e portas ao redor da sala
+function Room:addWallsAndDoors()
+	-- !TODO: inserir 4 paredes e salas ao invés de uma só
+	local relativePosDoor = vec(0, -Room.stdDim.height / 2 - 96)
+	local relativePosWall = vec(0, -Room.stdDim.height / 2 - 120)
+	CONSTRUCTORS[DOOR.type][DOOR.name](addVec(self.pos, relativePosDoor), self)
+	CONSTRUCTORS[WALL.type][WALL.name](addVec(self.pos, relativePosWall), self)
+end
+
+-- abre as portas se estiverem fechadas e fecha elas se estiverem abertas
+function Room:toggleDoors()
+	for _, d in pairs(self.doors) do
+		d:onInteract()
+	end
 end
 
 ----------------------------------------
@@ -246,15 +270,23 @@ function newRoom(pos, dimensions, roomType)
 	-- escolhendo uma blueprint para a sala
 	roomType = roomType or randRoomType()
 	local blueprint = randRoomBlueprint(roomType)
-	-- gerando os atributos derivadoss
-	local p1 = vec(pos.x * Room.stdDim.width, pos.y * Room.stdDim.height)
-	local p2 = vec(p1.x + dimensions.width, p1.y + dimensions.height)
+
+	-- posicionando a sala
+	local leftLimit = pos.x * (dimensions.width + Room.spacing) - Room.spacing
+	local topLimit = pos.y * (dimensions.height + Room.spacing) - Room.spacing
+	local rightLimit = leftLimit + dimensions.width + Room.spacing
+	local bottomLimit = topLimit + dimensions.height + Room.spacing
+	local p1 = vec(leftLimit, topLimit)
+	local p2 = vec(rightLimit, bottomLimit)
 	local limits = { p1 = p1, p2 = p2 }
-	local hb = hitbox(Rectangle.new(dimensions.width, dimensions.height))
+	local hb = hitbox(Rectangle.new(dimensions.width + Room.spacing, dimensions.height + Room.spacing))
 	local hbs = hitboxes({}, {}, { hb })
+
+	-- decorando a sala
 	local sprites = {}
 	sprites.floor = love.graphics.newImage("assets/sprites/rooms/testRoom.png")
 	sprites.floor:setFilter("nearest", "nearest")
+
 	-- instanciando e populando com entidades (inimigos, destrutíveis, etc)
 	local room = Room.new(pos, dimensions, hbs, limits, blueprint, sprites)
 	room:populate(blueprint.spawnpoints)
@@ -263,7 +295,6 @@ end
 
 -- cria a sala inicial do jogo e suas 4 vizinhas
 function createInitialRooms()
-	-- cria a sala inicial do jogo e suas vizinhas
 	newRoom({ x = 0, y = 0 }, Room.stdDim)
 	rooms[0][0]:setExplored()
 end

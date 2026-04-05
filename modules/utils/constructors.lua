@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.destructible")
+require("modules.constructors.interactives")
 require("modules.constructors.enemy")
 require("modules.constructors.npc")
 require("modules.constructors.player")
@@ -40,7 +41,11 @@ CONSTRUCTORS[DESTRUCTIBLE] = {
 	[JAR.name] = newJar,
 }
 
-
 CONSTRUCTORS[OBSTACLE] = {
 	[PILLAR.name] = newPillar,
+	[WALL.name] = newWall,
+}
+
+CONSTRUCTORS[INTERACTIVE] = {
+	[DOOR.name] = newDoor,
 }

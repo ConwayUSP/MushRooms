@@ -452,6 +452,73 @@ function getCircleCircleManifold(c1, c2)
 end
 
 ----------------------------------------
+-- Resposta física de colisão (3ª lei)
+----------------------------------------
+
+---@param entityA Entity
+---@param entityB Entity
+---@param normal Vec # normal apontando de A para B
+---@param restitution? number
+-- aplica um impulso de contato entre duas entidades, obedecendo
+-- conservação de quantidade de movimento e coeficiente de restituição
+local function applyContactImpulse(entityA, entityB, normal, restitution)
+	-- garante normal unitária
+	local n = normalize(normal)
+
+	-- garante vetores de velocidade válidos
+	entityA.vel = entityA.vel or vec(0, 0)
+	entityB.vel = entityB.vel or vec(0, 0)
+
+	local velA = entityA.vel
+	local velB = entityB.vel
+
+	-- velocidade relativa ao longo da normal (de A para B)
+	local relVel = subVec(velB, velA)
+	local velAlongNormal = dotProd(relVel, n)
+
+	-- se já estiverem se afastando, não aplica impulso
+	if velAlongNormal > 0 then
+		return
+	end
+
+	-- coeficiente de restituição efetivo (0 = inelástico, 1 = elástico)
+	local e = restitution or 0
+	if entityA.restitution then
+		e = math.max(e, entityA.restitution)
+	end
+	if entityB.restitution then
+		e = math.max(e, entityB.restitution)
+	end
+
+	-- massas inversas (massa infinita -> 0)
+	local invMassA = 0
+	if entityA.mass and entityA.mass ~= 0 and entityA.mass ~= math.huge then
+		invMassA = 1 / entityA.mass
+	end
+	local invMassB = 0
+	if entityB.mass and entityB.mass ~= 0 and entityB.mass ~= math.huge then
+		invMassB = 1 / entityB.mass
+	end
+
+	local invMassSum = invMassA + invMassB
+	if invMassSum == 0 then
+		return
+	end
+
+	-- impulso escalar
+	local j = -((1 + e) * velAlongNormal) / invMassSum
+	local impulse = scaleVec(n, j)
+
+	-- aplica impulsos iguais e opostos
+	if invMassA > 0 then
+		entityA.vel = subVec(entityA.vel, scaleVec(impulse, invMassA))
+	end
+	if invMassB > 0 then
+		entityB.vel = addVec(entityB.vel, scaleVec(impulse, invMassB))
+	end
+end
+
+----------------------------------------
 -- Classe Collision Manager
 ----------------------------------------
 
@@ -534,6 +601,11 @@ function CollisionManager:fetchHitboxesByRoom(room)
 	-- pegando hitboxes de interativos
 	for _, inter in pairs(room.interactives) do
 		self:register(inter)
+	end
+
+	-- pegando hitboxes de interativos
+	for _, door in pairs(room.doors) do
+		self:register(door)
 	end
 
 	-- pegando hitboxes de itens
@@ -635,8 +707,6 @@ function CollisionManager:register(entity)
 		return
 	end
 
-	-- print("Registering " .. entity.name .. " to CollisionManager")
-
 	if entity.hb.solids and #entity.hb.solids > 0 then
 		self.solids[entity] = entity.hb.solids
 	end
@@ -652,8 +722,6 @@ function CollisionManager:unregister(entity)
 	if not data then
 		return
 	end
-
-	-- print("Unregistering " .. entity.name .. " from CollisionManager")
 
 	if data.solids and #data.solids > 0 then
 		self.solids[entity] = nil
@@ -850,12 +918,20 @@ function CollisionManager:resolveSolidCollisions(entity, nextPos)
 						finalPos = addVec(finalPos, pushOut)
 						-- Atualiza a hitbox para a nova posição (para a próxima iteração do loop i)
 						desiredhb = buildWorldHitbox(entityhb, finalPos)
-						-- projeta a velocidade na normal da colisão, deslizando a entidade
-						local velDotNormal = dotProd(entity.vel, manifold.normal)
-						-- se estiver se movendo contra a parede, remove essa componente
-						if velDotNormal < 0 then
-							local slideCancel = scaleVec(manifold.normal, velDotNormal)
-							entity.vel = scaleVec(subVec(entity.vel, slideCancel), 0.75) -- x0.75 para perder um pouco mais de energia
+						-- para sólidos estáticos, mantemos o comportamento antigo;
+						-- para sólidos dinâmicos aplicamos impulso de contato obedecendo a 3ª lei.
+						local isStaticSolid = solid.isStatic == true
+						if isStaticSolid then
+							-- projeta a velocidade na normal da colisão, deslizando a entidade
+							local velDotNormal = dotProd(entity.vel, manifold.normal)
+							-- se estiver se movendo contra a parede, remove essa componente
+							if velDotNormal < 0 then
+								local slideCancel = scaleVec(manifold.normal, velDotNormal)
+								entity.vel = scaleVec(subVec(entity.vel, slideCancel), 0.75) -- x0.75 para perder um pouco mais de energia
+							end
+						else
+							local normalEntityToSolid = scaleVec(manifold.normal, -1)
+							applyContactImpulse(entity, solid, normalEntityToSolid, 0)
 						end
 					end
 				end
@@ -1013,4 +1089,3 @@ end
 function CollisionManager:onPlayerObstacleExit(obstacle)
 	obstacle.transparent = false
 end
-
