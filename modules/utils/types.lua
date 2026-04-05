@@ -25,6 +25,10 @@ SPAWN_DATA = "spawn data"
 COLLISION_MANAGER = "collision manager"
 DIALOGUE = "dialogue"
 INVENTORY = "inventory"
+CRAFTING = "crafting"
+RECIPE = "recipe"
+BUILDING = "building"
+DISH = "dish"
 OBSTACLE = "obstacle"
 UI_MANAGER = "UI manager"
 UI_SCENE = "UI scene"
@@ -84,6 +88,20 @@ GOLD = registerEntity(RESOURCE, "gold")
 
 ------------- OBSTÁCULO ----------------
 PILLAR = registerEntity(OBSTACLE, "pillar")
+
+------------------ BUILDINGS -----------------
+FIRECAMP = registerEntity(BUILDING, "firecamp")
+CHEST = registerEntity(BUILDING, "chest")
+ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
+KITCHEN_STATION = registerEntity(BUILDING, "kitchen station")
+FURNACE = registerEntity(BUILDING, "furnace")
+DRILL = registerEntity(BUILDING, "drill")
+TRAP = registerEntity(BUILDING, "trap")
+LADDER = registerEntity(BUILDING, "ladder")
+BLESSER = registerEntity(BUILDING, "blesser")
+FORGE = registerEntity(BUILDING, "forge")
+
+------------------ DISHES -----------------
 WALL = registerEntity(OBSTACLE, "wall")
 
 ------------- INTERATIVO ---------------

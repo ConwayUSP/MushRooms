@@ -1,9 +1,13 @@
 ---@class Inventory
+---@field owner Entity
+---@field items table
 
 Inventory = {}
 Inventory.__index = Inventory
 Inventory.type = INVENTORY
 
+---@param owner Entity
+-- cria uma nova instância de inventário para o dono especificado
 function Inventory.new(owner)
   local inv = setmetatable({}, Inventory)
   inv.owner = owner
@@ -19,6 +23,8 @@ function Inventory:startItems()
   return items
 end
 
+---@param item Resource
+---@return boolean
 function Inventory:addItem(item)
   local index = self:hasItem(item)
 
@@ -52,6 +58,8 @@ function Inventory:addItem(item)
   return true
 end
 
+---@param item Resource
+---@return boolean
 function Inventory:subtractItem(item)
   local index = self:hasItem(item)
   if index ~= -1 then
@@ -69,6 +77,8 @@ function Inventory:subtractItem(item)
   return false
 end
 
+---@param item Resource
+---@return boolean
 function Inventory:hasItem(item)
   for index, invItem in ipairs(self.items[item.type]) do
     if invItem.name == item.name then
