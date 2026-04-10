@@ -19,11 +19,11 @@ require("table")
 ---@field animations table<string, Animation>
 ---@field target any
 ---@field atk Attack[]
+---@field atkFrame number[]
 ---@field selectedAtk number
 ---@field isAttacking boolean
 ---@field hasTriggeredAttackThisAnim boolean
 ---@field attackJustStarted boolean
----@field attackFrame number
 ---@field addAnimations function
 ---@field setProjectileAtk function
 
@@ -39,10 +39,10 @@ Enemy.type = ENEMY
 ---@param attacks Attack[]
 ---@param hitboxes Hitboxes
 ---@param room Room
----@param attackFrame number
+---@param atkFrames number[]
 ---@return Enemy
 -- cria uma instância de `Enemy`
-function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, attackFrame)
+function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, atkFrames)
 	---@type Enemy
 	local enemy = setmetatable({}, Enemy) ---@diagnostic disable-line
 	enemy:init(name, spawnPos, hitboxes, room, physics)
@@ -51,7 +51,7 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy.hp = hp -- pontos de vida do inimigo
 	enemy.move = move -- função de movimento do inimigo
 	enemy.atk = attacks -- objetos Attack associados ao inimigo (caso possua)
-	enemy.attackFrame = attackFrame -- frame de ataque do inimigo
+	enemy.atkFrame = atkFrames -- frames para
 	-- atributos fixos na instanciação
 	enemy.selectedAtk = 1 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
 	enemy.state = IDLE -- define o estado atual do inimigo, estreitamente relacionado às animações
@@ -200,7 +200,7 @@ function Enemy:updateAttack()
 	if self.isAttacking then
 		local anim = self.animations[self.state]
 
-		if anim.currFrame >= self.attackFrame and not self.hasTriggeredAttackThisAnim then
+		if anim.currFrame >= self.atkFrame[self.selectedAtk] and not self.hasTriggeredAttackThisAnim then
 			local dir = math.atan2(self.target.pos.y - self.pos.y, self.target.pos.x - self.pos.x)
 			self.atk[self.selectedAtk]:attack(self, self.pos, dir)
 			self.hasTriggeredAttackThisAnim = true

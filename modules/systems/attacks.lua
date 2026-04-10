@@ -13,7 +13,7 @@ require("modules.utils.utils")
 ---@field dmg number
 ---@field dur number
 ---@field hb Hitboxes
----@field cooldown number
+---@field cooldown function
 ---@field initialMass number
 ---@field initialSpeed number
 ---@field friction number
@@ -123,7 +123,7 @@ end
 -- inicia um evento de ataque no ponto `origin` com direção `direction`.
 -- `attacker` é a entidade (player ou inimigo) iniciando o ataque
 function Attack:attack(attacker, origin, direction)
-	self.timer = self.cooldown
+	self.timer = self.cooldown()
 	self.canAttack = false
 
 	local atkEvent = AttackEvent.new(self, attacker, origin, direction)
@@ -155,6 +155,7 @@ end
 function Attack:updateTimer(dt)
 	if not self.canAttack then
 		self.timer = self.timer - dt
+		print(self.timer)
 		if self.timer <= 0 then
 			self.canAttack = true
 		end

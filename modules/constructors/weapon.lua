@@ -1,3 +1,8 @@
+----------------------------------------
+-- Importações de Módulos
+----------------------------------------
+require("modules.constructors.cooldowns")
+
 ---@return Weapon
 -- cria uma arma do tipo Katana
 function newKatana()
@@ -13,7 +18,8 @@ function newKatana()
 	end
 	local hb = hitbox(Circle.new(100))
 	local hbs = hitboxes({ hb })
-	local atkSettings = newAtkSetting(MELEE_ATTACK, true, 15, 0.5, hbs, 0.3)
+	local cooldown = multiCooldown({ 0.1, 0.1, 0.5 })
+	local atkSettings = newAtkSetting(MELEE_ATTACK, true, 15, 0.5, hbs, cooldown)
 	local atkAnimSettings = newAnimSetting(12, { width = 64, height = 64 }, 0.03, false, 1)
 	local attack = Attack.new("Katana Slice", atkSettings, atkAnimSettings, updateFunc, onHitFunc)
 
@@ -28,7 +34,8 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Estilingue
 function newSlingShot()
-	local attack = newPebbleShotAttack(true, 1.5, 0.4, 2000)
+	local cooldown = constCooldown(0.4)
+	local attack = newPebbleShotAttack(true, 1.5, cooldown, 2000)
 	local slingshot = Weapon.new(SLING_SHOT.name, math.huge, attack)
 	local idleAnimSettings = newAnimSetting(2, { width = 64, height = 64 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(10, { width = 64, height = 64 }, 0.05, false, 1)
