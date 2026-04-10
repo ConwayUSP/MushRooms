@@ -536,8 +536,8 @@ function CollisionManager.init()
 	local cm = setmetatable({}, CollisionManager)
 
 	cm.registry = cm:startRegistry() -- tabela mestre de hitboxes registradas
-	cm.roomsDirty = false         -- flag para indicar se as listas de hitboxes precisam ser atualizadas
-	cm.solids = {}                -- hitboxes sólidas
+	cm.roomsDirty = false -- flag para indicar se as listas de hitboxes precisam ser atualizadas
+	cm.solids = {} -- hitboxes sólidas
 
 	-- otimização: manter uma cópia das salas ativas
 	-- para minimizar o número de colisões checadas
@@ -585,8 +585,10 @@ function CollisionManager:fetchHitboxesByRoom(room)
 
 	-- pegando hitboxes de inimigos
 	for _, enemy in pairs(room.enemies) do
-		for _, attack in pairs(enemy.atk.events) do
-			self:register(attack)
+		for _, attack in pairs(enemy.atk) do
+			for _, atkEvent in pairs(attack.events) do
+				self:register(atkEvent)
+			end
 		end
 		self:register(enemy)
 	end
@@ -639,8 +641,10 @@ function CollisionManager:clearHitboxesByRoom(room)
 
 	-- removendo hitboxes de inimigos
 	for _, enemy in pairs(room.enemies) do
-		for _, attack in pairs(enemy.atk.events) do
-			self:unregister(attack)
+		for _, attack in pairs(enemy.atk) do
+			for _, atkEvent in pairs(attack.events) do
+				self:unregister(atkEvent)
+			end
 		end
 		self:unregister(enemy)
 	end

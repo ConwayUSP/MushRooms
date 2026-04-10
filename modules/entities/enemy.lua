@@ -14,12 +14,12 @@ require("table")
 ---@class Enemy : Entity
 ---@field hp number
 ---@field move function
----@field attack Attack
 ---@field state string
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
 ---@field target any
----@field atk Attack
+---@field atk Attack[]
+---@field selectedAtk number
 ---@field isAttacking boolean
 ---@field hasTriggeredAttackThisAnim boolean
 ---@field attackJustStarted boolean
@@ -36,13 +36,13 @@ Enemy.type = ENEMY
 ---@param spawnPos Vec
 ---@param physics PhysicsSettings
 ---@param move function
----@param attack Attack
+---@param attacks Attack[]
 ---@param hitboxes Hitboxes
 ---@param room Room
 ---@param attackFrame number
 ---@return Enemy
 -- cria uma instância de `Enemy`
-function Enemy.new(name, hp, spawnPos, physics, move, attack, hitboxes, room, attackFrame)
+function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, attackFrame)
 	---@type Enemy
 	local enemy = setmetatable({}, Enemy) ---@diagnostic disable-line
 	enemy:init(name, spawnPos, hitboxes, room, physics)
@@ -50,9 +50,10 @@ function Enemy.new(name, hp, spawnPos, physics, move, attack, hitboxes, room, at
 	-- atributos que variam
 	enemy.hp = hp -- pontos de vida do inimigo
 	enemy.move = move -- função de movimento do inimigo
-	enemy.atk = attack -- objeto Attack associado ao inimigo (caso possua)
+	enemy.atk = attacks -- objetos Attack associados ao inimigo (caso possua)
 	enemy.attackFrame = attackFrame -- frame de ataque do inimigo
 	-- atributos fixos na instanciação
+	enemy.selectedAtk = 1 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
 	enemy.state = IDLE -- define o estado atual do inimigo, estreitamente relacionado às animações
 	enemy.spriteSheets = {} -- no tipo imagem do love
 	enemy.animations = {} -- as chaves são estados e os valores são Animações
@@ -112,16 +113,14 @@ end
 function Enemy:initAttackAnim(anim)
 	anim.onFinish = function()
 		self.isAttacking = false
+		self.selectedAtk = math.random(#self.atk)
 		self.hasTriggeredAttackThisAnim = false
 	end
 end
 
 -- verifica se um estado é de ataque
 function Enemy:isAttackState(state)
-	return state == ATTACKING_UP
-		or state == ATTACKING_DOWN
-		or state == ATTACKING_LEFT
-		or state == ATTACKING_RIGHT
+	return state == ATTACKING_UP or state == ATTACKING_DOWN or state == ATTACKING_LEFT or state == ATTACKING_RIGHT
 end
 
 -- reseta todas as animações de ataque para o primeiro frame
@@ -177,7 +176,7 @@ function Enemy:die()
 	local anim = self.animations[DYING]
 	anim.onFinish = function()
 		collisionManager:unregister(self)
-		for _, atk in pairs(self.atk.events) do
+		for _, atk in pairs(self.atk[self.selectedAtk].events) do
 			collisionManager:unregister(atk)
 		end
 
@@ -187,10 +186,10 @@ end
 
 function Enemy:attack()
 	-- as condições para tentar um ataque não são cumpridas
-	if not self.target or not self.target.pos or not self.atk then
+	if not self.target or not self.target.pos or not self.atk[self.selectedAtk] then
 		return
 	end
-	if self.atk:tryAttack() and not self.isAttacking then
+	if self.atk[self.selectedAtk].canAttack and not self.isAttacking then
 		self.isAttacking = true
 		self.hasTriggeredAttackThisAnim = false
 		self.attackJustStarted = true
@@ -198,15 +197,14 @@ function Enemy:attack()
 end
 
 function Enemy:updateAttack()
-	if self.isAttacking then		
+	if self.isAttacking then
 		local anim = self.animations[self.state]
 
 		if anim.currFrame >= self.attackFrame and not self.hasTriggeredAttackThisAnim then
 			local dir = math.atan2(self.target.pos.y - self.pos.y, self.target.pos.x - self.pos.x)
-			self.atk:attack(self, self.pos, dir)
+			self.atk[self.selectedAtk]:attack(self, self.pos, dir)
 			self.hasTriggeredAttackThisAnim = true
 		end
-
 	end
 end
 
@@ -217,10 +215,11 @@ function Enemy:update(dt)
 	if self.move and self.state ~= DYING and not self.isAttacking then
 		self:move(dt)
 	end
-	if self.atk then
-		self.atk:update(dt)
+	self.atk[self.selectedAtk]:updateTimer(dt)
+	for _, atk in pairs(self.atk) do
+		atk:update(dt)
 	end
-	
+
 	self:updateInvulnerability(dt)
 	self:attack()
 	self:updateState()
@@ -245,7 +244,7 @@ function Enemy:updateState()
 		return
 	end
 
-	if self.atk and self.isAttacking then
+	if self.atk[self.selectedAtk] and self.isAttacking then
 		local dirVec = subVec(self.target.pos, self.pos)
 
 		local isVerticalAttack = math.abs(dirVec.y) > math.abs(dirVec.x)
@@ -271,9 +270,7 @@ function Enemy:updateState()
 		else
 			self.state = IDLE
 		end
-
 	end
-	
 end
 
 -- define o alvo atual do `Enemy`

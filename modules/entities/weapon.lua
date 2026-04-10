@@ -42,9 +42,9 @@ function Weapon.new(name, ammo, attack)
 	weapon.atk = attack -- instância de Attack associada à arma
 	-- atributos fixos na instanciação
 	weapon.canShoot = false
-	weapon.target = nil   -- inimigo para o qual a arma está mirando
-	weapon.rotation = 0   -- rotação da arma em radianos
-	weapon.state = IDLE   -- estado atual da arma
+	weapon.target = nil -- inimigo para o qual a arma está mirando
+	weapon.rotation = 0 -- rotação da arma em radianos
+	weapon.state = IDLE -- estado atual da arma
 	weapon.spriteSheets = {} -- no tipo imagem do love
 	weapon.animations = {} -- as chaves são estados e os valores são Animações
 	return weapon
@@ -63,6 +63,7 @@ end
 ---@param dt number
 -- atualiza o estado, o cooldown e o ataque da arma
 function Weapon:update(dt)
+	self.atk:updateTimer(dt)
 	self.atk:update(dt)
 
 	if self.atk.canAttack then
@@ -72,7 +73,7 @@ end
 
 -- tenta realizar um ataque, caso bem sucedido, atualiza o estado/animação da arma
 function Weapon:attack()
-	if self.atk:tryAttack() then
+	if self.atk.canAttack then
 		self.atk:attack(self.owner, self.owner.pos, self.rotation)
 		self.state = ATTACKING
 		if self.animations[ATTACKING] then
