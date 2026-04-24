@@ -56,7 +56,7 @@ ANCHORS = {
 
 	-- Obstáculos
 	pillar = floorAnchor(24),
-	wall = floorAnchor(27.99), -- desempate com a porta
+	wall = floorAnchor(27.999), -- desempate com a porta
 }
 
 ----------------------------------------

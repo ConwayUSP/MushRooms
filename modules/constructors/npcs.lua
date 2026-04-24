@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.dialogue")
+require("modules.constructors.dialogues")
 require("modules.entities.npc")
 
 ---@param spawnPos Vec

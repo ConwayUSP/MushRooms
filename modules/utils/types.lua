@@ -2,45 +2,62 @@
 -- Enum dos tipos do jogo
 ----------------------------------------
 ---@alias Type string
+
+---------- ENTIDADES ----------
 PLAYER = "player"
 ENEMY = "enemy"
 NPC = "npc"
-ROOM = "room"
 WEAPON = "weapon"
-RESOURCE = "resource"
 ITEM = "item"
 DESTRUCTIBLE = "destructible"
 INTERACTIVE = "interactive"
-COLOR = "color"
-LOOT = "loot"
+OBSTACLE = "obstacle"
+
+---------- ATAQUES ----------
 ATTACK = "attack"
 MELEE_ATTACK = "melee attack"
 RANGED_ATTACK = "ranged attack"
 PLAYER_ATTACK = "player attack"
 ENEMY_ATTACK = "enemy attack"
 ATTACK_EVENT = "attack event"
+
+---------- SALAS ----------
+ROOM = "room"
 BLUEPRINT = "blueprint"
 SPAWNPOINT = "spawnpoint"
 SPAWN_DATA = "spawn data"
+
+---------- SISTEMAS ----------
 COLLISION_MANAGER = "collision manager"
 DIALOGUE = "dialogue"
 INVENTORY = "inventory"
-CRAFTING = "crafting"
+
+---------- CRAFTING ----------
+CRAFTING_MANAGER = "crafting manager"
 RECIPE = "recipe"
+RESOURCE = "resource"
+MATERIAL = "material"
+INGREDIENT = "ingredient"
 BUILDING = "building"
-DISH = "dish"
-OBSTACLE = "obstacle"
+FOOD = "food"
+
+---------- UI ----------
 UI_MANAGER = "UI manager"
 UI_SCENE = "UI scene"
 UI_ELEMENT = "UI element"
 UI_IMAGE_ELEM = "UI image element"
 UI_BUTTON_ELEM = "UI button element"
+UI_TEXT_ELEM = "UI text element"
 UI_MENU_SCENE = "UI menu scene"
 UI_EQUIPMENT_SCENE = "UI player equipment scene"
 UI_INVENTORY_SCENE = "UI player inventory scene"
 UI_MAP_SCENE = "UI player map scene"
 UI_BESTIARY_SCENE = "UI player bestiary scene"
 UI_CRAFTING_SCENE = "UI player crafting scene"
+
+---------- OUTROS ----------
+COLOR = "color"
+LOOT = "loot"
 
 ----------------------------------------
 -- Registro das entidades do jogo
@@ -88,12 +105,13 @@ GOLD = registerEntity(RESOURCE, "gold")
 
 ------------- OBSTÁCULO ----------------
 PILLAR = registerEntity(OBSTACLE, "pillar")
+WALL = registerEntity(OBSTACLE, "wall")
 
 ------------------ BUILDINGS -----------------
 FIRECAMP = registerEntity(BUILDING, "firecamp")
 CHEST = registerEntity(BUILDING, "chest")
 ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
-KITCHEN_STATION = registerEntity(BUILDING, "kitchen station")
+KITCHEN = registerEntity(BUILDING, "kitchen")
 FURNACE = registerEntity(BUILDING, "furnace")
 DRILL = registerEntity(BUILDING, "drill")
 TRAP = registerEntity(BUILDING, "trap")
@@ -101,8 +119,6 @@ LADDER = registerEntity(BUILDING, "ladder")
 BLESSER = registerEntity(BUILDING, "blesser")
 FORGE = registerEntity(BUILDING, "forge")
 
------------------- DISHES -----------------
-WALL = registerEntity(OBSTACLE, "wall")
-
 ------------- INTERATIVO ---------------
 DOOR = registerEntity(INTERACTIVE, "door")
+TURTLE = registerEntity(INTERACTIVE, "turtle")

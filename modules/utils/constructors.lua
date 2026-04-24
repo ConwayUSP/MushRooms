@@ -1,12 +1,12 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.destructible")
+require("modules.constructors.destructibles")
 require("modules.constructors.interactives")
-require("modules.constructors.enemy")
-require("modules.constructors.npc")
+require("modules.constructors.enemies")
+require("modules.constructors.npcs")
 require("modules.constructors.player")
-require("modules.constructors.obstacle")
+require("modules.constructors.obstacles")
 require("modules.utils.types")
 
 ----------------------------------------
@@ -48,4 +48,5 @@ CONSTRUCTORS[OBSTACLE] = {
 
 CONSTRUCTORS[INTERACTIVE] = {
 	[DOOR.name] = newDoor,
+	[TURTLE.name] = newTurtle,
 }

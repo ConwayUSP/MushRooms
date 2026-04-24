@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.dialogue")
+require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
 require("modules.engine.animation")
 require("modules.engine.camera")

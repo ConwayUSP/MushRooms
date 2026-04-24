@@ -12,10 +12,21 @@ ELEM_LAYER = 5
 -- Classe UIScene
 ----------------------------------------
 
+---@class UIScene
+---@field subtype Type
+---@field controls table
+---@field active boolean
+---@field selectionPos Vec
+---@field layers table<_, table<_, UIElement>>[]
+
 UIScene = {}
 UIScene.__index = UIScene
 UIScene.type = UI_SCENE
 
+---@param sceneType Type
+---@param player any
+---@return table
+-- cria uma nova cena de UI com um subtipo e com os controles do `player`
 function UIScene.new(sceneType, player)
 	local uiscene = setmetatable({}, UIScene)
 	uiscene.subtype = sceneType
@@ -30,6 +41,11 @@ function UIScene.new(sceneType, player)
 	return uiscene
 end
 
+---@param element UIElement
+---@param layer number
+---@param pos Vec
+---@return UIScene
+-- coloca um elemento de UI na cena em uma determinada camada e posição da matriz
 function UIScene:addElement(element, layer, pos)
 	if not self.layers[layer][pos.y] then
 		self.layers[layer][pos.y] = {}
@@ -42,11 +58,17 @@ function UIScene:addElement(element, layer, pos)
 	return self
 end
 
+---@param layer number
+---@param pos Vec
+---@return UIScene
+-- remove um elemento de UI de acordo com a camada e sua posição na matriz
 function UIScene:removeElement(layer, pos)
 	self.layers[layer][pos.y][pos.x] = nil
 	return self
 end
 
+---@param dt number
+-- atualiza cada um dos elementos de UI desta cena
 function UIScene:update(dt)
 	for _, layer in pairs(self.layers) do
 		for _, row in pairs(layer) do
@@ -57,6 +79,7 @@ function UIScene:update(dt)
 	end
 end
 
+-- desenha cada um dos elementos de UI desta cena
 function UIScene:draw()
 	love.graphics.clear(0.0, 0.0, 0.0, 0.3)
 	for _, layer in pairs(self.layers) do
@@ -68,6 +91,9 @@ function UIScene:draw()
 	end
 end
 
+---@param key string
+---@param isrepeat boolean
+-- trata uma interação via teclado com a UI desta cena
 function UIScene:keypressed(key, isrepeat)
 	local prevSelPos = vec(self.selectionPos.x, self.selectionPos.y)
 	local elemLayer = self.layers[ELEM_LAYER]

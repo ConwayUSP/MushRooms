@@ -2,10 +2,27 @@
 -- Classe UIScene
 ----------------------------------------
 
+---@class UIElement
+---@field name string
+---@field subtype Type
+---@field pos Vec
+---@field size Size
+---@field hb Hitboxes
+---@field state string
+---@field selected boolean
+---@field spriteSheets table
+---@field animations table
+
 UIElement = {}
 UIElement.__index = UIElement
 UIElement.type = UI_ELEMENT
 
+---@param name string
+---@param elementType Type
+---@param pos Vec
+---@param size Size
+---@param hitboxes Hitboxes
+-- inicializa um elemento de UI com estado `IDLE` e selected = `false`
 function UIElement:init(name, elementType, pos, size, hitboxes)
     self.name = name
     self.subtype = elementType
@@ -18,6 +35,8 @@ function UIElement:init(name, elementType, pos, size, hitboxes)
     self.animations = {}
 end
 
+---@param animSettings table<string, AnimSettings>
+-- adiciona animações ao elemento de UI
 function UIElement:addAnimations(animSettings)
     for state, settings in pairs(animSettings) do
         local path = pngPathFormat({ "assets", "animations", "UI", self.name, state })
@@ -25,21 +44,27 @@ function UIElement:addAnimations(animSettings)
     end
 end
 
+---@param dt number
+-- atualiza a animação do elemento de UI
 function UIElement:update(dt)
     self.animations[self.state]:update(dt)
 end
 
+-- marca o elemento de UI como `selected` e seu estado como `SELECTED`
 function UIElement:select()
     self.selected = true
     self.state = SELECTED
 end
 
+-- marca o elemento de UI como não selecionado e seu estado como `IDLE`
 function UIElement:deselect()
     self.selected = false
     self.animations[self.state]:reset()
     self.state = IDLE
 end
 
+---@param camera Camera
+-- renderiza o elemento de UI
 function UIElement:draw(camera)
     local viewPos = self.pos
     if camera then

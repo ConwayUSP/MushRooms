@@ -3,7 +3,7 @@
 ----------------------------------------
 require("modules.engine.animation")
 require("modules.entities.entity")
-require("modules.systems.attacks")
+require("modules.systems.attack")
 require("modules.utils.shapes")
 require("modules.utils.types")
 

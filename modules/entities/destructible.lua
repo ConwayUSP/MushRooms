@@ -1,11 +1,11 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.weapon")
+require("modules.constructors.weapons")
 require("modules.engine.animation")
 require("modules.engine.collision")
 require("modules.entities.entity")
-require("modules.systems.loots")
+require("modules.systems.loot")
 require("modules.utils.states")
 require("modules.utils.types")
 require("modules.utils.utils")

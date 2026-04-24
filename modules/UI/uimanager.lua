@@ -2,10 +2,21 @@
 -- Classe UIManager
 ----------------------------------------
 
+---@class UIManager
+---@field player Player
+---@field canvas table
+---@field canvasSize Size
+---@field scenes table<string, UIScene>
+---@field activeScene UIScene
+---@field parentCanvas table
+---@field parentCanvasPos Vec
+
 UIManager = {}
 UIManager.__index = UIManager
 UIManager.type = UI_MANAGER
 
+---@param player? Player
+-- cria um novo gerenciador de UI vazio atrelado opcionalmente a um `player`
 function UIManager.new(player)
     local uimanager = setmetatable({}, UIManager)
     uimanager.player = player
@@ -17,6 +28,9 @@ function UIManager.new(player)
     return uimanager
 end
 
+---@param canvas table
+---@param canvasPos Vec
+-- define em qual canvas este UI manager deveria renderizar sua UI
 function UIManager:setParentCanvas(canvas, canvasPos)
     self.parentCanvas = canvas
     self.parentCanvasPos = canvasPos
@@ -26,30 +40,42 @@ function UIManager:setParentCanvas(canvas, canvasPos)
     self.canvasSize = size(parentW, parentH)
 end
 
+---@param scene UIScene
+-- adiciona uma cena à lista de cenas deste manager
 function UIManager:addScene(scene)
     self.scenes[scene.subtype] = scene
     return self
 end
 
+---@param sceneType Type
+-- ativa uma cena de um determinado tipo
 function UIManager:activateScene(sceneType)
     self.scenes[sceneType].active = true
     self.activeScene = sceneType
 end
 
+---@param sceneType Type
+-- desativa uma cena de um determinado tipo
 function UIManager:deactivateScene(sceneType)
     self.scenes[sceneType].active = false
     -- !TODO: implementar um stack de cenas ativas para UIs sobrepostas
     self.activeScene = nil
 end
 
+---@param sceneType string
+---@return boolean
+-- retorna um `boolean` dizendo se a cena de tipo `sceneType` está ativa
 function UIManager:isSceneActive(sceneType)
     return self.scenes[sceneType].active
 end
 
+---@param sceneType Type
+-- faz com que uma cena ativa se desative e uma cena desativa se ative
 function UIManager:toggleScene(sceneType)
     self.scenes[sceneType].active = not self.scenes[sceneType].active
 end
 
+-- desativa todas as cenas deste UI manager
 function UIManager:deactivateAllScenes()
     for _, scene in pairs(self.scenes) do
         scene.active = false
@@ -57,6 +83,8 @@ function UIManager:deactivateAllScenes()
     self.activeScene = nil
 end
 
+---@param dt number
+-- atualiza o estado de todas as cenas deste manager
 function UIManager:update(dt)
     for _, scene in pairs(self.scenes) do
         if scene.active then
@@ -65,6 +93,9 @@ function UIManager:update(dt)
     end
 end
 
+---@param camera Camera
+-- redefine o canvas ativo e os offsets necessários e então
+-- renderiza todas as UIScenes deste manager
 function UIManager:draw(camera)
     love.graphics.setCanvas(self.canvas)
     love.graphics.clear(0.0, 0.0, 0.0, 0.0)

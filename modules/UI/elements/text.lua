@@ -1,3 +1,12 @@
+----------------------------------------
+-- Importações de Módulos
+----------------------------------------
+require("modules.UI.uielement")
+
+----------------------------------------
+-- Classe UITextElem
+----------------------------------------
+
 UITextElem = setmetatable({}, { __index = UIElement })
 UITextElem.__index = UITextElem
 

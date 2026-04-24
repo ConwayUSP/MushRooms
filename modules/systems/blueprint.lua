@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.room")
+require("modules.constructors.rooms")
 require("modules.utils.types")
 
 ----------------------------------------

@@ -63,9 +63,13 @@ function Item.new(object, pos, room, autoPick, floorY)
 	item.canPick = false -- se o item pode ser coletado (true após terminar de cair)
 	item.state = "falling" -- estado inicial do item
 
-	local sprite_path = object.path or pngPathFormat({ "assets", "sprites", "items", object.name })
-	item.image = love.graphics.newImage(sprite_path)
-	item.image:setFilter("nearest", "nearest")
+	if object.image then
+		item.image = object.image
+	else
+		local sprite_path = pngPathFormat({ "assets", "sprites", "items", object.name })
+		item.image = love.graphics.newImage(sprite_path)
+		item.image:setFilter("nearest", "nearest")
+	end
 
 	collisionManager:register(item)
 	table.insert(room.items, item)
@@ -112,11 +116,9 @@ function Item:updateIdle(dt)
 	self.visualOffset.y = math.sin(self.idleTimer * speed) * amplitude
 end
 
-
 function Item:isGrounded()
 	return self.pos.y > self.floorY and self.vel.y > 0
 end
-
 
 ---@param value boolean
 -- define se o item está brilhando (bordas brancas) ou não
@@ -137,7 +139,7 @@ function Item:draw(camera)
 	end
 
 	local scale = 3
-	
+
 	local visualPos = addVec(self.pos, self.visualOffset)
 	local viewPos = camera:viewPos(visualPos)
 	local offset = {
