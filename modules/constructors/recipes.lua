@@ -1,81 +1,22 @@
-require("modules.systems.recipes")
+require("modules.systems.recipe")
 
-function newFireCamp()
-  local inputs = { WOOD, STONE }
-  local output = FIRECAMP
-  local stationType = "raw"
-  
-  return Recipe.new(inputs, output, stationType)
-end
+FIRECAMP_RECIPE = Recipe.new({ craftInput(WOOD, 10), craftInput(STONE, 3) }, FIRECAMP)
 
-function newChest()
-  local inputs = { WOOD, IRON }
-  local output = CHEST
-  local stationType = "buildings"
+CHEST_RECIPE = Recipe.new({ craftInput(WOOD, 15), craftInput(IRON, 3) }, CHEST)
 
-  return Recipe.new(inputs, output, stationType)
-end
+ENGINEERING_TABLE_RECIPE =
+	Recipe.new({ craftInput(WOOD, 20), craftInput(STONE, 10), craftInput(IRON, 5) }, ENGINEERING_TABLE)
 
-function newEngineeringTable()
-  local inputs = { WOOD, IRON, STONE }
-  local output = ENGINEERING_TABLE
-  local stationType = "raw"
+KITCHEN_RECIPE = Recipe.new({ craftInput(WOOD, 10), craftInput(BREAD, 10) }, KITCHEN)
 
-  return Recipe.new(inputs, output, stationType)
-end
+FURNACE_RECIPE = Recipe.new({ craftInput(STONE, 20), craftInput(IRON, 10) }, FURNACE)
 
-function newKitchenStation()
-  local inputs = { WOOD, STONE, BREAD }
-  local output = KITCHEN_STATION
-  local stationType = "buildings"
+DRILL_RECIPE = Recipe.new({ craftInput(IRON, 5), craftInput(GOLD, 5) }, DRILL)
 
-  return Recipe.new(inputs, output, stationType)
-end
+TRAP_RECIPE = Recipe.new({ craftInput(BONE, 10), craftInput(FEATHER, 12) }, TRAP)
 
-function newFurnace()
-  local inputs = { STONE, STONE, IRON }
-  local output = FURNACE
-  local stationType = "buildings"
+LADDER_RECIPE = Recipe.new({ craftInput(WOOD, 30), craftInput(STONE, 10) }, LADDER)
 
-  return Recipe.new(inputs, output, stationType)
-end
+BLESSER_RECIPE = Recipe.new({ craftInput(GOLD, 10), craftInput(BREAD, 10), craftInput(FEATHER, 10) }, BLESSER)
 
-function newDrill()
-  local inputs = { STONE, IRON, GOLD }
-  local output = DRILL
-  local stationType = "buildings"
-
-  return Recipe.new(inputs, output, stationType)
-end
-
-function newTrap()
-  local inputs = { WOOD, BONE, FEATHER }
-  local output = TRAP
-  local stationType = "buildings"
-
-  return Recipe.new(inputs, output, stationType)
-end
-
-function newLadder()
-  local inputs = { WOOD, WOOD, STONE }
-  local output = LADDER
-  local stationType = "buildings"
-
-  return Recipe.new(inputs, output, stationType)
-end
-
-function newBlesser()
-  local inputs = { GOLD, BREAD, FEATHER }
-  local output = BLESSER
-  local stationType = "buildings"
-
-  return Recipe.new(inputs, output, stationType)
-end
-
-function newForge()
-  local inputs = { STONE, IRON, IRON }
-  local output = FORGE
-  local stationType = "buildings"
-
-  return Recipe.new(inputs, output, stationType)
-end
+FORGE_RECIPE = Recipe.new({ craftInput(STONE, 5), craftInput(IRON, 10), craftInput(GOLD, 5) }, FORGE)
