@@ -8,7 +8,7 @@ PLAYER = "player"
 ENEMY = "enemy"
 NPC = "npc"
 WEAPON = "weapon"
-ITEM = "item"
+DROP = "drop"
 DESTRUCTIBLE = "destructible"
 INTERACTIVE = "interactive"
 OBSTACLE = "obstacle"
@@ -89,8 +89,8 @@ SLING_SHOT = registerEntity(WEAPON, "Sling Shot")
 JAR = registerEntity(DESTRUCTIBLE, "jar")
 BARREL = registerEntity(DESTRUCTIBLE, "barrel")
 
------------------ ITEM -----------------
-COIN = registerEntity(ITEM, "coin")
+----------------- DROP -----------------
+COIN = registerEntity(DROP, "coin")
 
 -------------- RECURSOS ----------------
 WOOD = registerEntity(RESOURCE, "wood")

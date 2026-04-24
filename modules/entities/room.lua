@@ -49,7 +49,7 @@ EVENT_ROOM = "event room"
 ---@field explored boolean
 ---@field destructibles Destructible[]
 ---@field interactives Interactive[]
----@field items Item[]
+---@field drops Drop[]
 ---@field enemies Enemy[]
 ---@field npcs Npc[]
 ---@field obstacles Obstacle[]
@@ -90,7 +90,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.destructibles = {} -- lista de objetos destrutíveis da sala
 	room.interactives = {} -- lista de objetos interativos na sala
 	room.doors = {} -- lista de portas da sala
-	room.items = {} -- lista de itens dropados na sala
+	room.drops = {} -- lista de itens dropados na sala
 	room.enemies = {} -- lista de inimigos na sala
 	room.npcs = {} -- lista de NPCs na sala
 	room.obstacles = {} -- lista de obstáculos na sala
@@ -102,7 +102,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 end
 
 ---@param dt number
--- atualiza os destrutíveis, inimigos e items da sala
+-- atualiza os destrutíveis, inimigos e drops da sala
 function Room:update(dt)
 	-- atualiza destrutíveis
 	for _, d in pairs(self.destructibles) do
@@ -116,9 +116,9 @@ function Room:update(dt)
 	for _, d in pairs(self.doors) do
 		d:update(dt)
 	end
-	-- atualiza items
-	for _, item in pairs(self.items) do
-		item:update(dt)
+	-- atualiza drops
+	for _, drop in pairs(self.drops) do
+		drop:update(dt)
 	end
 	-- atualiza inimigos
 	for _, e in pairs(self.enemies) do

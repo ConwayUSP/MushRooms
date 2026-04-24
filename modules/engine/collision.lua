@@ -554,7 +554,7 @@ function CollisionManager:startRegistry()
 	reg[ENEMY] = {}
 	reg[DESTRUCTIBLE] = {}
 	reg[INTERACTIVE] = {}
-	reg[ITEM] = {}
+	reg[DROP] = {}
 	reg[NPC] = {}
 	reg[PLAYER_ATTACK] = {}
 	reg[ENEMY_ATTACK] = {}
@@ -611,8 +611,8 @@ function CollisionManager:fetchHitboxesByRoom(room)
 	end
 
 	-- pegando hitboxes de itens
-	for _, item in pairs(room.items) do
-		self:register(item)
+	for _, drop in pairs(room.drops) do
+		self:register(drop)
 	end
 
 	-- pegando hitboxes de npcs
@@ -660,8 +660,8 @@ function CollisionManager:clearHitboxesByRoom(room)
 	end
 
 	-- removendo hitboxes de itens
-	for _, item in pairs(room.items) do
-		self:unregister(item)
+	for _, drop in pairs(room.drops) do
+		self:unregister(drop)
 	end
 
 	-- removendo hitboxes de npcs
@@ -768,26 +768,26 @@ function CollisionManager:handleCollisions()
 		end
 	end
 
-	----------- PLAYER / ITEM -----------
-	for item, itemhb in pairs(registry[ITEM]) do
-		if item.collected then
-			self:unregister(item)
-			goto nextitem
+	----------- PLAYER / DROP -----------
+	for drop, drophb in pairs(registry[DROP]) do
+		if drop.collected then
+			self:unregister(drop)
+			goto nextdrop
 		end
 
 		local hitByAnyPlayer = false
 
 		for player, playerhb in pairs(registry[PLAYER]) do
-			local hit = checkColision(playerhb.default, player, itemhb.triggers, item)
+			local hit = checkColision(playerhb.default, player, drophb.triggers, drop)
 
 			if hit then
 				hitByAnyPlayer = true
-				self:onPlayerItem(player, item)
+				self:onPlayerDrop(player, drop)
 			end
 		end
 
-		item:setShine(hitByAnyPlayer)
-		::nextitem::
+		drop:setShine(hitByAnyPlayer)
+		::nextdrop::
 	end
 
 	------- PLAYER / NPC --------
@@ -970,10 +970,10 @@ function CollisionManager:onPlayerRoom(player, room)
 end
 
 ---@param player Player
----@param item Item
--- trata a colisão entre um `player` e um `item`
-function CollisionManager:onPlayerItem(player, item)
-	player:tryCollectItem(item)
+---@param drop Drop
+-- trata a colisão entre um `player` e um `drop`
+function CollisionManager:onPlayerDrop(player, drop)
+	player:tryCollectDrop(drop)
 end
 
 ---@param enemy Enemy

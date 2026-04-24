@@ -67,8 +67,8 @@ function renderEntities(camera)
 				end,
 			})
 		end
-		-- Adiciona items
-		for _, i in pairs(r.items) do
+		-- Adiciona drops
+		for _, i in pairs(r.drops) do
 			table.insert(drawList, {
 				y = i.floorY + getAnchor(i, FLOOR),
 				draw = function()

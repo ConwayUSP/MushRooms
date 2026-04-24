@@ -68,22 +68,22 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
 
 	-- atributos que variam
-	player.id = #players + 1                   -- número do jogador
-	player.hp = 100                            -- pontos de vida
-	player.controls = controls                 -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
-	player.colors = colors                     -- paleta de cores do jogador
+	player.id = #players + 1 -- número do jogador
+	player.hp = 100 -- pontos de vida
+	player.controls = controls -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.colors = colors -- paleta de cores do jogador
 	-- atributos fixos na instanciação
-	player.movementVec = { x = 0, y = 0 }      -- vetor de direção e magnitude do movimento do jogador
-	player.state = IDLE                        -- define o estado atual do jogador, estreitamente relacionado às animações
-	player.spriteSheets = {}                   -- no tipo imagem do love
-	player.animations = {}                     -- as chaves são estados e os valores são Animações
-	player.particles = {}                      -- efeitos de partícula emitidos pelo player
-	player.weapons = {}                        -- lista das armas que o jogador possui
-	player.weapon = nil                        -- arma equipada
-	player.inDialogue = false                  -- se o player está em diálogo
-	player.interactiveObj = nil                -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
-	player.inventory = Inventory.new(player)   -- inventário do jogador
-	player.candidateInteractives = {}          -- lista de objetos interativos próximos ao jogador
+	player.movementVec = { x = 0, y = 0 } -- vetor de direção e magnitude do movimento do jogador
+	player.state = IDLE -- define o estado atual do jogador, estreitamente relacionado às animações
+	player.spriteSheets = {} -- no tipo imagem do love
+	player.animations = {} -- as chaves são estados e os valores são Animações
+	player.particles = {} -- efeitos de partícula emitidos pelo player
+	player.weapons = {} -- lista das armas que o jogador possui
+	player.weapon = nil -- arma equipada
+	player.inDialogue = false -- se o player está em diálogo
+	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
+	player.inventory = Inventory.new(player) -- inventário do jogador
+	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
 
 	collisionManager:register(player)
@@ -368,37 +368,37 @@ function Player:collectResource(resource)
 	return success
 end
 
----@param item Item
--- coleta um item e o marca como coletado
-function Player:collectItem(item)
+---@param drop Drop
+-- coleta um drop e o marca como coletado
+function Player:collectDrop(drop)
 	local result = false
-	if item.object.type == WEAPON then
-		result = self:collectWeapon(item.object)
+	if drop.object.type == WEAPON then
+		result = self:collectWeapon(drop.object)
 		if result then
-			self:equipWeapon(item.object.name)
+			self:equipWeapon(drop.object.name)
 		end
-	elseif item.object.type == ITEM then
+	elseif drop.object.type == drop then
 		result = self:collectCoin()
-	elseif item.object.type == RESOURCE then
-		result = self:collectResource(item.object)
+	elseif drop.object.type == RESOURCE then
+		result = self:collectResource(drop.object)
 	end
 	if result then
-		item:setCollected()
+		drop:setCollected()
 	end
 end
 
----@param item Item
--- verifica se condições-chave para a coleta de um item
--- são verdadeiras, caso positivo, coleta o item
-function Player:tryCollectItem(item)
-	if not item.canPick then
+---@param drop Drop
+-- verifica se condições-chave para a coleta de um drop
+-- são verdadeiras, caso positivo, coleta o drop
+function Player:tryCollectDrop(drop)
+	if not drop.canPick then
 		return
 	end
-	if item.autoPick then
-		self:collectItem(item)
+	if drop.autoPick then
+		self:collectDrop(drop)
 		return
 	elseif love.keyboard.isDown(self.controls.act2) then
-		self:collectItem(item)
+		self:collectDrop(drop)
 		return
 	end
 end

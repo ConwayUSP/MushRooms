@@ -51,5 +51,5 @@ function _spawnDropDebugHandler(numberKey)
 end
 
 function _spawnDropAtPlayer(drop, autoPick)
-	spawnItem(drop, players[1].pos, players[1].room, autoPick, getAnchor(players[1], FLOOR), vec(0, -500))
+	spawnDrop(drop, players[1].pos, players[1].room, autoPick, getAnchor(players[1], FLOOR), vec(0, -500))
 end
