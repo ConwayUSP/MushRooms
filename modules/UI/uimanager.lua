@@ -95,7 +95,16 @@ end
 ---@param sceneType Type
 -- faz com que uma cena ativa se desative e uma cena desativa se ative
 function UIManager:toggleScene(sceneType)
-	self.scenes[sceneType].active = not self.scenes[sceneType].active
+	local newState = not self.scenes[sceneType].active
+	self.scenes[sceneType].active = newState
+	
+	if newState then
+		self.activeScene = sceneType
+	else
+		if self.activeScene == sceneType then
+			self.activeScene = nil
+		end
+	end
 end
 
 -- desativa todas as cenas deste UI manager
