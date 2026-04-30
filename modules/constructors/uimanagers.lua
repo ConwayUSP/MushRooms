@@ -18,7 +18,9 @@ end
 function newPlayerUIManager(player)
 	local playerManager = UIManager.new(player)
 	local inventoryScene = newResourceInventoryScene(playerManager.canvasSize)
+	local craftingScene = newCraftingScene(playerManager.canvasSize, player)
 	playerManager:addScene(inventoryScene)
+	playerManager:addScene(craftingScene)
 
 	return playerManager
 end
