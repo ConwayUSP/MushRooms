@@ -16,9 +16,11 @@ CraftingManager.type = CRAFTING_MANAGER
 
 ---@param recipes Recipe[]
 ---@param uimanager UIManager
+---@return CraftingManager
 -- cria um novo `CraftingManager` para um determinado contexto de crafting
 function CraftingManager.new(recipes, uimanager)
 	local cm = setmetatable({}, CraftingManager)
 	cm.recipes = recipes
 	cm.uimanager = uimanager
+	return cm
 end
