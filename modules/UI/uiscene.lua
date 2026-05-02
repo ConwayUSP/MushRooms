@@ -6,7 +6,8 @@ BG_LAYER_1 = 1
 BG_LAYER_2 = 2
 VISUAL_LAYER_1 = 3
 VISUAL_LAYER_2 = 4
-ELEM_LAYER = 5
+ELEM_LAYER_1 = 5
+ELEM_LAYER_2 = 6
 
 ----------------------------------------
 -- Classe UIScene
@@ -36,8 +37,8 @@ function UIScene.new(sceneType, player)
 		uiscene.controls = { up = "w", left = "a", down = "s", right = "d", act1 = "space", act2 = "lshift" }
 	end
 	uiscene.active = false
-	uiscene.selectionPos = vec(1, 1)
-	uiscene.layers = { {}, {}, {}, {}, {} }
+	uiscene.selectionPos = vec(math.huge, math.huge)
+	uiscene.layers = { {}, {}, {}, {}, {}, {} }
 	return uiscene
 end
 
@@ -52,8 +53,21 @@ function UIScene:addElement(element, layer, pos)
 	end
 	self.layers[layer][pos.y][pos.x] = element
 	-- o primeiro elemento começa selecionado
-	if layer == ELEM_LAYER and pos.x == 1 and pos.y == 1 then
-		self.layers[ELEM_LAYER][1][1]:select()
+	if (layer == ELEM_LAYER_1 or layer == ELEM_LAYER_2) then
+		local newSelPos = vec(self.selectionPos.x, self.selectionPos.y)
+		if pos.y < self.selectionPos.y or (pos.y == self.selectionPos.y and pos.x < self.selectionPos.x) then
+			newSelPos = vec(pos.x, pos.y)
+		end
+
+		if newSelPos.x ~= self.selectionPos.x or newSelPos.y ~= self.selectionPos.y then
+			local prevRow = self.layers[layer][self.selectionPos.y]
+			if prevRow and prevRow[self.selectionPos.x] then
+				prevRow[self.selectionPos.x]:deselect()
+			end
+
+			self.layers[layer][newSelPos.y][newSelPos.x]:select()
+			self.selectionPos = newSelPos
+		end
 	end
 	return self
 end
@@ -70,7 +84,8 @@ end
 ---@param dt number
 -- atualiza cada um dos elementos de UI desta cena
 function UIScene:update(dt)
-	for _, layer in pairs(self.layers) do
+	for i = 1, #self.layers do
+		local layer = self.layers[i]
 		for _, row in pairs(layer) do
 			for _, el in pairs(row) do
 				el:update(dt)
@@ -82,7 +97,8 @@ end
 -- desenha cada um dos elementos de UI desta cena
 function UIScene:draw()
 	love.graphics.clear(0.0, 0.0, 0.0, 0.3)
-	for _, layer in pairs(self.layers) do
+	for i = 1, #self.layers do
+		local layer = self.layers[i]
 		for _, row in pairs(layer) do
 			for _, el in pairs(row) do
 				el:draw()
@@ -96,48 +112,101 @@ end
 -- trata uma interação via teclado com a UI desta cena
 function UIScene:keypressed(key, isrepeat)
 	local prevSelPos = vec(self.selectionPos.x, self.selectionPos.y)
-	local elemLayer = self.layers[ELEM_LAYER]
+	local elemLayer1 = self.layers[ELEM_LAYER_1]
+	local elemLayer2 = self.layers[ELEM_LAYER_2]
+
+	-- helpers
+	local function getMaxXInRow(layer, y)
+		local max = 0
+		local row = layer[y]
+		if row then
+			for x, _ in pairs(row) do
+				if x > max then max = x end
+			end
+		end
+		return max
+	end
+
+	local function getMaxY(layer)
+		local max = 0
+		for y, _ in pairs(layer) do
+			if y > max then max = y end
+		end
+		return max
+	end
+
+	local function getElem(layer, x, y)
+		if layer[y] then
+			return layer[y][x]
+		end
+		return nil
+	end
+
+	if (not elemLayer1[self.selectionPos.y] or not elemLayer1[self.selectionPos.y][self.selectionPos.x]) and (not elemLayer2[self.selectionPos.y] or not elemLayer2[self.selectionPos.y][self.selectionPos.x]) then
+		return
+	end
 
 	if key == self.controls.left then
 		if self.selectionPos.x > 1 then
-			self.selectionPos.x = self.selectionPos.x - 1
+			if getElem(elemLayer1, self.selectionPos.x - 1, self.selectionPos.y) or getElem(elemLayer2, self.selectionPos.x - 1, self.selectionPos.y) then
+				self.selectionPos.x = self.selectionPos.x - 1
+			end
 		end
 	elseif key == self.controls.right then
-		if self.selectionPos.x < #elemLayer[self.selectionPos.y] then
+		local maxX1 = getMaxXInRow(elemLayer1, self.selectionPos.y)
+		local maxX2 = getMaxXInRow(elemLayer2, self.selectionPos.y)
+		local maxX = math.max(maxX1, maxX2)
+
+		if self.selectionPos.x < maxX then
 			self.selectionPos.x = self.selectionPos.x + 1
 		end
 	elseif key == self.controls.up then
 		if self.selectionPos.y > 1 then
 			local newY = self.selectionPos.y - 1
 			local newX = 1
-			if elemLayer[newY][self.selectionPos.x] then
+			local upLayer = (elemLayer1[newY] and elemLayer1) or elemLayer2
+			if getElem(upLayer, self.selectionPos.x, newY) then
 				newX = self.selectionPos.x
 			else
-				newX = #elemLayer[newY]
+				newX = getMaxXInRow(upLayer, newY)
 			end
 			self.selectionPos = vec(newX, newY)
 		end
 	elseif key == self.controls.down then
-		if self.selectionPos.y < #elemLayer then
+		local maxY1 = getMaxY(elemLayer1)
+		local maxY2 = getMaxY(elemLayer2)
+		local maxY = math.max(maxY1, maxY2)
+
+		if self.selectionPos.y < maxY then
 			local newY = self.selectionPos.y + 1
 			local newX = 1
-			if elemLayer[newY][self.selectionPos.x] then
+			local downLayer = (elemLayer1[newY] and elemLayer1) or elemLayer2
+			if getElem(downLayer, self.selectionPos.x, newY) then
 				newX = self.selectionPos.x
 			else
-				newX = #elemLayer[newY]
+				newX = getMaxXInRow(downLayer, newY)
 			end
 			self.selectionPos = vec(newX, newY)
 		end
 	elseif key == self.controls.act1 then
 		local selPos = self.selectionPos
-		local el = elemLayer[selPos.y][selPos.x]
-		if el.subtype == UI_BUTTON_ELEM then
-			el.onClick()
+		local el_1 = getElem(elemLayer1, selPos.x, selPos.y)
+		local el_2 = getElem(elemLayer2, selPos.x, selPos.y)
+		if el_1 and el_1.subtype == UI_BUTTON_ELEM then
+			el_1.onClick()
+		elseif el_2 and el_2.subtype == UI_BUTTON_ELEM then
+			el_2.onClick()
 		end
 	end
 
 	if prevSelPos.y ~= self.selectionPos.y or prevSelPos.x ~= self.selectionPos.x then
-		elemLayer[prevSelPos.y][prevSelPos.x]:deselect()
-		elemLayer[self.selectionPos.y][self.selectionPos.x]:select()
+		local prevEl1 = getElem(elemLayer1, prevSelPos.x, prevSelPos.y)
+		local prevEl2 = getElem(elemLayer2, prevSelPos.x, prevSelPos.y)
+		if prevEl1 then prevEl1:deselect() end
+		if prevEl2 then prevEl2:deselect() end
+		local newEl1 = getElem(elemLayer1, self.selectionPos.x, self.selectionPos.y)
+		local newEl2 = getElem(elemLayer2, self.selectionPos.x, self.selectionPos.y)
+		if newEl1 then newEl1:select() end
+		if newEl2 then newEl2:select() end
 	end
 end

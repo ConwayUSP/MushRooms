@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.particles")
+require("modules.constructors.craftings")
 require("modules.engine.animation")
 require("modules.engine.collision")
 require("modules.entities.entity")
@@ -47,6 +48,7 @@ players = {}
 ---@field inventory Inventory
 ---@field candidateInteractives Interactive|Npc[]
 ---@field uiManager table
+---@field craftingManager CraftingManager
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -84,6 +86,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
 	player.inventory = Inventory.new(player) -- inventário do jogador
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
+	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
 
 	collisionManager:register(player)
@@ -149,6 +152,10 @@ end
 ---@param dt number
 -- movimenta o `Player` de acordo com o input do jogador
 function Player:move(dt)
+	if self.uiManager.activeScene then
+		return
+	end
+
 	local movementDir = vec(0, 0)
 	if self.state == DEFENDING or self.inDialogue then
 		return
@@ -258,7 +265,7 @@ end
 -- verifica se o `Player` está pressionando a tecla de ação 1,
 -- caso esteja em diálogo, avança o diálogo; caso contrário, chama a função de ataque dele
 function Player:checkAction1(key)
-	if key ~= self.controls.act1 then
+	if key ~= self.controls.act1 or self.uiManager.activeScene then
 		return
 	end
 
@@ -276,7 +283,7 @@ end
 -- verifica se o `Player` está pressionando a tecla de ação 2
 -- caso positivo, executa a ação correta dependendo do contexto
 function Player:checkAction2(key)
-	if key ~= self.controls.act2 then
+	if key ~= self.controls.act2 or self.uiManager.activeScene then
 		return
 	end
 	if self.interactiveObj then
@@ -309,6 +316,9 @@ end
 function Player:checkSpecialActions(key)
 	if key == "i" and love.keyboard.isDown(self.controls.act1) then
 		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
+	end
+	if key == "c" and love.keyboard.isDown(self.controls.act1) then
+		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
 	end
 	if key == "p" and love.keyboard.isDown(self.controls.act1) then
 		self.room:toggleDoors()
