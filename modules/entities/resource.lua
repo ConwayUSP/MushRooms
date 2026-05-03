@@ -6,7 +6,7 @@
 ---@field name string
 ---@field subtype Type
 ---@field description string
----@field path string
+---@field image table
 
 Resource = {}
 Resource.__index = Resource

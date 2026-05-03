@@ -53,7 +53,7 @@ function UIScene:addElement(element, layer, pos)
 	end
 	self.layers[layer][pos.y][pos.x] = element
 	-- o primeiro elemento começa selecionado
-	if (layer == ELEM_LAYER_1 or layer == ELEM_LAYER_2) then
+	if layer == ELEM_LAYER_1 or layer == ELEM_LAYER_2 then
 		local newSelPos = vec(self.selectionPos.x, self.selectionPos.y)
 		if pos.y < self.selectionPos.y or (pos.y == self.selectionPos.y and pos.x < self.selectionPos.x) then
 			newSelPos = vec(pos.x, pos.y)
@@ -67,6 +67,9 @@ function UIScene:addElement(element, layer, pos)
 
 			self.layers[layer][newSelPos.y][newSelPos.x]:select()
 			self.selectionPos = newSelPos
+			if self.onSelectionChange then
+				self:onSelectionChange()
+			end
 		end
 	end
 	return self
@@ -107,106 +110,67 @@ function UIScene:draw()
 	end
 end
 
----@param key string
----@param isrepeat boolean
--- trata uma interação via teclado com a UI desta cena
 function UIScene:keypressed(key, isrepeat)
-	local prevSelPos = vec(self.selectionPos.x, self.selectionPos.y)
-	local elemLayer1 = self.layers[ELEM_LAYER_1]
-	local elemLayer2 = self.layers[ELEM_LAYER_2]
+	-- camadas que possuem interação (botões, itens, etc.)
+	local interactionLayers = { ELEM_LAYER_1, ELEM_LAYER_2 }
 
-	-- helpers
-	local function getMaxXInRow(layer, y)
-		local max = 0
-		local row = layer[y]
-		if row then
-			for x, _ in pairs(row) do
-				if x > max then max = x end
+	-- função auxiliar para verificar se existe algum elemento numa coordenada
+	local function hasElementAt(x, y)
+		for _, l in ipairs(interactionLayers) do
+			if self.layers[l][y] and self.layers[l][y][x] then
+				return true
 			end
 		end
-		return max
+		return false
 	end
 
-	local function getMaxY(layer)
-		local max = 0
-		for y, _ in pairs(layer) do
-			if y > max then max = y end
-		end
-		return max
-	end
+	-- lidando com movimentação pela UI
+	local moveMap = {
+		[self.controls.up] = vec(0, -1),
+		[self.controls.down] = vec(0, 1),
+		[self.controls.left] = vec(-1, 0),
+		[self.controls.right] = vec(1, 0),
+	}
 
-	local function getElem(layer, x, y)
-		if layer[y] then
-			return layer[y][x]
-		end
-		return nil
-	end
+	local dir = moveMap[key]
+	if dir then
+		local targetPos = addVec(self.selectionPos, dir)
 
-	if (not elemLayer1[self.selectionPos.y] or not elemLayer1[self.selectionPos.y][self.selectionPos.x]) and (not elemLayer2[self.selectionPos.y] or not elemLayer2[self.selectionPos.y][self.selectionPos.x]) then
-		return
-	end
+		if hasElementAt(targetPos.x, targetPos.y) then
+			-- deselecionando os elementos na posição antiga
+			for _, l in ipairs(interactionLayers) do
+				local el = self.layers[l][self.selectionPos.y]
+					and self.layers[l][self.selectionPos.y][self.selectionPos.x]
+				if el then
+					el:deselect()
+				end
+			end
 
-	if key == self.controls.left then
-		if self.selectionPos.x > 1 then
-			if getElem(elemLayer1, self.selectionPos.x - 1, self.selectionPos.y) or getElem(elemLayer2, self.selectionPos.x - 1, self.selectionPos.y) then
-				self.selectionPos.x = self.selectionPos.x - 1
+			self.selectionPos = targetPos
+
+			-- selecionando os elementos na nova posição
+			for _, l in ipairs(interactionLayers) do
+				local el = self.layers[l][self.selectionPos.y]
+					and self.layers[l][self.selectionPos.y][self.selectionPos.x]
+				if el then
+					el:select()
+				end
+			end
+
+			-- atualiza a cena se necessário
+			if self.onSelectionChange then
+				self:onSelectionChange()
 			end
 		end
-	elseif key == self.controls.right then
-		local maxX1 = getMaxXInRow(elemLayer1, self.selectionPos.y)
-		local maxX2 = getMaxXInRow(elemLayer2, self.selectionPos.y)
-		local maxX = math.max(maxX1, maxX2)
-
-		if self.selectionPos.x < maxX then
-			self.selectionPos.x = self.selectionPos.x + 1
-		end
-	elseif key == self.controls.up then
-		if self.selectionPos.y > 1 then
-			local newY = self.selectionPos.y - 1
-			local newX = 1
-			local upLayer = (elemLayer1[newY] and elemLayer1) or elemLayer2
-			if getElem(upLayer, self.selectionPos.x, newY) then
-				newX = self.selectionPos.x
-			else
-				newX = getMaxXInRow(upLayer, newY)
-			end
-			self.selectionPos = vec(newX, newY)
-		end
-	elseif key == self.controls.down then
-		local maxY1 = getMaxY(elemLayer1)
-		local maxY2 = getMaxY(elemLayer2)
-		local maxY = math.max(maxY1, maxY2)
-
-		if self.selectionPos.y < maxY then
-			local newY = self.selectionPos.y + 1
-			local newX = 1
-			local downLayer = (elemLayer1[newY] and elemLayer1) or elemLayer2
-			if getElem(downLayer, self.selectionPos.x, newY) then
-				newX = self.selectionPos.x
-			else
-				newX = getMaxXInRow(downLayer, newY)
-			end
-			self.selectionPos = vec(newX, newY)
-		end
-	elseif key == self.controls.act1 then
-		local selPos = self.selectionPos
-		local el_1 = getElem(elemLayer1, selPos.x, selPos.y)
-		local el_2 = getElem(elemLayer2, selPos.x, selPos.y)
-		if el_1 and el_1.subtype == UI_BUTTON_ELEM then
-			el_1.onClick()
-		elseif el_2 and el_2.subtype == UI_BUTTON_ELEM then
-			el_2.onClick()
-		end
 	end
 
-	if prevSelPos.y ~= self.selectionPos.y or prevSelPos.x ~= self.selectionPos.x then
-		local prevEl1 = getElem(elemLayer1, prevSelPos.x, prevSelPos.y)
-		local prevEl2 = getElem(elemLayer2, prevSelPos.x, prevSelPos.y)
-		if prevEl1 then prevEl1:deselect() end
-		if prevEl2 then prevEl2:deselect() end
-		local newEl1 = getElem(elemLayer1, self.selectionPos.x, self.selectionPos.y)
-		local newEl2 = getElem(elemLayer2, self.selectionPos.x, self.selectionPos.y)
-		if newEl1 then newEl1:select() end
-		if newEl2 then newEl2:select() end
+	-- lidando com cliques
+	if key == self.controls.act1 then
+		for _, l in ipairs(interactionLayers) do
+			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
+			if el and el.subtype == UI_BUTTON_ELEM then
+				el.onClick()
+			end
+		end
 	end
 end

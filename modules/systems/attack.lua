@@ -155,7 +155,6 @@ end
 function Attack:updateTimer(dt)
 	if not self.canAttack then
 		self.timer = self.timer - dt
-		print(self.timer)
 		if self.timer <= 0 then
 			self.canAttack = true
 		end

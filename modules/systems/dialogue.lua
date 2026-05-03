@@ -159,7 +159,6 @@ function DialogueManager:start(dialogue, speaker, listener)
 		return
 	end
 
-	print("Iniciando diálogo entre " .. speaker.name .. " e " .. listener.name)
 	self.dialogues[speaker] = dialogue
 
 	dialogue.speaker = speaker
@@ -173,7 +172,6 @@ end
 function DialogueManager:cleanDialogue(dialogue)
 	if self.dialogues[dialogue.speaker] then
 		self.dialogues[dialogue.speaker] = nil
-		print("Finalizando diálogo...")
 	end
 end
 
