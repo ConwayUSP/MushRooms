@@ -66,12 +66,14 @@ LOOT = "loot"
 ---@class EntityReg
 ---@field type Type
 ---@field name string
+---@field description string?
 
 ---@param type Type
 ---@param name string
+---@param description string?
 ---@return EntityReg
-function registerEntity(type, name)
-	return { type = type, name = name }
+function registerEntity(type, name, description)
+	return { type = type, name = name, description = description }
 end
 
 --------------- INIMIGOS ---------------
@@ -108,8 +110,9 @@ PILLAR = registerEntity(OBSTACLE, "pillar")
 WALL = registerEntity(OBSTACLE, "wall")
 
 ------------------ BUILDINGS -----------------
-FIRECAMP = registerEntity(BUILDING, "firecamp")
-CHEST = registerEntity(BUILDING, "chest")
+FIRECAMP =
+	registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
+CHEST = registerEntity(BUILDING, "chest", "It's bigger on the inside than it looks... and it's made with love")
 ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
 KITCHEN = registerEntity(BUILDING, "kitchen")
 FURNACE = registerEntity(BUILDING, "furnace")

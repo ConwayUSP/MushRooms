@@ -265,3 +265,15 @@ function pngPathFormat(parts)
 	end
 	return path
 end
+
+----------------------------------------
+-- Funções de Debug
+----------------------------------------
+
+function debugTable(tableName, table)
+	print("--- TABLE: " .. tableName .. " ---")
+	for k, v in pairs(table) do
+		print(tostring(k) .. " = " .. tostring(v))
+	end
+	print("----------------------------------")
+end

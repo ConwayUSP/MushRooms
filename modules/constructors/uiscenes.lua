@@ -4,6 +4,7 @@
 require("modules.UI.uiscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
+require("modules.UI.elements.text")
 require("modules.constructors.uielements")
 
 ----------------------------------------
@@ -199,6 +200,30 @@ function newCraftingScene(canvasSize, player)
 			local previewImg = newCraftingItemPreviewElement(recipe.output.name, previewPos, size(128, 128), spritePath)
 			self:addElement(previewImg, VISUAL_LAYER_2, vec(1, 1))
 
+			-- textos
+			local namePos = vec(previewPos.x - 200, previewPos.y + 72)
+			local nameText = UITextElem.new(
+				"product name text",
+				namePos,
+				size(200, 400),
+				2,
+				nil,
+				rgba(0, 0, 0, 255),
+				recipe.output.name
+			)
+			self:addElement(nameText, VISUAL_LAYER_2, vec(1, 2))
+			local descPos = vec(previewPos.x - 150, previewPos.y + 112)
+			local descText = UITextElem.new(
+				"product desc text",
+				descPos,
+				size(240, 400),
+				1.26,
+				nil,
+				rgba(0, 0, 0, 255),
+				recipe.output.description
+			)
+			self:addElement(descText, VISUAL_LAYER_2, vec(1, 3))
+
 			-- adiciona os ingredientes abaixo
 			for i, input in pairs(recipe.inputs) do
 				self:addRecipeIngredientSlot(i)
@@ -209,7 +234,7 @@ function newCraftingScene(canvasSize, player)
 				local spritePath = pngPathFormat({ "assets", "sprites", "resources", resName })
 				local ingredientEl =
 					newCraftingItemPreviewElement(resName, vec(slotX, ingredientsY), size(96, 96), spritePath)
-				self:addElement(ingredientEl, VISUAL_LAYER_2, vec(i, 2))
+				self:addElement(ingredientEl, VISUAL_LAYER_2, vec(i, 4))
 			end
 		end
 	end

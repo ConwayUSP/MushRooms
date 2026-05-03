@@ -132,7 +132,7 @@ function Dialogue:draw(camera)
 		local width = dialogueBoxImg:getWidth()
 		local padding = 20
 		love.graphics.draw(dialogueBoxImg, viewPos.x, viewPos.y, 0, 3, 3, width / 2, 12)
-		love.graphics.setFont(tempFont)
+		love.graphics.setFont(mushFont)
 		local textX = viewPos.x + padding - width * 1.5
 		local textWidth = width * 3 - 2 * padding
 		love.graphics.printf(text, textX, viewPos.y, textWidth, "center")

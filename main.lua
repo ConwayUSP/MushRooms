@@ -128,7 +128,8 @@ function love.load()
 	math.randomseed(os.time())
 
 	-- definindo a fonte padrão do jogo
-	tempFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 16)
+	mushFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 16)
+	love.graphics.setFont(mushFont)
 
 	-- definindo as dimensões iniciais do jogo
 	window.width = 1280
