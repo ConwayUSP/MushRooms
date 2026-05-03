@@ -114,14 +114,42 @@ function UIScene:keypressed(key, isrepeat)
 	-- camadas que possuem interação (botões, itens, etc.)
 	local interactionLayers = { ELEM_LAYER_1, ELEM_LAYER_2 }
 
-	-- função auxiliar para verificar se existe algum elemento numa coordenada
-	local function hasElementAt(x, y)
-		for _, l in ipairs(interactionLayers) do
-			if self.layers[l][y] and self.layers[l][y][x] then
-				return true
+	-- acha o elemento mais próximo da coluna `column` na linha `row`
+	local function closestElemInRow(row, col)
+		for _, l in pairs(interactionLayers) do
+			local smallestDif = math.huge
+			local closestEl = nil
+			local closestElPos = nil
+			if self.layers[l][row] then
+				for i, el in pairs(self.layers[l][row]) do
+					if math.abs(col - i) < smallestDif then
+						smallestDif = math.abs(col - i)
+						closestEl = el
+						closestElPos = vec(i, row)
+					end
+				end
 			end
+			return closestEl, closestElPos
 		end
-		return false
+	end
+
+	-- acha o elemento mais próximo da linha `row` na coluna `column`
+	local function closestElemInColumn(col, row)
+		for _, l in pairs(interactionLayers) do
+			local smallestDif = math.huge
+			local closestEl = nil
+			local closestElPos = nil
+			for i, r in pairs(self.layers[l]) do
+				if r[col] then
+					if math.abs(row - i) < smallestDif then
+						smallestDif = math.abs(row - i)
+						closestEl = r[col]
+						closestElPos = vec(col, i)
+					end
+				end
+			end
+			return closestEl, closestElPos
+		end
 	end
 
 	-- lidando com movimentação pela UI
@@ -135,8 +163,14 @@ function UIScene:keypressed(key, isrepeat)
 	local dir = moveMap[key]
 	if dir then
 		local targetPos = addVec(self.selectionPos, dir)
+		local closestEl = nil
+		if dir.y ~= 0 then
+			closestEl, targetPos = closestElemInRow(targetPos.y, targetPos.x)
+		elseif dir.x ~= 0 then
+			closestEl, targetPos = closestElemInColumn(targetPos.x, targetPos.y)
+		end
 
-		if hasElementAt(targetPos.x, targetPos.y) then
+		if closestEl then
 			-- deselecionando os elementos na posição antiga
 			for _, l in ipairs(interactionLayers) do
 				local el = self.layers[l][self.selectionPos.y]
