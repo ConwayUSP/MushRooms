@@ -95,7 +95,7 @@ function newResourceInventoryScene(canvasSize)
 end
 
 function newCraftingScene(canvasSize, player)
-	local invScene = UIScene.new(UI_CRAFTING_SCENE)
+	local invScene = UIScene.new(UI_CRAFTING_SCENE, player)
 	local canvasCenter = vec(canvasSize.width / 2, canvasSize.height / 2)
 
 	local COLS = 3

@@ -34,6 +34,10 @@ OPENING = "opening"
 CLOSED = "closed"
 CLOSING = "closing"
 
+-------------- CONSTRUÇÕES -------------
+
+ACTIVE = "active"
+
 ------------ ELEMENTOS DE UI -----------
 
 SELECTED = "selected"

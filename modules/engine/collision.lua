@@ -554,6 +554,7 @@ function CollisionManager:startRegistry()
 	reg[ENEMY] = {}
 	reg[DESTRUCTIBLE] = {}
 	reg[INTERACTIVE] = {}
+	reg[PRODUCT] = {}
 	reg[DROP] = {}
 	reg[NPC] = {}
 	reg[PLAYER_ATTACK] = {}
@@ -1045,7 +1046,6 @@ end
 ---@param npc Npc
 -- trata o fim da colisão entre um `player` e um `npc`
 function CollisionManager:onPlayerNpcExit(player, npc)
-	print(npc.name .. " onExit by " .. player.name)
 	npc:onExit(player)
 end
 
@@ -1066,7 +1066,6 @@ end
 ---@param inter Interactive
 -- trata o fim de colisão entre um `player` e um objeto `interactive`
 function CollisionManager:onPlayerInteractiveExit(player, inter)
-	print(inter.name .. " onExit by " .. player.name)
 	inter:onExit(player)
 end
 

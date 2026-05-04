@@ -49,6 +49,9 @@ players = {}
 ---@field candidateInteractives Interactive|Npc[]
 ---@field uiManager table
 ---@field craftingManager CraftingManager
+---@field building any
+---@field buildingModeTimer number
+---@field startBuildingMode function
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -88,6 +91,8 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
+	player.building = nil -- construção que o player está posicionando para construir
+	player.buildingModeTimer = 0
 
 	collisionManager:register(player)
 	return player
@@ -144,6 +149,7 @@ function Player:update(dt)
 		w:update(dt)
 	end
 	self:updateInvulnerability(dt)
+	self:updateBuildingMode(dt)
 	self:updateState()
 	self:updateParticles(dt)
 	self:resolveInteractive()
@@ -190,6 +196,8 @@ function Player:move(dt)
 	applyForce(self, walkForce)
 	applyPhysics(self, dt)
 
+	-- atualizando objetos cujo movimento depende do Player
+	self:updateBuildingPos()
 	self:updateParticlesPos()
 	if self.weapon then
 		-- separa a orientação da arma em dois casos para amenizar o bug ao colidir com paredes
@@ -261,11 +269,58 @@ function Player:updateParticlesPos()
 	self.particles[WALKING_UP]:setPosition(self.pos.x, self.pos.y + 24)
 end
 
+-- faz com que a construção fique na direção aproximada em que o player está olhando (considera colisões)
+function Player:updateBuildingPos()
+	if self.building then
+		setPos(self.building, addVec(self.pos, scaleVec(normalize(self.vel), 100)))
+	end
+end
+
+-- começa o modo de construção/posicionamento de algum objeto
+function Player:startBuildingMode(building)
+	debugTable("building", building)
+	self.building = building
+	setPos(self.building, addVec(self.pos, vec(100, 0)))
+	self.buildingModeTimer = 0
+	self.uiManager:deactivateAllScenes()
+end
+
+function Player:updateBuildingMode(dt)
+	if self.building then
+		self.building:update(dt)
+		self.buildingModeTimer = self.buildingModeTimer + dt
+	end
+end
+
+-- posiciona a construção e
+function Player:build()
+	-- timer necessário para não bugar e construir imediatamente ao comprar
+	if self.building and self.buildingModeTimer > 0.5 then
+		-- !TODO: consumir recursos do player
+		self.building.actualized = true
+		self.room:addBuilding(self.building)
+		self.building = nil
+	end
+end
+
+-- sai do modo construção
+function Player:endBuildingMode()
+	if self.buildingModeTimer > 0.5 then
+		self.building = nil
+		self.buildingModeTimer = 0
+	end
+end
+
 ---@param key string
 -- verifica se o `Player` está pressionando a tecla de ação 1,
 -- caso esteja em diálogo, avança o diálogo; caso contrário, chama a função de ataque dele
 function Player:checkAction1(key)
 	if key ~= self.controls.act1 or self.uiManager.activeScene then
+		return
+	end
+
+	if self.building then
+		self:build()
 		return
 	end
 
@@ -286,7 +341,9 @@ function Player:checkAction2(key)
 	if key ~= self.controls.act2 or self.uiManager.activeScene then
 		return
 	end
-	if self.interactiveObj then
+	if self.building then
+		self:endBuildingMode()
+	elseif self.interactiveObj then
 		if self.interactiveObj.type == NPC then
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
 			stopMovement(self)

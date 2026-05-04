@@ -38,6 +38,7 @@ RECIPE = "recipe"
 RESOURCE = "resource"
 MATERIAL = "material"
 INGREDIENT = "ingredient"
+PRODUCT = "product"
 BUILDING = "building"
 FOOD = "food"
 

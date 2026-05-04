@@ -146,4 +146,11 @@ function addAnimation(entity, path, action, settings)
 	entity.spriteSheets[action] = love.graphics.newImage(path)
 end
 
+function addAnimations(entity, pathStart, settings)
+	for state, s in pairs(settings) do
+		local path = pngPathFormat({ pathStart, state })
+		addAnimation(entity, path, state, s)
+	end
+end
+
 return Animation

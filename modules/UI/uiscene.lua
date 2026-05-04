@@ -31,6 +31,7 @@ UIScene.type = UI_SCENE
 function UIScene.new(sceneType, player)
 	local uiscene = setmetatable({}, UIScene)
 	uiscene.subtype = sceneType
+	uiscene.player = player
 	if player then
 		uiscene.controls = player.controls
 	else
@@ -203,7 +204,7 @@ function UIScene:keypressed(key, isrepeat)
 		for _, l in ipairs(interactionLayers) do
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 			if el and el.subtype == UI_BUTTON_ELEM then
-				el.onClick()
+				el.onClick(self)
 			end
 		end
 	end

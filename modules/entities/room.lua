@@ -229,6 +229,12 @@ function Room:toggleDoors()
 	end
 end
 
+function Room:addBuilding(building)
+	table.insert(self.interactives, building)
+	building.room = self
+	collisionManager:register(building)
+end
+
 ----------------------------------------
 -- Funções Globais
 ----------------------------------------

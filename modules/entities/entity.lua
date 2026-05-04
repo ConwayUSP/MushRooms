@@ -91,3 +91,16 @@ function Entity:isInvulnerable()
 	local blink = 0.5
 	return self.invulnerableTimer > 0 and self.blinkTimer < blink
 end
+
+---@param camera Camera
+-- função de renderização padrão das entidades
+function Entity:draw(camera)
+	local viewPos = camera:viewPos(self.pos)
+	local anim = self.animations[self.state]
+	local quad = anim.frames[anim.currFrame]
+	local offset = {
+		x = anim.frameDim.width / 2,
+		y = anim.frameDim.height / 2,
+	}
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+end

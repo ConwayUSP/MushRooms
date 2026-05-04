@@ -13,7 +13,7 @@ function newResourceItemElement(resName, invLength, canvasSize)
 	local row = math.floor((invLength - 1) / 5)
 	local posX = leftMargin + col * 108
 	local posY = topMargin + row * 108
-	local resourceEl = UIButtonElem.new(resName, vec(posX, posY), size(96, 96), nil, function()
+	local resourceEl = UIButtonElem.new(resName, vec(posX, posY), size(96, 96), nil, function(scene)
 		print("Recurso clicado: " .. resName)
 	end)
 	local animSettings = {}
@@ -31,9 +31,10 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	local itemName = recipe.output.name
 	local vec = vec(x * vecOffset.x, y * vecOffset.y)
 	local finalPos = addVec(coordStart, vec)
-	local itemEl = UIButtonElem.new(itemName, finalPos, size(96, 96), nil, function()
-		print("Receita clicada: " .. itemName)
-	end)
+	local onClick = function(scene)
+		scene.player:startBuildingMode(CONSTRUCTORS[PRODUCT][recipe.output.name]())
+	end
+	local itemEl = UIButtonElem.new(itemName, finalPos, size(96, 96), nil, onClick)
 	local animSettings = {}
 	animSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	animSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)

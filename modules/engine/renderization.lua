@@ -112,7 +112,7 @@ function renderEntities(camera)
 		end
 	end
 
-	-- Adiciona jogadores e suas possíveis armas
+	-- Adiciona jogadores e suas possíveis armas e construções
 	for _, p in pairs(players) do
 		table.insert(drawList, {
 			y = p.pos.y + getAnchor(p, FLOOR),
@@ -132,10 +132,21 @@ function renderEntities(camera)
 			})
 		end
 
+		-- !WARNING: isso está certo? não deveria ser adicionado à drawList como os outros?
 		for _, w in pairs(p.weapons) do
 			for _, e in pairs(w.atk.events) do
 				e:draw(camera)
 			end
+		end
+
+		if p.building then
+			local b = p.building
+			table.insert(drawList, {
+				y = b.pos.y + getAnchor(b, FLOOR),
+				draw = function()
+					b:draw(camera)
+				end,
+			})
 		end
 	end
 

@@ -253,6 +253,18 @@ end
 
 ---@param parts string[]
 ---@return string
+-- transforma uma lista de nomes de pastas em um caminho para o diretório final
+function dirPathFormat(parts)
+	local path = pathlizeName(parts[1])
+	for i = 2, #parts, 1 do
+		path = path .. "/" .. pathlizeName(parts[i])
+	end
+	print(path)
+	return path
+end
+
+---@param parts string[]
+---@return string
 -- transforma uma lista de pastas e um nome de arquivo em um caminho para o arquivo
 function pngPathFormat(parts)
 	local path = ""

@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.destructibles")
+require("modules.constructors.buildings")
 require("modules.constructors.interactives")
 require("modules.constructors.enemies")
 require("modules.constructors.npcs")
@@ -49,4 +50,9 @@ CONSTRUCTORS[OBSTACLE] = {
 CONSTRUCTORS[INTERACTIVE] = {
 	[DOOR.name] = newDoor,
 	[TURTLE.name] = newTurtle,
+}
+
+CONSTRUCTORS[PRODUCT] = {
+	[CHEST.name] = newChest,
+	[FIRECAMP.name] = newFirecamp,
 }

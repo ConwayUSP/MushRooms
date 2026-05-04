@@ -1,4 +1,10 @@
 ----------------------------------------
+-- Importações de Módulos
+----------------------------------------
+require("modules.engine.animation")
+require("modules.systems.shaders")
+
+----------------------------------------
 -- Classe Product
 ----------------------------------------
 
@@ -10,7 +16,7 @@
 ---@field animations table
 ---@field spriteSheets table
 
-Product = {}
+Product = setmetatable({}, { __index = Entity })
 Product.__index = Product
 Product.type = RESOURCE
 
@@ -18,17 +24,36 @@ Product.type = RESOURCE
 ---@param name string
 ---@param description string
 -- cria uma nova instância de Product
-function Product.new(prodType, name, description)
+function Product.new(prodType, name, description, hitboxes)
 	---@type Product
 	local product = setmetatable({}, Product) ---@diagnostic disable-line
+	Entity.init(product, name, vec(0, 0), hitboxes)
 
 	product.subtype = prodType -- se o recurso é BUILDING ou FOOD
-	product.name = name -- nome do recurso
+	product.actualized = prodType ~= BUILDING -- construções não começam reais (precisam ser posicionadas antes)
 	product.description = description -- descrição do recurso
-	product.image = love.graphics.newImage(pngPathFormat({ "assets", "sprites", "resources", name })) -- sprite do recurso
-	product.image:setFilter("nearest", "nearest")
+	product.state = IDLE
+	product.animations = {}
+	product.spriteSheets = {}
 
-	--!TODO: add animations
+	if prodType == BUILDING then
+		product.update = Interactive.update
+	end
 
 	return product
+end
+
+function Product:draw(camera)
+	if not self.actualized then
+		love.graphics.setShader(positioningShader)
+	end
+	local viewPos = camera:viewPos(self.pos)
+	local anim = self.animations[self.state]
+	local quad = anim.frames[anim.currFrame]
+	local offset = {
+		x = anim.frameDim.width / 2,
+		y = anim.frameDim.height / 2,
+	}
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+	love.graphics.setShader()
 end
