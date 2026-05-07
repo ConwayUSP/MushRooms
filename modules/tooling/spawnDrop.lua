@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.resources")
+require("modules.utils.entities")
 require("modules.utils.utils")
 
 ----------------------------------------
@@ -15,36 +16,13 @@ end
 function _spawnDropDebugHandler(numberKey)
 	local spawn = false
 
-	if numberKey == "1" then
-		_spawnDropAtPlayer(newKatana(), false)
-		spawn = true
-	elseif numberKey == "2" then
-		_spawnDropAtPlayer(newSlingShot(), false)
-		spawn = true
-	elseif numberKey == "3" then
-		_spawnDropAtPlayer(COIN, true)
-		spawn = true
-	elseif numberKey == "4" then
-		_spawnDropAtPlayer(newWood(), true)
-		spawn = true
-	elseif numberKey == "5" then
-		_spawnDropAtPlayer(newStone(), true)
-		spawn = true
-	elseif numberKey == "6" then
-		_spawnDropAtPlayer(newBone(), true)
-		spawn = true
-	elseif numberKey == "7" then
-		_spawnDropAtPlayer(newFeather(), true)
-		spawn = true
-	elseif numberKey == "8" then
-		_spawnDropAtPlayer(newIron(), true)
-		spawn = true
-	elseif numberKey == "9" then
-		_spawnDropAtPlayer(newGold(), true)
-		spawn = true
-	elseif numberKey == "0" then
-		_spawnDropAtPlayer(newBread(), true)
-		spawn = true
+	local idx = math.random(tableLen(CONSTRUCTORS[RESOURCE]))
+	local c = 0
+	for _, constructor in pairs(CONSTRUCTORS[RESOURCE]) do
+		c = c + 1
+		if c == idx then
+			_spawnDropAtPlayer(constructor(), true)
+		end
 	end
 
 	return spawn

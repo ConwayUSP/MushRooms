@@ -175,6 +175,17 @@ function pairKey(a, b)
 	return tostring(a) .. "|" .. tostring(b)
 end
 
+---@param table table
+---@return number
+-- equivalente ao operador #, mas para tabelas indexadas por não-números
+function tableLen(table)
+	local len = 0
+	for _, _ in pairs(table) do
+		len = len + 1
+	end
+	return len
+end
+
 ----------------------------------------
 -- Funções matemáticas
 ----------------------------------------

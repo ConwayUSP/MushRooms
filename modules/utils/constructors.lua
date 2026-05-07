@@ -8,7 +8,9 @@ require("modules.constructors.enemies")
 require("modules.constructors.npcs")
 require("modules.constructors.player")
 require("modules.constructors.obstacles")
+require("modules.constructors.resources")
 require("modules.utils.types")
+require("modules.utils.entities")
 
 ----------------------------------------
 -- Mapa de construtores
@@ -50,6 +52,35 @@ CONSTRUCTORS[OBSTACLE] = {
 CONSTRUCTORS[INTERACTIVE] = {
 	[DOOR.name] = newDoor,
 	[TURTLE.name] = newTurtle,
+}
+
+CONSTRUCTORS[RESOURCE] = {
+	[CASKIN.name] = newCaskin,
+	[PEDACITO.name] = newPedacito,
+	[PORRO.name] = newPorro,
+	[WAW.name] = newWaw,
+	[FAFOGO.name] = newFafogo,
+	[PUFF.name] = newPuff,
+	[COSECA.name] = newCoseca,
+	[ARDURO.name] = newArduro,
+	[COGUMELIUM.name] = newCogumelium,
+	[MOLLE.name] = newMolle,
+	[EWW.name] = newEww,
+	[COBRITA.name] = newCobrita,
+	[FALHO.name] = newFalho,
+	[TUMBU.name] = newTumbu,
+	[FUNPO.name] = newFunpo,
+	[GRAAH.name] = newGraah,
+	[JIFOFA.name] = newJifofa,
+	[CHUBO.name] = newChubo,
+	[BIFF.name] = newBiff,
+	[YULI.name] = newYuli,
+	[NHAM.name] = newNham,
+	[PLOP.name] = newPlop,
+	[MELSH.name] = newMelsh,
+	[CHONGO.name] = newChongo,
+	[WAMOLI.name] = newWamoli,
+	[ZUB.name] = newZub,
 }
 
 CONSTRUCTORS[PRODUCT] = {

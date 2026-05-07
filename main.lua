@@ -17,6 +17,7 @@ require("modules.systems.dialogue")
 require("modules.tooling.roomcontrol")
 require("modules.tooling.spawnDrop")
 require("modules.tooling.turtledebug")
+require("modules.systems.shaders")
 require("game")
 require("table")
 

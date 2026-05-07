@@ -1,0 +1,91 @@
+require("modules.utils.types")
+
+----------------------------------------
+-- Registro das entidades do jogo
+----------------------------------------
+
+---@class EntityReg
+---@field type Type
+---@field name string
+---@field description string?
+
+---@param type Type
+---@param name string
+---@param description string?
+---@return EntityReg
+function registerEntity(type, name, description)
+	return { type = type, name = name, description = description }
+end
+
+--------------- INIMIGOS ---------------
+SPIDER_DUCK = registerEntity(ENEMY, "Spider Duck")
+NUCLEAR_CAT = registerEntity(ENEMY, "Nuclear Cat")
+
+----------------- NPCs -----------------
+GLOB = registerEntity(NPC, "Glob")
+
+---------------- ARMAS -----------------
+KATANA = registerEntity(WEAPON, "Katana")
+SLING_SHOT = registerEntity(WEAPON, "Sling Shot")
+
+------------- DESTRUTÍVEIS -------------
+JAR = registerEntity(DESTRUCTIBLE, "jar")
+BARREL = registerEntity(DESTRUCTIBLE, "barrel")
+
+----------------- DROP -----------------
+COIN = registerEntity(DROP, "coin")
+
+-------------- RECURSOS ----------------
+CASKIN = registerEntity(RESOURCE, "caskin")
+PEDACITO = registerEntity(RESOURCE, "pedacito")
+PORRO = registerEntity(RESOURCE, "porro")
+WAW = registerEntity(RESOURCE, "waw")
+FAFOGO = registerEntity(RESOURCE, "fafogo")
+PUFF = registerEntity(RESOURCE, "puff")
+COSECA = registerEntity(RESOURCE, "coseca")
+ARDURO = registerEntity(RESOURCE, "arduro")
+COGUMELIUM = registerEntity(RESOURCE, "cogumelium")
+BLUB = registerEntity(RESOURCE, "blub")
+MOLLE = registerEntity(RESOURCE, "molle")
+EWW = registerEntity(RESOURCE, "eww")
+COBRITA = registerEntity(RESOURCE, "cobrita")
+-- daqui pra baixo são ingredientes
+FALHO = registerEntity(RESOURCE, "falho")
+TUMBU = registerEntity(RESOURCE, "tumbu")
+FRONCHO = registerEntity(RESOURCE, "froncho")
+FUNPO = registerEntity(RESOURCE, "funpo")
+GRAAH = registerEntity(RESOURCE, "graah")
+CABRA = registerEntity(RESOURCE, "cabra")
+CHUBO = registerEntity(RESOURCE, "chubo")
+JIFOFA = registerEntity(RESOURCE, "jifofa")
+BIFF = registerEntity(RESOURCE, "biff")
+YULI = registerEntity(RESOURCE, "yuli")
+NHAM = registerEntity(RESOURCE, "nham")
+PLOP = registerEntity(RESOURCE, "plop")
+MELSH = registerEntity(RESOURCE, "melsh")
+CHONGO = registerEntity(RESOURCE, "chongo")
+WAMOLI = registerEntity(RESOURCE, "wamoli")
+ZUB = registerEntity(RESOURCE, "zub")
+
+----------------- SALA -----------------
+
+------------- OBSTÁCULO ----------------
+PILLAR = registerEntity(OBSTACLE, "pillar")
+WALL = registerEntity(OBSTACLE, "wall")
+
+------------------ BUILDINGS -----------------
+FIRECAMP =
+	registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
+CHEST = registerEntity(BUILDING, "chest", "It's bigger on the inside than it looks... and it's made with love")
+ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
+KITCHEN = registerEntity(BUILDING, "kitchen")
+FURNACE = registerEntity(BUILDING, "furnace")
+DRILL = registerEntity(BUILDING, "drill")
+TRAP = registerEntity(BUILDING, "trap")
+LADDER = registerEntity(BUILDING, "ladder")
+BLESSER = registerEntity(BUILDING, "blesser")
+FORGE = registerEntity(BUILDING, "forge")
+
+------------- INTERATIVO ---------------
+DOOR = registerEntity(INTERACTIVE, "door")
+TURTLE = registerEntity(INTERACTIVE, "turtle")
