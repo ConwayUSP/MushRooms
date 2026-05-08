@@ -22,6 +22,7 @@ function _spawnDropDebugHandler(numberKey)
 		c = c + 1
 		if c == idx then
 			_spawnDropAtPlayer(constructor(), true)
+			spawn = true
 		end
 	end
 

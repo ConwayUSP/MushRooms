@@ -77,6 +77,7 @@ CONSTRUCTORS[RESOURCE] = {
 	[YULI.name] = newYuli,
 	[NHAM.name] = newNham,
 	[PLOP.name] = newPlop,
+	[BOUBA.name] = newBouba,
 	[MELSH.name] = newMelsh,
 	[CHONGO.name] = newChongo,
 	[WAMOLI.name] = newWamoli,

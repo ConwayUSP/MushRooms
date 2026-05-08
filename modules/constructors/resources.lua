@@ -226,6 +226,15 @@ function newPlop()
 end
 
 ---@return Resource
+-- cria um recurso do tipo Fruta Doce Redonda
+function newBouba()
+	local description = "TODO"
+	local bouba = Resource.new(MATERIAL, BOUBA.name, description)
+
+	return bouba
+end
+
+---@return Resource
 -- cria um recurso do tipo Peixe
 function newMelsh()
 	local description = "TODO"
