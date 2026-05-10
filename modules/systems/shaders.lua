@@ -1,6 +1,8 @@
 outlineShader = love.graphics.newShader("shaders/outline.glsl")
 positioningShader = love.graphics.newShader("shaders/positioning.glsl")
-pixelatedShader = love.graphics.newShader("shaders/pixelated.glsl")
+rescaleShader = love.graphics.newShader("shaders/rescale.glsl")
+
+rescaleShader:send("new_res", { 20, 20 })
 
 ---@param image table
 ---@param x number

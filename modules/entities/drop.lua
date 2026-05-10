@@ -9,6 +9,7 @@ require("modules.systems.movement")
 require("modules.utils.types")
 require("modules.utils.utils")
 require("modules.utils.vec")
+require("modules.systems.shaders")
 require("table")
 
 ----------------------------------------
@@ -134,11 +135,15 @@ end
 -- função de renderização do `Drop` - desenha ele na
 -- perspectiva da `camera` passada como argumento
 function Drop:draw(camera)
+	local scale = 3
+	if self.object.type == RESOURCE then
+		love.graphics.setShader(rescaleShader)
+		scale = 1.875 -- para manter a escala dos pixels com a textura 20x20
+	end
+
 	if self.collected then
 		return
 	end
-
-	local scale = 3
 
 	local visualPos = addVec(self.pos, self.visualOffset)
 	local viewPos = camera:viewPos(visualPos)
@@ -147,11 +152,12 @@ function Drop:draw(camera)
 		y = self.image:getHeight() / 2,
 	}
 
-	if self.shine then
+	if self.shine and self.object.type ~= RESOURCE then
 		drawSpriteWithOutline(self.image, viewPos.x, viewPos.y, scale, offset)
 	else
 		love.graphics.draw(self.image, viewPos.x, viewPos.y, 0, scale, scale, offset.x, offset.y)
 	end
+	love.graphics.setShader()
 end
 
 -- marca o `Drop` como tendo sido coletado
