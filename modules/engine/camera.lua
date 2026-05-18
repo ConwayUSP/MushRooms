@@ -104,13 +104,13 @@ function Camera:updatePosition(dt)
 				-- limita a posição da câmera ao hitbox da sala
 				self.targetPos.x = clamp(
 					self.target.pos.x,
-					room.limits.p1.x + viewportZoomed.width / 2,
-					room.limits.p2.x - viewportZoomed.width / 2
+					room.limits.p1.x - Room.spacingH / 2 + viewportZoomed.width / 2,
+					room.limits.p2.x + Room.spacingH / 2 - viewportZoomed.width / 2
 				)
 				self.targetPos.y = clamp(
 					self.target.pos.y,
 					room.limits.p1.y + viewportZoomed.height / 2,
-					room.limits.p2.y - viewportZoomed.height / 2
+					room.limits.p2.y - Room.spacingV / 2 - viewportZoomed.height / 2
 				)
 			end
 		end

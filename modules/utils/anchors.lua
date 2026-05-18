@@ -39,7 +39,9 @@ ANCHORS = {
 	jar = floorAnchor(4),
 
 	-- Interagiveis
-	door = floorAnchor(20),
+	door_up = floorAnchor(20),
+	door_left = floorAnchor(10),
+	door_right = floorAnchor(10),
 
 	-- Inimigos
 	spider_duck = floorAnchor(14),
@@ -56,7 +58,11 @@ ANCHORS = {
 
 	-- Obstáculos
 	pillar = floorAnchor(24),
-	wall = floorAnchor(27.999), -- desempate com a porta
+	wall_up = floorAnchor(31.2), -- desempate com a porta
+	wall_left_back = floorAnchor(130),
+	wall_left_front = floorAnchor(200),
+	wall_right_back = floorAnchor(130),
+	wall_right_front = floorAnchor(200),
 }
 
 ----------------------------------------

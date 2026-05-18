@@ -72,7 +72,12 @@ ZUB = registerEntity(RESOURCE, "zub")
 
 ------------- OBSTÁCULO ----------------
 PILLAR = registerEntity(OBSTACLE, "pillar")
-WALL = registerEntity(OBSTACLE, "wall")
+WALL_UP = registerEntity(OBSTACLE, "wall up")
+WALL_DOWN = registerEntity(OBSTACLE, "wall down")
+WALL_LEFT_BACK = registerEntity(OBSTACLE, "wall left back")
+WALL_LEFT_FRONT = registerEntity(OBSTACLE, "wall left front")
+WALL_RIGHT_BACK = registerEntity(OBSTACLE, "wall right back")
+WALL_RIGHT_FRONT = registerEntity(OBSTACLE, "wall right front")
 
 ------------------ BUILDINGS -----------------
 FIRECAMP =
@@ -88,5 +93,8 @@ BLESSER = registerEntity(BUILDING, "blesser")
 FORGE = registerEntity(BUILDING, "forge")
 
 ------------- INTERATIVO ---------------
-DOOR = registerEntity(INTERACTIVE, "door")
+DOOR_UP = registerEntity(INTERACTIVE, "door up")
+DOOR_LEFT = registerEntity(INTERACTIVE, "door left")
+DOOR_RIGHT = registerEntity(INTERACTIVE, "door right")
+DOOR_DOWN = registerEntity(INTERACTIVE, "door down")
 TURTLE = registerEntity(INTERACTIVE, "turtle")

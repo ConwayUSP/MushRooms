@@ -44,7 +44,7 @@ function Interactive.new(name, pos, hitboxes, room, physics, onInteract, update,
 	interactive.spriteSheets = {} -- no tipo imagem do love
 	interactive.animations = {} -- as chaves são estados e os valores são Animações
 
-	if name == "door" then
+	if name == DOOR_UP.name or name == DOOR_DOWN.name or name == DOOR_LEFT.name or name == DOOR_RIGHT.name then
 		table.insert(room.doors, interactive)
 	else
 		table.insert(room.interactives, interactive)

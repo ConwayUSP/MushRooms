@@ -660,6 +660,11 @@ function CollisionManager:clearHitboxesByRoom(room)
 		self:unregister(inter)
 	end
 
+	-- removendo hitboxes de portas
+	for _, door in pairs(room.doors) do
+		self:unregister(door)
+	end
+
 	-- removendo hitboxes de itens
 	for _, drop in pairs(room.drops) do
 		self:unregister(drop)

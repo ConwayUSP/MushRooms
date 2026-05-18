@@ -63,7 +63,8 @@ Room = {}
 Room.__index = Room
 Room.type = ROOM
 Room.stdDim = { width = 1536, height = 1536 }
-Room.spacing = 64 * 6 -- tamanho do sprite de parede (pode mudar depois)
+Room.spacingV = 360
+Room.spacingH = 96
 
 ---@param pos Vec
 ---@param dimensions Size
@@ -215,11 +216,29 @@ end
 
 -- coloca paredes e portas ao redor da sala
 function Room:addWallsAndDoors()
-	-- !TODO: inserir 4 paredes e salas ao invés de uma só
-	local relativePosDoor = vec(0, -Room.stdDim.height / 2 - 96)
-	local relativePosWall = vec(0, -Room.stdDim.height / 2 - 120)
-	CONSTRUCTORS[DOOR.type][DOOR.name](addVec(self.pos, relativePosDoor), self)
-	CONSTRUCTORS[WALL.type][WALL.name](addVec(self.pos, relativePosWall), self)
+	-- perdoe a quantidade de números mágicos nessa função T~T
+	local doors = { DOOR_UP, DOOR_LEFT, DOOR_RIGHT, DOOR_DOWN }
+	local doorsRelPos = {
+		vec(0, -Room.stdDim.height / 2 - 80),
+		vec(-Room.stdDim.width / 2 - 47, -120),
+		vec(Room.stdDim.width / 2 + 47, -120),
+		vec(0, Room.stdDim.height / 2 + 40),
+	}
+	local walls = { WALL_UP, WALL_DOWN, WALL_LEFT_BACK, WALL_LEFT_FRONT, WALL_RIGHT_BACK, WALL_RIGHT_FRONT }
+	local wallsRelPos = {
+		vec(0, -Room.stdDim.height / 2 - 114),
+		vec(0, Room.stdDim.height / 2 + 114),
+		vec(-Room.stdDim.width / 2 - 44, -Room.stdDim.height / 2 + 282),
+		vec(-Room.stdDim.width / 2 - 44, 258),
+		vec(Room.stdDim.width / 2 + 44, -Room.stdDim.height / 2 + 282),
+		vec(Room.stdDim.width / 2 + 44, 258),
+	}
+	for i = 1, #doors do
+		CONSTRUCTORS[doors[i].type][doors[i].name](addVec(self.pos, doorsRelPos[i]), self, doors[i])
+	end
+	for i = 1, #walls do
+		CONSTRUCTORS[walls[i].type][walls[i].name](addVec(self.pos, wallsRelPos[i]), self)
+	end
 end
 
 -- abre as portas se estiverem fechadas e fecha elas se estiverem abertas
@@ -278,19 +297,19 @@ function newRoom(pos, dimensions, roomType)
 	local blueprint = randRoomBlueprint(roomType)
 
 	-- posicionando a sala
-	local leftLimit = pos.x * (dimensions.width + Room.spacing) - Room.spacing
-	local topLimit = pos.y * (dimensions.height + Room.spacing) - Room.spacing
-	local rightLimit = leftLimit + dimensions.width + Room.spacing
-	local bottomLimit = topLimit + dimensions.height + Room.spacing
+	local leftLimit = pos.x * (dimensions.width + Room.spacingH) - Room.spacingH
+	local topLimit = pos.y * (dimensions.height + Room.spacingV) - Room.spacingV
+	local rightLimit = leftLimit + dimensions.width + Room.spacingH
+	local bottomLimit = topLimit + dimensions.height + Room.spacingV
 	local p1 = vec(leftLimit, topLimit)
 	local p2 = vec(rightLimit, bottomLimit)
 	local limits = { p1 = p1, p2 = p2 }
-	local hb = hitbox(Rectangle.new(dimensions.width + Room.spacing, dimensions.height + Room.spacing))
+	local hb = hitbox(Rectangle.new(dimensions.width + Room.spacingH, dimensions.height + Room.spacingV))
 	local hbs = hitboxes({}, {}, { hb })
 
 	-- decorando a sala
 	local sprites = {}
-	sprites.floor = love.graphics.newImage("assets/sprites/rooms/testRoom.png")
+	sprites.floor = love.graphics.newImage("assets/sprites/rooms/test_room.png")
 	sprites.floor:setFilter("nearest", "nearest")
 
 	-- instanciando e populando com entidades (inimigos, destrutíveis, etc)

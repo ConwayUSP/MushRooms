@@ -46,11 +46,19 @@ CONSTRUCTORS[DESTRUCTIBLE] = {
 
 CONSTRUCTORS[OBSTACLE] = {
 	[PILLAR.name] = newPillar,
-	[WALL.name] = newWall,
+	[WALL_UP.name] = newWallUp,
+	[WALL_DOWN.name] = newWallDown,
+	[WALL_LEFT_BACK.name] = newWallLeftBack,
+	[WALL_LEFT_FRONT.name] = newWallLeftFront,
+	[WALL_RIGHT_BACK.name] = newWallRightBack,
+	[WALL_RIGHT_FRONT.name] = newWallRightFront,
 }
 
 CONSTRUCTORS[INTERACTIVE] = {
-	[DOOR.name] = newDoor,
+	[DOOR_UP.name] = newDoor,
+	[DOOR_LEFT.name] = newDoor,
+	[DOOR_RIGHT.name] = newDoor,
+	[DOOR_DOWN.name] = newDoor,
 	[TURTLE.name] = newTurtle,
 }
 

@@ -19,12 +19,9 @@ function renderRooms(camera)
 				goto nextroom
 			end
 
-			love.graphics.setColor(r.color.r, r.color.g, r.color.b, r.color.a)
-			local roomViewPos = addVec(camera:viewPos(r.limits.p1), vec(Room.spacing / 2, Room.spacing / 2))
-			love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 6, 6)
+			local roomViewPos = addVec(camera:viewPos(r.limits.p1), vec(Room.spacingH / 2, Room.spacingV / 2))
+			love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 3, 3)
 
-			-- reseta a cor de renderização
-			love.graphics.setColor(1, 1, 1, 1)
 			::nextroom::
 		end
 	end
@@ -185,6 +182,7 @@ function renderHitboxes(camera)
 	---@type table<string, table<Entity, Hitboxes>>
 	local registry = collisionManager.registry
 
+	love.graphics.setLineWidth(3)
 	for _, reg in pairs(registry) do
 		for entity, hitboxes in pairs(reg) do
 			renderSolids(camera, hitboxes.solids, entity)
@@ -192,6 +190,7 @@ function renderHitboxes(camera)
 			renderTriggers(camera, hitboxes.triggers, entity)
 		end
 	end
+	love.graphics.setLineWidth(1)
 end
 
 ---@param camera Camera
@@ -203,7 +202,7 @@ function renderSolids(camera, hitboxes, entity)
 		return
 	end
 
-	love.graphics.setColor(1, 0, 0, 0.5)
+	love.graphics.setColor(1, 0.3, 0.3, 0.8)
 	for _, hb in ipairs(hitboxes) do
 		renderByShape(camera, hb, entity)
 	end
@@ -219,7 +218,7 @@ function renderDefaults(camera, hitboxes, entity)
 		return
 	end
 
-	love.graphics.setColor(0, 0, 1, 0.5)
+	love.graphics.setColor(0.3, 0.3, 1, 0.8)
 	for _, hb in ipairs(hitboxes) do
 		renderByShape(camera, hb, entity)
 	end
@@ -235,7 +234,7 @@ function renderTriggers(camera, hitboxes, entity)
 		return
 	end
 
-	love.graphics.setColor(0, 1, 0, 0.5)
+	love.graphics.setColor(0.3, 1, 0.3, 0.8)
 	for _, hb in ipairs(hitboxes) do
 		renderByShape(camera, hb, entity)
 	end
@@ -243,10 +242,6 @@ function renderTriggers(camera, hitboxes, entity)
 end
 
 function renderByShape(camera, hitbox, entity)
-	-- if entity.type == ROOM then
-	-- 	return
-	-- end
-
 	local worldHb = buildWorldHitbox(hitbox, entity.pos)
 
 	if worldHb.shape.shape == CIRCLE then
@@ -263,7 +258,7 @@ end
 --- renderiza a hitbox circular na perspectiva da `camera`
 function renderCircleHitbox(camera, hitbox)
 	local viewPos = camera:viewPos(hitbox.offset)
-	love.graphics.circle("fill", viewPos.x, viewPos.y, hitbox.shape.radius)
+	love.graphics.circle("line", viewPos.x, viewPos.y, hitbox.shape.radius)
 end
 
 ---@param camera Camera
@@ -272,7 +267,7 @@ end
 function renderRectangleHitbox(camera, hitbox)
 	local viewPos = camera:viewPos(hitbox.offset)
 	love.graphics.rectangle(
-		"fill",
+		"line",
 		viewPos.x - hitbox.shape.width / 2,
 		viewPos.y - hitbox.shape.height / 2,
 		hitbox.shape.width,
