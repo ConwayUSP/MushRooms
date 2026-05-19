@@ -84,10 +84,16 @@ function renderEntities(camera)
 			-- Adiciona ataques de inimigos
 			for _, a in pairs(e.atk) do
 				for _, ev in pairs(a.events) do
-					ev:draw(camera)
+					table.insert(drawList, {
+						y = ev.pos.y + getAnchor(ev, FLOOR) + getAnchor(e, FLOOR),
+						draw = function()
+							ev:draw(camera)
+						end,
+					})
 				end
 			end
 		end
+
 		-- Adiciona NPCs
 		for _, npc in pairs(r.npcs) do
 			table.insert(drawList, {
@@ -129,10 +135,14 @@ function renderEntities(camera)
 			})
 		end
 
-		-- !WARNING: isso está certo? não deveria ser adicionado à drawList como os outros?
 		for _, w in pairs(p.weapons) do
 			for _, e in pairs(w.atk.events) do
-				e:draw(camera)
+				table.insert(drawList, {
+					y = e.pos.y + getAnchor(e, FLOOR) + getAnchor(p, FLOOR),
+					draw = function()
+						e:draw(camera)
+					end
+				})
 			end
 		end
 
