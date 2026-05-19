@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.resources")
+require("modules.constructors.weapons")
 require("modules.utils.entities")
 require("modules.utils.utils")
 
@@ -15,10 +16,17 @@ end
 
 function _spawnDropDebugHandler(numberKey)
 	local spawn = false
+	local constructors = {}
 
-	local idx = math.random(tableLen(CONSTRUCTORS[RESOURCE]))
-	local c = 0
 	for _, constructor in pairs(CONSTRUCTORS[RESOURCE]) do
+		table.insert(constructors, constructor)
+	end
+	table.insert(constructors, newKatana)
+	table.insert(constructors, newSlingShot)
+
+	local idx = math.random(tableLen(constructors))
+	local c = 0
+	for _, constructor in pairs(constructors) do
 		c = c + 1
 		if c == idx then
 			_spawnDropAtPlayer(constructor(), true)
