@@ -27,7 +27,7 @@ Product.type = RESOURCE
 function Product.new(prodType, name, description, hitboxes)
 	---@type Product
 	local product = setmetatable({}, Product) ---@diagnostic disable-line
-	Entity.init(product, name, vec(0, 0), hitboxes)
+	Entity.init(product, name, vec(0, 0), hitboxes, nil, physicsSettings(math.huge))
 
 	product.subtype = prodType -- se o recurso é BUILDING ou FOOD
 	product.actualized = prodType ~= BUILDING -- construções não começam reais (precisam ser posicionadas antes)
