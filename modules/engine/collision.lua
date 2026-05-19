@@ -462,60 +462,63 @@ end
 -- aplica um impulso de contato entre duas entidades, obedecendo
 -- conservação de quantidade de movimento e coeficiente de restituição
 local function applyContactImpulse(entityA, entityB, normal, restitution)
-	-- garante normal unitária
-	local n = normalize(normal)
-
-	-- garante vetores de velocidade válidos
 	entityA.vel = entityA.vel or vec(0, 0)
 	entityB.vel = entityB.vel or vec(0, 0)
+	
+	entityA.mass = entityA.mass or math.huge
+	entityB.mass = entityB.mass or math.huge
 
-	local velA = entityA.vel
-	local velB = entityB.vel
+	local vA = entityA.vel
+	local vB = entityB.vel
 
-	-- velocidade relativa ao longo da normal (de A para B)
-	local relVel = subVec(velB, velA)
-	local velAlongNormal = dotProd(relVel, n)
-
-	-- se já estiverem se afastando, não aplica impulso
-	if velAlongNormal > 0 then
-		return
-	end
+	local mA = entityA.mass
+	local mB = entityB.mass
 
 	-- coeficiente de restituição efetivo (0 = inelástico, 1 = elástico)
-	local e = restitution or 0
-	if entityA.restitution then
-		e = math.max(e, entityA.restitution)
-	end
-	if entityB.restitution then
-		e = math.max(e, entityB.restitution)
+	local rest = restitution or 0
+	if entityA.restitution or entityB.restitution then
+		rest = math.max(entityA.restitution or 0, entityB.restitution or 0)
 	end
 
-	-- massas inversas (massa infinita -> 0)
-	local invMassA = 0
-	if entityA.mass and entityA.mass ~= 0 and entityA.mass ~= math.huge then
-		invMassA = 1 / entityA.mass
-	end
-	local invMassB = 0
-	if entityB.mass and entityB.mass ~= 0 and entityB.mass ~= math.huge then
-		invMassB = 1 / entityB.mass
-	end
+	-- garante normal unitária, de A pra B
+	local u_normal = normalize(normal)
+	local u_tangent = tangentVec(u_normal)
 
-	local invMassSum = invMassA + invMassB
-	if invMassSum == 0 then
+	local vA_normal = dotProd(vA, u_normal)
+	local vA_tangent = dotProd(vA, u_tangent)
+
+	local vB_normal = dotProd(vB, u_normal)
+	local vB_tangent = dotProd(vB, u_tangent)
+
+	if mA == math.huge or mB == math.huge then
+		if mA == math.huge and mB == math.huge then
+			return
+
+		elseif mA == math.huge then
+			entityB.vel = addVec(scaleVec(u_tangent, vB_tangent), scaleVec(u_normal, -vB_normal*rest))
+
+		else
+			entityA.vel = addVec(scaleVec(u_tangent, vA_tangent), scaleVec(u_normal, -vA_normal*rest))
+
+		end
+
 		return
 	end
 
-	-- impulso escalar
-	local j = -((1 + e) * velAlongNormal) / invMassSum
-	local impulse = scaleVec(n, j)
+	-- formulas usadas: 
+	-- rest*(Va - Vb) = V'b - V'a
+	-- mA*Va + mB*Vb = mA*V'a + mB*V'b
+	-- obs: Va ou Vb = velocidade ANTES / V'a ou V'b = velocidade DEPOIS da colisão
+	local vA_normal_prime = (mA*vA_normal + mB*vB_normal - mB*rest*(vA_normal - vB_normal))/(mA + mB)
+	local vB_normal_prime = (mA*vA_normal + mB*vB_normal + mA*rest*(vA_normal - vB_normal))/(mA + mB)
 
-	-- aplica impulsos iguais e opostos
-	if invMassA > 0 then
-		entityA.vel = subVec(entityA.vel, scaleVec(impulse, invMassA))
-	end
-	if invMassB > 0 then
-		entityB.vel = addVec(entityB.vel, scaleVec(impulse, invMassB))
-	end
+	local vA_normal_prime_vec = scaleVec(u_normal, vA_normal_prime)
+	local vB_normal_prime_vec = scaleVec(u_normal, vB_normal_prime)
+	local vA_tangent_prime_vec = scaleVec(u_tangent, vA_tangent)
+	local vB_tangent_prime_vec = scaleVec(u_tangent, vB_tangent)
+
+	entityA.vel = addVec(vA_normal_prime_vec, vA_tangent_prime_vec)
+	entityB.vel = addVec(vB_normal_prime_vec, vB_tangent_prime_vec)
 end
 
 ----------------------------------------
@@ -897,16 +900,25 @@ function CollisionManager:handleCollisions()
 	end
 end
 
+function CollisionManager:handleSolidCollisions(entityA, entityB)
+	if entityA.type == ATTACK_EVENT and entityB.type == OBSTACLE then
+		self:onAttackObstacle(entityA, entityB)
+
+	elseif entityA.type == OBSTACLE and entityB.type == ATTACK_EVENT then
+		self:onAttackObstacle(entityB, entityA)
+
+	end
+end
+
 ---@param entity Entity
 ---@param nextPos Vec
 ---@return Vec correctedPos
 function CollisionManager:resolveSolidCollisions(entity, nextPos)
 	local finalPos = vec(nextPos.x, nextPos.y)
+	local collisionsDetected = 0
 
 	-- executa múltiplas passadas para resolver colisões em canto
-	for _ = 1, 3 do
-		local collisionDetected = false
-
+	for _ = 1, 5 do
 		-- itera sobre todas as entidades sólidas registradas
 		for solid, solidhbs in pairs(self.solids) do
 			if solid == entity then
@@ -922,34 +934,27 @@ function CollisionManager:resolveSolidCollisions(entity, nextPos)
 					local manifold = getCollisionManifold(desiredhb, worldSolidhb)
 
 					if manifold then
-						collisionDetected = true
+						if collisionsDetected == 0 then
+							self:handleSolidCollisions(entity, solid)
+						end
+
+						collisionsDetected = collisionsDetected + 1
 						-- resolve a posição (Empurra para fora)
 						local pushOut = scaleVec(manifold.normal, manifold.depth)
 						finalPos = addVec(finalPos, pushOut)
 						-- Atualiza a hitbox para a nova posição (para a próxima iteração do loop i)
 						desiredhb = buildWorldHitbox(entityhb, finalPos)
-						-- para sólidos estáticos, mantemos o comportamento antigo;
+
 						-- para sólidos dinâmicos aplicamos impulso de contato obedecendo a 3ª lei.
-						local isStaticSolid = solid.isStatic == true
-						if isStaticSolid then
-							-- projeta a velocidade na normal da colisão, deslizando a entidade
-							local velDotNormal = dotProd(entity.vel, manifold.normal)
-							-- se estiver se movendo contra a parede, remove essa componente
-							if velDotNormal < 0 then
-								local slideCancel = scaleVec(manifold.normal, velDotNormal)
-								entity.vel = scaleVec(subVec(entity.vel, slideCancel), 0.75) -- x0.75 para perder um pouco mais de energia
-							end
-						else
-							local normalEntityToSolid = scaleVec(manifold.normal, -1)
-							applyContactImpulse(entity, solid, normalEntityToSolid, 0)
-						end
+						local normalEntityToSolid = scaleVec(manifold.normal, -1)
+						applyContactImpulse(entity, solid, normalEntityToSolid, 1)
 					end
 				end
 			end
 			::nextsolid::
 		end
 
-		if not collisionDetected then
+		if collisionsDetected == 0 then
 			break
 		end
 	end
@@ -1078,12 +1083,8 @@ end
 ---@param attackB AtkEvent
 -- trata a colisão entre dois ataques
 function CollisionManager:onAttackAttack(attackA, attackB)
-	if not attackA.active or not attackB.active then
-		return
-	end
-
-	attackA.piercesLeft = attackA.piercesLeft - 1
-	attackB.piercesLeft = attackB.piercesLeft - 1
+	attackA:reducePierces()
+	attackB:reducePierces()
 end
 
 ---@param obstacle Obstacle
@@ -1096,4 +1097,11 @@ end
 -- trata o fim da colisão entre o `player` e um `obstacle`
 function CollisionManager:onPlayerObstacleExit(obstacle)
 	obstacle.transparent = false
+end
+
+---@param attack AtkEvent
+---@param obstacle Obstacle
+-- trata a colisão entre um ataque e um obstáculo
+function CollisionManager:onAttackObstacle(attack, obstacle)
+	attack:reduceBounces()
 end

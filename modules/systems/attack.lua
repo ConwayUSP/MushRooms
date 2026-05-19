@@ -18,6 +18,7 @@ require("modules.utils.utils")
 ---@field initialSpeed number
 ---@field friction number
 ---@field accFactor number
+---@field restitution number
 ---@field bounces number
 ---@field pierces number
 
@@ -30,6 +31,7 @@ require("modules.utils.utils")
 ---@param speed? number
 ---@param friction? number
 ---@param acceleration? number
+---@param restitution? number
 ---@param bounces? number
 ---@param pierces? number
 ---@return AtkSetting
@@ -46,7 +48,8 @@ function newAtkSetting(
 	friction,
 	acceleration,
 	bounces,
-	pierces
+	pierces,
+	restitution
 )
 	return {
 		subtype = subtype,
@@ -61,6 +64,7 @@ function newAtkSetting(
 		accFactor = acceleration or 0,
 		bounces = bounces or 0,
 		pierces = pierces or math.huge,
+		restitution = restitution or 0,
 	}
 end
 
@@ -72,18 +76,19 @@ end
 ---@field name string
 ---@field timer number
 ---@field canAttack boolean
----@field animSettings table
+---@field animIntactSettings table
+---@field animBreakingSettings table
 ---@field updateEvent function
 ---@field onHit function
 ---@field trajectoryFunc? MovementFunc
 ---@field events AtkEvent[]
+---@field addAnimations fun(self: Attack, intactSettings: AnimSettings, breakingSettings: AnimSettings)
 Attack = {}
 Attack.__index = Attack
 Attack.type = ATTACK
 
 ---@param name string
 ---@param atkSettings AtkSetting
----@param animSettings AnimSettings
 ---@param updateFunc function
 ---@param onHit function
 ---@param trajectoryFunc? MovementFunc
@@ -91,7 +96,7 @@ Attack.type = ATTACK
 -- `Attacks` agem como emissores de `AttackEvents`;
 -- eles armazenam as configurações, dados iniciais
 -- de um ataque e informações de controle (como o cooldown)
-function Attack.new(name, atkSettings, animSettings, updateFunc, onHit, trajectoryFunc)
+function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFunc)
 	local attack = setmetatable({}, Attack)
 	attack.name = name -- nome do tipo de ataque
 	attack.subtype = atkSettings.subtype -- indica se o ataque é melee, ranged ou outro tipo
@@ -102,19 +107,27 @@ function Attack.new(name, atkSettings, animSettings, updateFunc, onHit, trajecto
 	attack.initialSpeed = atkSettings.initialSpeed -- fator inicial de velocidade do ataque/projétil
 	attack.friction = atkSettings.friction
 	attack.accFactor = atkSettings.accFactor -- fator inicial de aceleração do ataque/projétil
+	attack.restitution = atkSettings.restitution -- fator de restituição do ataque/projétil
 	attack.hb = atkSettings.hb -- hitboxes do ataque
 	attack.bounces = atkSettings.bounces -- quantas vezes o ataque pode ricochetear (caso seja projétil)
 	attack.pierces = atkSettings.pierces -- quantas vezes o ataque pode atravessar um alvo
 	attack.cooldown = atkSettings.cooldown -- tempo que deve passar entre ataques
 	attack.timer = 0 -- timer do cooldown, ao chegar em 0 permite gerar ataques
 	attack.canAttack = true -- se pode gerar um AttackEvent ou não
-	attack.animSettings = animSettings -- configurações da animação de cada evento
 	attack.updateEvent = updateFunc -- função executada para cada AttackEvent, atualizando seu estado atual
 	attack.onHit = onHit -- função executada toda vez que um ataque acertar um alvo
 	attack.trajectoryFunc = trajectoryFunc -- função que define a trajetória do ataque/projétil
 	-- Atributos fixos na instanciação
 	attack.events = {}
 	return attack
+end
+
+---@param intactSettings AnimSettings
+---@param breakingSettings AnimSettings
+-- adiciona as animações de ataque e destruição à `Attack` de acordo
+function Attack:addAnimations(intactSettings, breakingSettings)
+	self.animIntactSettings = intactSettings
+	self.animBreakingSettings = breakingSettings
 end
 
 ---@param attacker any
@@ -127,7 +140,7 @@ function Attack:attack(attacker, origin, direction)
 	self.canAttack = false
 
 	local atkEvent = AttackEvent.new(self, attacker, origin, direction)
-	atkEvent:addAnimation(self.animSettings)
+	atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
 	table.insert(self.events, atkEvent)
 end
 
@@ -139,13 +152,21 @@ function Attack:update(dt)
 		local e = self.events[i]
 		self.updateEvent(e, dt)
 
-		if e.timer <= 0 or e.piercesLeft <= 0 then
+		if e.state ~= BREAKING and (e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1) then
+			e.state = BREAKING
 			e.active = false
 			collisionManager:unregister(e)
-			table.remove(self.events, i)
 		else
-			e.animation:update(dt)
-			applyPhysics(e, dt)
+			if e.state == BREAKING then
+				if e.breakingFinished then
+					table.remove(self.events, i)
+				else
+					e.animations[BREAKING]:update(dt)
+				end
+			else
+				e.animations[e.state]:update(dt)
+				applyPhysics(e, dt)
+			end
 		end
 	end
 end
@@ -181,6 +202,9 @@ end
 ---@field age number
 ---@field active boolean
 ---@field targetsDamaged any[]
+---@field state string
+---@field spriteSheets table<string, table>
+---@field animations table<string, Animation>
 AttackEvent = setmetatable({}, { __index = Entity })
 AttackEvent.__index = AttackEvent
 AttackEvent.type = ATTACK_EVENT
@@ -205,7 +229,8 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 		attackState.friction,
 		nil,
 		initialVel,
-		initialAcc
+		initialAcc,
+		attackState.restitution
 	)
 	atkEvent:init(attackState.name, origin, hitboxes, nil, physics)
 
@@ -224,12 +249,16 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.onHit = attackState.onHit -- função executada ao acertar um alvo
 	atkEvent.target = attacker.target -- alvo do ataque
 	atkEvent.ignoreSolids = attackState.subtype == MELEE_ATTACK -- se o ataque colide com sólidos ou não
+	atkEvent.state = INTACT
 
 	-- atributos fixos na instanciação
 	atkEvent.animDir = 0 -- direção visual do sprite, usada para corrigir a rotação do sprite caso necessário
 	atkEvent.age = 0 -- tempo desde a criação do ataque
 	atkEvent.active = true -- se o ataque atualmente pode dar dano
+	atkEvent.breakingFinished = false
 	atkEvent.targetsDamaged = {} -- lista de alvos feridos pelo ataque
+	atkEvent.spriteSheets = {}
+	atkEvent.animations = {}
 
 	-- adicionando à respectiva lista de hitboxes
 	collisionManager:register(atkEvent)
@@ -249,32 +278,52 @@ function AttackEvent:baseUpdate(dt)
 	self.timer = self.timer - dt
 end
 
+function AttackEvent:reducePierces()
+	if not self.active then
+		return
+	end
+
+	self.piercesLeft = self.piercesLeft - 1
+end
+
+function AttackEvent:reduceBounces()
+	if not self.active then
+		return
+	end
+
+	self.bouncesLeft = self.bouncesLeft - 1
+end
+
 ----------------------------------------
 -- Funções de Renderização
 ----------------------------------------
 
----@param settings AnimSettings
--- adiciona as animações à lista `AttackEvents.animations` de acordo
--- com as `settings` fornecidas como argumento
-function AttackEvent:addAnimation(settings)
-	local path = pngPathFormat({ "assets", "animations", "attacks", self.name, "sheet" })
-	local animation = newAnimation(path, settings)
-	self.animation = animation
-	self.spriteSheet = love.graphics.newImage(path)
-	self.spriteSheet:setFilter("nearest", "nearest")
+---@param intactSettings AnimSettings
+---@param breakingSettings AnimSettings
+-- adiciona as animações de ataque e destruição à `AttackEvent` de acordo
+function AttackEvent:addAnimation(intactSettings, breakingSettings)
+	---------------- INTACT ----------------
+	local path = pngPathFormat({ "assets", "animations", "attacks", self.name, INTACT })
+	addAnimation(self, path, INTACT, intactSettings)
+	--------------- BREAKING ---------------
+	path = pngPathFormat({ "assets", "animations", "attacks", self.name, BREAKING })
+	addAnimation(self, path, BREAKING, breakingSettings)
+	self.animations[BREAKING].onFinish = function()
+		self.breakingFinished = true
+	end
 end
 
 ---@param camera Camera
 -- desenha o evento de ataque no canvas atual segundo a perpectiva da `camera`
 function AttackEvent:draw(camera)
 	local viewPos = camera:viewPos(self.pos)
-	local animation = self.animation
+	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local flipY = (self.direction / math.pi < -0.5 and self.direction / math.pi >= -1.5 and not self.animDir) and -1
 		or 1
 
 	love.graphics.draw(
-		self.spriteSheet,
+		self.spriteSheets[self.state],
 		quad,
 		viewPos.x,
 		viewPos.y,

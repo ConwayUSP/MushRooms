@@ -120,6 +120,19 @@ function rotateVec(v, angle)
 end
 
 ---@param v Vec
+---@return Vec
+-- retorna um vetor tangente ao original
+function tangentVec(v)
+	return vec( -v.y, v.x)
+end
+
+function proj(v1, v2)
+	local k = dotProd(v1, v2)/dotProd(v2, v2)
+
+	return scaleVec(v2, k)
+end
+
+---@param v Vec
 ---@return string
 -- converte um vetor em string para debug
 function vecToString(v)

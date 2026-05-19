@@ -20,7 +20,7 @@ ATTACKING_RIGHT = "attacking right"
 HURTING = "hurting" -- tomando dano
 DYING = "dying"
 
-------------- DESTRUTÍVEIS -------------
+------------- DESTRUTÍVEIS / ATAQUES -------------
 
 INTACT = "intact"
 BREAKING = "breaking"
