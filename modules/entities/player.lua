@@ -93,6 +93,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
+	player.defaultInvulnerableTime = 0.3
 
 	collisionManager:register(player)
 	return player
@@ -525,8 +526,10 @@ function Player:draw(camera)
 	love.graphics.draw(self.particles[WALKING_UP], particles_offset.x, particles_offset.y)
 
 	if self:isInvulnerable() then
-		return
+		love.graphics.setShader(whiteShader)
+		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
 	end
+
 	-- desenhando o player em si
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
@@ -535,10 +538,17 @@ function Player:draw(camera)
 		x = animation.frameDim.width / 2,
 		y = animation.frameDim.height / 2,
 	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+	local p = self.invulnerableTimer > 0 and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
+	local defaultScale = 3
+	local scaleX = defaultScale - 0.8 * math.sin(math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(math.pi * p)
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y * scaleY / defaultScale)
 
 	-- desenhando o efeito de partículas da defesa em cima do player
 	love.graphics.draw(self.particles[DEFENDING], particles_offset.x, particles_offset.y)
+	if self:isInvulnerable() then
+		love.graphics.setShader()
+	end
 end
 
 ----------------------------------------

@@ -105,22 +105,43 @@ function Weapon:draw(camera)
 	if self.owner.state == DEFENDING then
 		return
 	end
-	local wViewPos = camera:viewPos(self.owner.pos)
+
+	love.graphics.setColor(1, 1, 1, 1)
+
+	if self.owner:isInvulnerable() then
+		love.graphics.setShader(whiteShader)
+		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
+	end
+
+	local viewPos = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
+	local offset = {
+		x = animation.frameDim.width / 2 - 5,
+		y = animation.frameDim.height / 2 - 5,
+	}
+
 	-- inverte arma no segundo e terceiro quadrantes
 	local flipY = (self.rotation / math.pi < -0.5 and self.rotation / math.pi >= -1.5) and -1 or 1
 
-	love.graphics.setColor(1, 1, 1, 1)
+	local p = self.owner.invulnerableTimer > 0 and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer)/self.owner.defaultInvulnerableTime or 0
+	local defaultScale = 3
+	local scaleX = defaultScale - 0.8 * math.sin(math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(math.pi * p)
+
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
-		wViewPos.x,
-		wViewPos.y,
+		viewPos.x,
+		viewPos.y,
 		self.rotation,
-		3,
-		3 * flipY,
-		animation.frameDim.width / 2 - 5,
-		animation.frameDim.height / 2 - 5
+		scaleX,
+		scaleY * flipY,
+		offset.x,
+		offset.y * scaleY / defaultScale
 	)
+
+	if self.owner:isInvulnerable() then
+		love.graphics.setShader()
+	end
 end

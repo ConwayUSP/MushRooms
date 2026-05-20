@@ -1005,7 +1005,7 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 		return
 	end
 
-	enemy.invulnerableTimer = 0.5
+	enemy:setInvulnerable(0.5)
 	enemy:takeDamage(attack.dmg)
 end
 
@@ -1018,7 +1018,7 @@ function CollisionManager:onEnemyPlayer(enemy, player)
 	end
 
 	print(player.name .. " hit by enemy " .. enemy.name)
-	player.invulnerableTimer = 1.0
+	player:setInvulnerable()
 end
 
 ---@param player Player
@@ -1041,7 +1041,7 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 
 	print(player.name .. " hit by enemy " .. attack.attacker.name)
 
-	player.invulnerableTimer = 1.0
+	player:setInvulnerable()
 	attack:onHit(player)
 end
 

@@ -61,6 +61,7 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy.isAttacking = false -- indica se o inimigo está atualmente atacando
 	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
 	enemy.attackJustStarted = false -- indica se um novo ataque acabou de começar
+	enemy.defaultInvulnerableTime = 0.3 -- tempo padrão de invulnerabilidade após levar dano
 
 	table.insert(room.enemies, enemy)
 	return enemy
@@ -302,7 +303,8 @@ end
 -- função de renderização de `Enemy`
 function Enemy:draw(camera)
 	if self:isInvulnerable() then
-		return
+		love.graphics.setShader(whiteShader)
+		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
 	end
 
 	local viewPos = camera:viewPos(self.pos)
@@ -312,5 +314,13 @@ function Enemy:draw(camera)
 		x = animation.frameDim.width / 2,
 		y = animation.frameDim.height / 2,
 	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+		local p = self.invulnerableTimer > 0 and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
+	local defaultScale = 3
+	local scaleX = defaultScale - 0.8 * math.sin(math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(math.pi * p)
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y * scaleY / defaultScale)
+
+	if self:isInvulnerable() then
+		love.graphics.setShader()
+	end
 end
