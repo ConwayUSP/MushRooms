@@ -74,6 +74,7 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics)
 	self.speedRange = physics.speedRange
 	self.restitution = physics.restitution or 0
 
+	self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
 	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
 end
@@ -81,13 +82,17 @@ end
 function Entity:updateInvulnerability(dt)
 	if self.invulnerableTimer > 0 then
 		self.invulnerableTimer = self.invulnerableTimer - dt
-		self.blinkTimer = (self.blinkTimer + dt * 10) % 1
+		-- self.blinkTimer = (self.blinkTimer + dt * 10) % 1
 	end
 end
 
 function Entity:isInvulnerable()
-	local blink = 0.5
-	return self.invulnerableTimer > 0 and self.blinkTimer < blink
+	return self.invulnerableTimer > 0
+end
+
+function Entity:setInvulnerable(duration)
+	self.defaultInvulnerableTime = self.defaultInvulnerableTime or duration
+	self.invulnerableTimer = self.defaultInvulnerableTime
 end
 
 ---@param camera Camera
