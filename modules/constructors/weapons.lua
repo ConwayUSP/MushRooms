@@ -21,7 +21,8 @@ function newKatana()
 	local cooldown = multiCooldown({ 0.1, 0.1, 0.5 })
 	local atkSettings = newAtkSetting(MELEE_ATTACK, true, 15, 0.5, hbs, cooldown)
 	local atkAnimSettings = newAnimSetting(12, { width = 64, height = 64 }, 0.03, false, 1)
-	local attack = Attack.new("Katana Slice", atkSettings, atkAnimSettings, updateFunc, onHitFunc)
+	local attack = Attack.new("Katana Slice", atkSettings, updateFunc, onHitFunc)
+	attack:addAnimations(atkAnimSettings, atkAnimSettings)
 
 	-- Inicialicação da arma em si
 	local katana = Weapon.new(KATANA.name, math.huge, attack)

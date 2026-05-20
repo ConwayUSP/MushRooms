@@ -49,7 +49,6 @@ end
 ---@field acc Vec
 ---@field speedRange range
 ---@field restitution number
----@field isStatic boolean
 Entity = {}
 Entity.__index = Entity
 
@@ -74,7 +73,6 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics)
 	self.acc = physics.initialAcc
 	self.speedRange = physics.speedRange
 	self.restitution = physics.restitution or 0
-	self.isStatic = physics.mass == math.huge
 
 	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável

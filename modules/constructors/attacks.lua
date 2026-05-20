@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.systems.movement")
+require("modules.systems.attack")
 require("modules.utils.types")
 
 ----------------------------------------
@@ -21,7 +22,7 @@ require("modules.utils.types")
 -- tipo de ataque: a parte imutável
 
 ---@param ally boolean
----@param cooldown number
+---@param cooldown function
 ---@param speed number
 ---@param trajectoryFunc? MovementFunc
 ---@return Attack
@@ -29,21 +30,26 @@ require("modules.utils.types")
 function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 	local hb = hitbox(Circle.new(15))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 15, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 0, 2)
-	local anim = newAnimSetting(5, { width = 16, height = 16 }, 0.1, true, 1)
+	local settings = newAtkSetting(RANGED_ATTACK, ally, 15, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 4, 2, 1)
+	local animIntact = newAnimSetting(5, { width = 16, height = 16 }, 0.1, true, 1)
+	local animBreaking = newAnimSetting(5, { width = 16, height = 16 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
 	local onHitFunc = function(e, t)
 		print("Pebble Shot acertou um alvo")
 	end
 
-	return Attack.new("Pebble Shot", settings, anim, updateFunc, onHitFunc, trajectoryFunc)
+	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, trajectoryFunc)
+	attack:addAnimations(animIntact, animBreaking)
+
+	return attack
 end
 
 function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 0, 2)
-	local anim = newAnimSetting(3, { width = 32, height = 32 }, 0.1, false, 1)
+	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 1, 2)
+	local animIntact = newAnimSetting(3, { width = 32, height = 32 }, 0.1, true, 1)
+	local animBreaking = newAnimSetting(5, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = function(e, dt)
 		AttackEvent.baseUpdate(e, dt)
 		e.animDir = -math.rad(90)
@@ -52,5 +58,8 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 		print("Nuclear Shot acertou um alvo")
 	end
 
-	return Attack.new("Nuclear Shot", settings, anim, updateFunc, onHitFunc, trajectoryFunc)
+	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, trajectoryFunc)
+	attack:addAnimations(animIntact, animBreaking)
+
+	return attack
 end
