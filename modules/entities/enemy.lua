@@ -62,6 +62,8 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
 	enemy.attackJustStarted = false -- indica se um novo ataque acabou de começar
 	enemy.defaultInvulnerableTime = 0.3 -- tempo padrão de invulnerabilidade após levar dano
+	enemy.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
+	enemy.shadowWidth = 25
 
 	table.insert(room.enemies, enemy)
 	return enemy
@@ -316,8 +318,8 @@ function Enemy:draw(camera)
 	}
 		local p = self.invulnerableTimer > 0 and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
 	local defaultScale = 3
-	local scaleX = defaultScale - 0.8 * math.sin(math.pi * p)
-	local scaleY = defaultScale + 0.8 * math.sin(math.pi * p)
+	local scaleX = defaultScale - 0.8 * math.sin(2*math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(2*math.pi * p)
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y * scaleY / defaultScale)
 
 	if self:isInvulnerable() then

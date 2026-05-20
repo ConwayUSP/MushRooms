@@ -15,6 +15,9 @@ require("modules.systems.shaders")
 ---@field image table
 ---@field animations table
 ---@field spriteSheets table
+---@field state string
+---@field hasShadow boolean
+---@field shadowWidth number
 
 Product = setmetatable({}, { __index = Entity })
 Product.__index = Product
@@ -35,6 +38,7 @@ function Product.new(prodType, name, description, hitboxes)
 	product.state = IDLE
 	product.animations = {}
 	product.spriteSheets = {}
+	product.hasShadow = true
 
 	if prodType == BUILDING then
 		product.update = Interactive.update

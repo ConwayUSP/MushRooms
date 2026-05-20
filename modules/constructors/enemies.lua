@@ -27,6 +27,7 @@ function newNuclearCat(spawnPos, room)
 	local attackAnimSettings = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false, 1)
 	local dyingAnimSettings = newAnimSetting(6, { width = 32, height = 32 }, 0.001, false, 1)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
+	enemy.shadowWidth = 30
 	return enemy
 end
 
@@ -48,5 +49,6 @@ function newSpiderDuck(spawnPos, room)
 	local attackAnimSettings = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false, 1)
 	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.001, false, 1)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
+	enemy.shadowWidth = 30
 	return enemy
 end

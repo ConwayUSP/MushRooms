@@ -82,6 +82,8 @@ end
 ---@field onHit function
 ---@field trajectoryFunc? MovementFunc
 ---@field events AtkEvent[]
+---@field hasShadow boolean
+---@field shadowWidth number
 ---@field addAnimations fun(self: Attack, intactSettings: AnimSettings, breakingSettings: AnimSettings)
 Attack = {}
 Attack.__index = Attack
@@ -250,6 +252,8 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.target = attacker.target -- alvo do ataque
 	atkEvent.ignoreSolids = attackState.subtype == MELEE_ATTACK -- se o ataque colide com sólidos ou não
 	atkEvent.state = INTACT
+	atkEvent.hasShadow = attackState.hasShadow or false
+	atkEvent.shadowWidth = attackState.shadowWidth or 0
 
 	-- atributos fixos na instanciação
 	atkEvent.animDir = 0 -- direção visual do sprite, usada para corrigir a rotação do sprite caso necessário
