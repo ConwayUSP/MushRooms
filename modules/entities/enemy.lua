@@ -312,15 +312,15 @@ function Enemy:draw(camera)
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	local offset = {
-		x = animation.frameDim.width / 2,
-		y = animation.frameDim.height / 2,
-	}
-		local p = self.invulnerableTimer > 0 and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
+	local p = self.invulnerableTimer > 0 and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2*math.pi * p)
 	local scaleY = defaultScale + 0.8 * math.sin(2*math.pi * p)
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y * scaleY / defaultScale)
+	local offset = {
+		x = animation.frameDim.width / 2,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height/2) * defaultScale) / scaleY,
+	}
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
 	if self:isInvulnerable() then
 		love.graphics.setShader()

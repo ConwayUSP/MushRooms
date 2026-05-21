@@ -116,18 +116,18 @@ function Weapon:draw(camera)
 	local viewPos = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	local offset = {
-		x = animation.frameDim.width / 2 - 5,
-		y = animation.frameDim.height / 2 - 5,
-	}
-
+	
 	-- inverte arma no segundo e terceiro quadrantes
 	local flipY = (self.rotation / math.pi < -0.5 and self.rotation / math.pi >= -1.5) and -1 or 1
-
+	
 	local p = self.owner.invulnerableTimer > 0 and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer)/self.owner.defaultInvulnerableTime or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2*math.pi * p)
 	local scaleY = defaultScale + 0.8 * math.sin(2*math.pi * p)
+	local offset = {
+		x = animation.frameDim.width / 2,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height/2) * defaultScale) / scaleY,
+	}
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
@@ -138,7 +138,7 @@ function Weapon:draw(camera)
 		scaleX,
 		scaleY * flipY,
 		offset.x,
-		offset.y * scaleY / defaultScale
+		offset.y
 	)
 
 	if self.owner:isInvulnerable() then
