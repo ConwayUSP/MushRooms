@@ -152,7 +152,7 @@ function renderEntities(camera)
 					y = e.pos.y + getAnchor(e, FLOOR) + getAnchor(p, FLOOR),
 					draw = function()
 						e:draw(camera)
-					end
+					end,
 				})
 			end
 		end
@@ -187,18 +187,23 @@ function renderEntities(camera)
 
 			-- largura da sombra proporcional à largura do sprite
 			local rx = frameWidth / 2
-			local ry = rx * 0.3
+			local ry = rx * 0.4
 
 			table.insert(shadows, {
 				y = sy,
 				draw = function()
-					love.graphics.setColor(0.9, 0.9, 0.9, 0.60)
-
+					love.graphics.setColor(0, 0, 0.1, 1.0)
+					love.graphics.setShader(ditherShadowShader)
 					local viewPos = camera:viewPos(vec(sx, sy))
-					love.graphics.ellipse("fill", viewPos.x, viewPos.y, rx, ry)
+					ditherShadowShader:send("shadow_center", { viewPos.x, viewPos.y })
+					ditherShadowShader:send("shadow_radii", { rx, ry })
+					ditherShadowShader:send("time", love.timer.getTime())
+
+					love.graphics.circle("fill", viewPos.x, viewPos.y, rx)
 
 					love.graphics.setColor(1, 1, 1, 1)
-				end
+					love.graphics.setShader()
+				end,
 			})
 		end
 	end
@@ -207,8 +212,6 @@ function renderEntities(camera)
 	table.sort(drawList, function(a, b)
 		return a.y < b.y
 	end)
-
-	love.graphics.setBlendMode("darken", "premultiplied")
 
 	for _, s in ipairs(shadows) do
 		s.draw()
