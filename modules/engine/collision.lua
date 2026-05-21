@@ -589,12 +589,15 @@ function CollisionManager:fetchHitboxesByRoom(room)
 
 	-- pegando hitboxes de inimigos
 	for _, enemy in pairs(room.enemies) do
-		for _, attack in pairs(enemy.atk) do
-			for _, atkEvent in pairs(attack.events) do
-				self:register(atkEvent)
+		if enemy.state ~= DYING then
+			for _, attack in pairs(enemy.atk) do
+				for _, atkEvent in pairs(attack.events) do
+					self:register(atkEvent)
+				end
 			end
+			self:register(enemy)
+
 		end
-		self:register(enemy)
 	end
 
 	-- pegando hitboxes de destrutiveis
@@ -1005,6 +1008,7 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 		return
 	end
 
+	applyImpulse(enemy, scaleVec(normalize(subVec(enemy.pos, attack.pos)), attack.mass * 1000))
 	enemy:setInvulnerable(0.5)
 	enemy:takeDamage(attack.dmg)
 end
@@ -1041,6 +1045,8 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 
 	print(player.name .. " hit by enemy " .. attack.attacker.name)
 
+	-- F = m.a, mas como nem todo ataque possui acaleração, vou usar a "velocidade" como base do impulso
+	applyImpulse(player, scaleVec(attack.vel, attack.mass * 0.5))
 	player:setInvulnerable()
 	attack:onHit(player)
 end
@@ -1083,8 +1089,8 @@ end
 ---@param attackB AtkEvent
 -- trata a colisão entre dois ataques
 function CollisionManager:onAttackAttack(attackA, attackB)
-	attackA:reducePierces()
-	attackB:reducePierces()
+	-- attackA:reducePierces()
+	-- attackB:reducePierces()
 end
 
 ---@param obstacle Obstacle

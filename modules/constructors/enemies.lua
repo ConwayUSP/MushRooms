@@ -24,8 +24,8 @@ function newNuclearCat(spawnPos, room)
 	local enemy = Enemy.new(NUCLEAR_CAT.name, 30, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames)
 	local idleAnimSettings = newAnimSetting(15, { width = 32, height = 32 }, 0.15, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
-	local attackAnimSettings = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false, 1)
-	local dyingAnimSettings = newAnimSetting(6, { width = 32, height = 32 }, 0.001, false, 1)
+	local attackAnimSettings = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false)
+	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
 	enemy.shadowWidth = 30
 	return enemy
@@ -46,8 +46,8 @@ function newSpiderDuck(spawnPos, room)
 	local enemy = Enemy.new(SPIDER_DUCK.name, 20, spawnPos, physics, movementFunc, { attack }, hbs, room, atkFrames)
 	local idleAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.4, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
-	local attackAnimSettings = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false, 1)
-	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.001, false, 1)
+	local attackAnimSettings = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false)
+	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
 	enemy.shadowWidth = 30
 	return enemy
