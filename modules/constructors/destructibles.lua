@@ -13,6 +13,8 @@ function newBarrel(pos, room)
 	local breakingAnimSettings = newAnimSetting(7, { width = 64, height = 64 }, 0.05, false, 1)
 	local brokenAnimSettings = newAnimSetting(1, { width = 64, height = 64 }, 1, true, 1)
 	barrel:addAnimations(intactAnimSettings, breakingAnimSettings, brokenAnimSettings)
+	barrel.hasShadow = true
+	barrel.shadowWidth = 20
 	return barrel
 end
 
@@ -29,5 +31,7 @@ function newJar(pos, room)
 	local breakingAnimSettings = newAnimSetting(7, { width = 64, height = 64 }, 0.05, false, 1)
 	local brokenAnimSettings = newAnimSetting(1, { width = 64, height = 64 }, 1, true, 1)
 	jar:addAnimations(intactAnimSettings, breakingAnimSettings, brokenAnimSettings)
+	jar.hasShadow = true
+	jar.shadowWidth = 12
 	return jar
 end

@@ -40,6 +40,7 @@ function renderEntities(camera)
 		-- Adiciona destrutíveis
 		for _, d in pairs(r.destructibles) do
 			table.insert(drawList, {
+				it = d,
 				y = d.pos.y + getAnchor(d, FLOOR),
 				draw = function()
 					d:draw(camera)
@@ -49,6 +50,7 @@ function renderEntities(camera)
 		-- Adiciona objetos interativos
 		for _, i in pairs(r.interactives) do
 			table.insert(drawList, {
+				it = i,
 				y = i.pos.y + getAnchor(i, FLOOR),
 				draw = function()
 					i:draw(camera)
@@ -58,6 +60,7 @@ function renderEntities(camera)
 		-- Adiciona portas
 		for _, d in pairs(r.doors) do
 			table.insert(drawList, {
+				it = d,
 				y = d.pos.y + getAnchor(d, FLOOR),
 				draw = function()
 					d:draw(camera)
@@ -67,6 +70,7 @@ function renderEntities(camera)
 		-- Adiciona drops
 		for _, i in pairs(r.drops) do
 			table.insert(drawList, {
+				it = i,
 				y = i.floorY + getAnchor(i, FLOOR),
 				draw = function()
 					i:draw(camera)
@@ -76,6 +80,7 @@ function renderEntities(camera)
 		-- Adiciona inimigos
 		for _, e in pairs(r.enemies) do
 			table.insert(drawList, {
+				it = e,
 				y = e.pos.y + getAnchor(e, FLOOR),
 				draw = function()
 					e:draw(camera)
@@ -85,6 +90,7 @@ function renderEntities(camera)
 			for _, a in pairs(e.atk) do
 				for _, ev in pairs(a.events) do
 					table.insert(drawList, {
+						it = ev,
 						y = ev.pos.y + getAnchor(ev, FLOOR) + getAnchor(e, FLOOR),
 						draw = function()
 							ev:draw(camera)
@@ -97,6 +103,7 @@ function renderEntities(camera)
 		-- Adiciona NPCs
 		for _, npc in pairs(r.npcs) do
 			table.insert(drawList, {
+				it = npc,
 				y = npc.pos.y + getAnchor(npc, FLOOR),
 				draw = function()
 					npc:draw(camera)
@@ -107,6 +114,7 @@ function renderEntities(camera)
 		-- Adiciona obstáculos
 		for _, obs in pairs(r.obstacles) do
 			table.insert(drawList, {
+				it = obs,
 				y = obs.pos.y + getAnchor(obs, FLOOR),
 				draw = function()
 					obs:draw(camera)
@@ -118,6 +126,7 @@ function renderEntities(camera)
 	-- Adiciona jogadores e suas possíveis armas e construções
 	for _, p in pairs(players) do
 		table.insert(drawList, {
+			it = p,
 			y = p.pos.y + getAnchor(p, FLOOR),
 			draw = function()
 				p:draw(camera)
@@ -128,6 +137,7 @@ function renderEntities(camera)
 			local w = p.weapon
 			local offsetY = (w.rotation / math.pi < -1 or w.rotation / math.pi > 0) and 2 or -2
 			table.insert(drawList, {
+				it = w,
 				y = p.pos.y + getAnchor(p, FLOOR) + offsetY, -- mesma altura do jogador, mas deslocado para frente ou para trás
 				draw = function()
 					w:draw(camera)
@@ -138,6 +148,7 @@ function renderEntities(camera)
 		for _, w in pairs(p.weapons) do
 			for _, e in pairs(w.atk.events) do
 				table.insert(drawList, {
+					it = e,
 					y = e.pos.y + getAnchor(e, FLOOR) + getAnchor(p, FLOOR),
 					draw = function()
 						e:draw(camera)
@@ -149,6 +160,7 @@ function renderEntities(camera)
 		if p.building then
 			local b = p.building
 			table.insert(drawList, {
+				it = b,
 				y = b.pos.y + getAnchor(b, FLOOR),
 				draw = function()
 					b:draw(camera)
@@ -157,10 +169,52 @@ function renderEntities(camera)
 		end
 	end
 
+	-- Construir sombras separadamente para não mutar drawList durante iteração
+	local shadows = {}
+	for _, obj in ipairs(drawList) do
+		if obj.it and obj.it.hasShadow then
+			local sx = (obj.it.pos and obj.it.pos.x) or 0
+			local sy = obj.y - 1
+
+			local frameWidth
+			local scale = obj.it.scale or 3
+
+			if obj.it.shadowWidth then
+				frameWidth = obj.it.shadowWidth * scale
+			else
+				frameWidth = 16 * scale
+			end
+
+			-- largura da sombra proporcional à largura do sprite
+			local rx = frameWidth / 2
+			local ry = rx * 0.3
+
+			table.insert(shadows, {
+				y = sy,
+				draw = function()
+					love.graphics.setColor(0.9, 0.9, 0.9, 0.60)
+
+					local viewPos = camera:viewPos(vec(sx, sy))
+					love.graphics.ellipse("fill", viewPos.x, viewPos.y, rx, ry)
+
+					love.graphics.setColor(1, 1, 1, 1)
+				end
+			})
+		end
+	end
+
 	-- Ordena por posição Y
 	table.sort(drawList, function(a, b)
 		return a.y < b.y
 	end)
+
+	love.graphics.setBlendMode("darken", "premultiplied")
+
+	for _, s in ipairs(shadows) do
+		s.draw()
+	end
+
+	love.graphics.setBlendMode("alpha")
 
 	-- Desenha na ordem correta
 	for _, obj in ipairs(drawList) do

@@ -63,6 +63,8 @@ function Drop.new(object, pos, room, autoPick, floorY)
 	drop.shine = false -- se está brilhando
 	drop.canPick = false -- se o drop pode ser coletado (true após terminar de cair)
 	drop.state = "falling" -- estado inicial do drop
+	drop.hasShadow = true
+	drop.shadowWidth = 15
 
 	if object.image then
 		drop.image = object.image

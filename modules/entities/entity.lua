@@ -49,6 +49,11 @@ end
 ---@field acc Vec
 ---@field speedRange range
 ---@field restitution number
+---@field defaultInvulnerableTime number
+---@field invulnerableTimer number	
+---@field blinkTimer number
+---@field hasShadow? boolean
+---@field shadowWidth? number
 Entity = {}
 Entity.__index = Entity
 
@@ -77,6 +82,7 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics)
 	self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
 	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
+	-- self.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 end
 
 function Entity:updateInvulnerability(dt)

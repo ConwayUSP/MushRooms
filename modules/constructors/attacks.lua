@@ -40,6 +40,8 @@ function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 
 	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, trajectoryFunc)
 	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 10
 
 	return attack
 end
@@ -47,7 +49,7 @@ end
 function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 1, 2)
+	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 1, 2, 1)
 	local animIntact = newAnimSetting(3, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = function(e, dt)
@@ -60,6 +62,8 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 
 	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, trajectoryFunc)
 	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 10
 
 	return attack
 end

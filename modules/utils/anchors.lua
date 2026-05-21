@@ -65,6 +65,10 @@ ANCHORS = {
 	wall_left_front = floorAnchor(200),
 	wall_right_back = floorAnchor(130),
 	wall_right_front = floorAnchor(200),
+
+	-- Produtos
+	chest = floorAnchor(10),
+	firecamp = floorAnchor(10),
 }
 
 ----------------------------------------
