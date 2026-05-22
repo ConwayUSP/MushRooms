@@ -17,6 +17,7 @@ require("modules.systems.dialogue")
 require("modules.tooling.roomcontrol")
 require("modules.tooling.spawnDrop")
 require("modules.tooling.turtledebug")
+require("modules.tooling.fpsvisor")
 require("modules.systems.shaders")
 require("game")
 require("table")
@@ -174,6 +175,7 @@ function love.update(dt)
 	-------------- UI -------------
 	::uiupdate::
 	globalUIManager:update(dt)
+	updateFPSVisor(dt)
 
 	-- encerrando o profiling
 	updateProfile:stop()
@@ -192,6 +194,10 @@ function love.draw()
 	end
 
 	globalUIManager:draw()
+
+	if debugMode then
+		drawFPSVisor()
+	end
 
 	-- encerrando o profiling
 	drawProfile:stop()
