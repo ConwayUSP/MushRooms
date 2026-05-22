@@ -26,6 +26,8 @@ require("table")
 ---@field attackJustStarted boolean
 ---@field addAnimations function
 ---@field setProjectileAtk function
+---@field isReallyDead boolean
+---@field leavesBody boolean
 
 Enemy = setmetatable({}, { __index = Entity })
 Enemy.__index = Enemy
@@ -61,9 +63,11 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy.isAttacking = false -- indica se o inimigo está atualmente atacando
 	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
 	enemy.attackJustStarted = false -- indica se um novo ataque acabou de começar
-	enemy.defaultInvulnerableTime = 0.3 -- tempo padrão de invulnerabilidade após levar dano
+	enemy.defaultInvulnerableTime = 0.2 -- tempo padrão de invulnerabilidade após levar dano
 	enemy.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	enemy.shadowWidth = 25
+	enemy.isReallyDead = false -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
+	enemy.leavesBody = true -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
 
 	table.insert(room.enemies, enemy)
 	return enemy
@@ -109,6 +113,13 @@ function Enemy:addAnimations(idleSettings, walkingSettings, attackSettings, dyin
 	---------------- DYING -----------------
 	path = pngPathFormat({ "assets", "animations", "enemies", self.name, DYING })
 	addAnimation(self, path, DYING, dyingSettings)
+	self.animations[DYING].onFinish = function()
+		self.isReallyDead = true
+
+		if not self.leavesBody then
+			table.remove(self.room.enemies, tableIndexOf(self.room.enemies, self))
+		end
+	end
 end
 
 ---@param anim Animation
@@ -175,15 +186,16 @@ end
 
 -- inicia o processo de morte do inimigo
 function Enemy:die()
-	self.state = DYING
-	local anim = self.animations[DYING]
-	anim.onFinish = function()
-		collisionManager:unregister(self)
-		for _, atk in pairs(self.atk[self.selectedAtk].events) do
-			collisionManager:unregister(atk)
-		end
+	if self.state == DYING then
+		return
+	end
 
-		table.remove(self.room.enemies, tableIndexOf(self.room.enemies, self))
+	self.state = DYING
+
+	collisionManager:unregister(self)
+	for _, atk in pairs(self.atk[self.selectedAtk].events) do
+		collisionManager:unregister(atk)
+		atk:destroy()
 	end
 end
 
@@ -304,25 +316,28 @@ end
 ---@param camera Camera
 -- função de renderização de `Enemy`
 function Enemy:draw(camera)
-	if self:isInvulnerable() then
+	if self:isInvulnerable() and self.state ~= DYING then
 		love.graphics.setShader(whiteShader)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
+	end
+
+	if self.isReallyDead then
+		love.graphics.setColor(0.2, 0.2, 0.2, 1)
 	end
 
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	local p = self.invulnerableTimer > 0 and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
+	local p = (self.invulnerableTimer > 0 and self.state ~= DYING) and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
 	local defaultScale = 3
-	local scaleX = defaultScale - 0.8 * math.sin(2*math.pi * p)
-	local scaleY = defaultScale + 0.8 * math.sin(2*math.pi * p)
+	local scaleX = defaultScale - 0.6 * math.sin(2*math.pi * p)
+	local scaleY = defaultScale + 0.6 * math.sin(2*math.pi * p)
 	local offset = {
 		x = animation.frameDim.width / 2,
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height/2) * defaultScale) / scaleY,
 	}
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
-	if self:isInvulnerable() then
-		love.graphics.setShader()
-	end
+	love.graphics.setShader()
+	love.graphics.setColor(1, 1, 1, 1)
 end

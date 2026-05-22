@@ -69,9 +69,12 @@ function renderEntities(camera)
 		end
 		-- Adiciona drops
 		for _, i in pairs(r.drops) do
+			local dropScale = (i.object and i.object.type == RESOURCE) and 1.875 or 3
+
+			i.scale = dropScale
 			table.insert(drawList, {
 				it = i,
-				y = i.floorY + getAnchor(i, FLOOR),
+				y = i.floorY + getAnchor(i, FLOOR, dropScale),
 				draw = function()
 					i:draw(camera)
 				end,

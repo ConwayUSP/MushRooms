@@ -154,20 +154,30 @@ function Attack:update(dt)
 		local e = self.events[i]
 		self.updateEvent(e, dt)
 
-		if e.state ~= BREAKING and (e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1) then
-			e.state = BREAKING
-			e.active = false
-			collisionManager:unregister(e)
+		if self.subtype == MELEE_ATTACK then
+			e.animations[INTACT]:update(dt)
+
+			if e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1 then
+				e.active = false
+				collisionManager:unregister(e)
+				table.remove(self.events, i)
+			end
 		else
-			if e.state == BREAKING then
-				if e.breakingFinished then
-					table.remove(self.events, i)
-				else
-					e.animations[BREAKING]:update(dt)
-				end
+			if e.state ~= BREAKING and (e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1) then
+				e.state = BREAKING
+				e.active = false
+				collisionManager:unregister(e)
 			else
-				e.animations[e.state]:update(dt)
-				applyPhysics(e, dt)
+				if e.state == BREAKING then
+					if e.breakingFinished then
+						table.remove(self.events, i)
+					else
+						e.animations[BREAKING]:update(dt)
+					end
+				else
+					e.animations[e.state]:update(dt)
+					applyPhysics(e, dt)
+				end
 			end
 		end
 	end
@@ -296,6 +306,11 @@ function AttackEvent:reduceBounces()
 	end
 
 	self.bouncesLeft = self.bouncesLeft - 1
+end
+
+function AttackEvent:destroy()
+	self.piercesLeft = 0
+	self.bouncesLeft = -1
 end
 
 ----------------------------------------

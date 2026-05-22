@@ -84,7 +84,7 @@ ANCHORS = {
 function getAnchor(obj, anchorType, scale)
 	scale = scale or obj.scale or 3
 
-	local key = obj.name or obj.object.name
+	local key =  obj.object and obj.object.name or obj.name
 	key = pathlizeName(string.lower(key))
 	local anchor = ANCHORS[key] and ANCHORS[key][anchorType] or nil
 
@@ -101,5 +101,5 @@ function getAnchor(obj, anchorType, scale)
 	end
 
 	-- fallback padrão
-	return 0
+	return 15 * scale
 end
