@@ -7,6 +7,7 @@ require("modules.engine.animation")
 require("modules.engine.camera")
 require("modules.engine.collision")
 require("modules.engine.renderization")
+require("modules.engine.assetmanager")
 require("modules.entities.destructible")
 require("modules.entities.enemy")
 require("modules.entities.drop")
@@ -23,7 +24,6 @@ require("game")
 require("table")
 
 local appleCake = require("libs.applecake")(true)
-appleCake = require("libs.applecake")()
 appleCake.setBuffer(true)
 appleCake.beginSession()
 
@@ -122,6 +122,9 @@ end
 function love.load()
 	-- muda o filtro padrão para eliminar o efeito de blur
 	love.graphics.setDefaultFilter("nearest", "nearest")
+
+	-- carregando o gerenciador de assets
+	assetManager = AssetManager.init()
 
 	-- carregando a biblioteca de UI
 	globalUIManager = initGlobalUIManager()
