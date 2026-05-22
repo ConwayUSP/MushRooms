@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações
 ----------------------------------------
-require("modules.engine.collision")
+require("modules.systems.collision")
 require("modules.entities.entity")
 require("modules.entities.player")
 require("modules.systems.shaders")

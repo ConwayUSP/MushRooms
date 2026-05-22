@@ -3,7 +3,7 @@
 ----------------------------------------
 require("modules.constructors.weapons")
 require("modules.engine.animation")
-require("modules.engine.collision")
+require("modules.systems.collision")
 require("modules.entities.entity")
 require("modules.systems.loot")
 require("modules.utils.states")
