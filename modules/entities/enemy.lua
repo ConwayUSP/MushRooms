@@ -5,6 +5,7 @@ require("modules.engine.collision")
 require("modules.entities.entity")
 require("modules.utils.states")
 require("modules.utils.types")
+require("modules.systems.shaders")
 require("table")
 
 ----------------------------------------
@@ -50,24 +51,24 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy:init(name, spawnPos, hitboxes, room, physics)
 
 	-- atributos que variam
-	enemy.hp = hp -- pontos de vida do inimigo
-	enemy.move = move -- função de movimento do inimigo
-	enemy.atk = attacks -- objetos Attack associados ao inimigo (caso possua)
-	enemy.atkFrame = atkFrames -- frames para
+	enemy.hp = hp                         -- pontos de vida do inimigo
+	enemy.move = move                     -- função de movimento do inimigo
+	enemy.atk = attacks                   -- objetos Attack associados ao inimigo (caso possua)
+	enemy.atkFrame = atkFrames            -- frames para
 	-- atributos fixos na instanciação
-	enemy.selectedAtk = 1 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
-	enemy.state = IDLE -- define o estado atual do inimigo, estreitamente relacionado às animações
-	enemy.spriteSheets = {} -- no tipo imagem do love
-	enemy.animations = {} -- as chaves são estados e os valores são Animações
-	enemy.target = nil -- alvo atual do inimigo
-	enemy.isAttacking = false -- indica se o inimigo está atualmente atacando
+	enemy.selectedAtk = 1                 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
+	enemy.state = IDLE                    -- define o estado atual do inimigo, estreitamente relacionado às animações
+	enemy.spriteSheets = {}               -- no tipo imagem do love
+	enemy.animations = {}                 -- as chaves são estados e os valores são Animações
+	enemy.target = nil                    -- alvo atual do inimigo
+	enemy.isAttacking = false             -- indica se o inimigo está atualmente atacando
 	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
-	enemy.attackJustStarted = false -- indica se um novo ataque acabou de começar
-	enemy.defaultInvulnerableTime = 0.2 -- tempo padrão de invulnerabilidade após levar dano
-	enemy.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
+	enemy.attackJustStarted = false       -- indica se um novo ataque acabou de começar
+	enemy.defaultInvulnerableTime = 0.2   -- tempo padrão de invulnerabilidade após levar dano
+	enemy.hasShadow = true                -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	enemy.shadowWidth = 25
-	enemy.isReallyDead = false -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
-	enemy.leavesBody = true -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
+	enemy.isReallyDead = false            -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
+	enemy.leavesBody = true               -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
 
 	table.insert(room.enemies, enemy)
 	return enemy
@@ -191,6 +192,7 @@ function Enemy:die()
 	end
 
 	self.state = DYING
+	self.deathTimer = 0
 
 	collisionManager:unregister(self)
 	for _, atk in pairs(self.atk[self.selectedAtk].events) do
@@ -229,6 +231,8 @@ function Enemy:update(dt)
 	self:defineTarget()
 	if self.move and self.state ~= DYING and not self.isAttacking then
 		self:move(dt)
+	elseif self.state == DYING then
+		self.deathTimer = self.deathTimer + dt
 	end
 	self.atk[self.selectedAtk]:updateTimer(dt)
 	for _, atk in pairs(self.atk) do
@@ -319,22 +323,24 @@ function Enemy:draw(camera)
 	if self:isInvulnerable() and self.state ~= DYING then
 		love.graphics.setShader(whiteShader)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
-	end
-
-	if self.isReallyDead then
-		love.graphics.setColor(0.2, 0.2, 0.2, 1)
+	elseif self.state == DYING then
+		print("DEATH TIMER: " .. self.deathTimer)
+		deadBodyShader:send("death_timer", self.deathTimer)
+		love.graphics.setShader(deadBodyShader)
 	end
 
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	local p = (self.invulnerableTimer > 0 and self.state ~= DYING) and (self.defaultInvulnerableTime - self.invulnerableTimer)/self.defaultInvulnerableTime or 0
+	local p = (self.invulnerableTimer > 0 and self.state ~= DYING)
+		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+		or 0
 	local defaultScale = 3
-	local scaleX = defaultScale - 0.6 * math.sin(2*math.pi * p)
-	local scaleY = defaultScale + 0.6 * math.sin(2*math.pi * p)
+	local scaleX = defaultScale - 0.6 * math.sin(2 * math.pi * p)
+	local scaleY = defaultScale + 0.6 * math.sin(2 * math.pi * p)
 	local offset = {
 		x = animation.frameDim.width / 2,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height/2) * defaultScale) / scaleY,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 

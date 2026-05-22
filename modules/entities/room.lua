@@ -78,24 +78,24 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	local room = setmetatable({}, Room)
 
 	-- atributos que variam
-	room.arrPos = pos -- posição da sala na array de salas
-	room.dimensions = dimensions -- largura e altura da sala
-	room.hb = hitboxes -- hitbox da sala
-	room.limits = limits -- limites da sala nas coordenadas de mundo
+	room.arrPos = pos                                -- posição da sala na array de salas
+	room.dimensions = dimensions                     -- largura e altura da sala
+	room.hb = hitboxes                               -- hitbox da sala
+	room.limits = limits                             -- limites da sala nas coordenadas de mundo
 	room.pos = midpoint(room.limits.p1, room.limits.p2) -- centro da sala nas coordenadas de mundo
-	room.color = blueprint.color -- cor da sala
-	room.sprites = sprites -- os sprites da sala em camadas
+	room.color = blueprint.color                     -- cor da sala
+	room.sprites = sprites                           -- os sprites da sala em camadas
 	-- atributos fixos na instanciação
-	room.adjacentRooms = {} -- salas adjacentes
-	room.explored = false -- se algum jogador já entrou na sala ou não
-	room.destructibles = {} -- lista de objetos destrutíveis da sala
-	room.interactives = {} -- lista de objetos interativos na sala
-	room.doors = {} -- lista de portas da sala
-	room.drops = {} -- lista de itens dropados na sala
-	room.enemies = {} -- lista de inimigos na sala
-	room.npcs = {} -- lista de NPCs na sala
-	room.obstacles = {} -- lista de obstáculos na sala
-	room.playersInRoom = Set.new() -- lista de jogadores na sala
+	room.adjacentRooms = {}                          -- salas adjacentes
+	room.explored = false                            -- se algum jogador já entrou na sala ou não
+	room.destructibles = {}                          -- lista de objetos destrutíveis da sala
+	room.interactives = {}                           -- lista de objetos interativos na sala
+	room.doors = {}                                  -- lista de portas da sala
+	room.drops = {}                                  -- lista de itens dropados na sala
+	room.enemies = {}                                -- lista de inimigos na sala
+	room.npcs = {}                                   -- lista de NPCs na sala
+	room.obstacles = {}                              -- lista de obstáculos na sala
+	room.playersInRoom = Set.new()                   -- lista de jogadores na sala
 
 	room:addWallsAndDoors()
 
@@ -269,8 +269,8 @@ function getRoomAt(pos)
 	return nil
 end
 
----@param pos any
----@param dimensions any
+---@param pos Vec
+---@param dimensions Size
 ---@param roomType? RoomType
 -- cria uma nova sala no índice indicado por `pos` da
 -- lista global de salas (`rooms`)

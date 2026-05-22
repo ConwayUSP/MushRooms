@@ -3,6 +3,7 @@ positioningShader = love.graphics.newShader("shaders/positioning.glsl")
 rescaleShader = love.graphics.newShader("shaders/rescale.glsl")
 whiteShader = love.graphics.newShader("shaders/white.glsl")
 ditherShadowShader = love.graphics.newShader("shaders/dithershadow.glsl")
+deadBodyShader = love.graphics.newShader("shaders/deadbody.glsl")
 
 rescaleShader:send("new_res", { 20, 20 })
 
