@@ -324,7 +324,6 @@ function Enemy:draw(camera)
 		love.graphics.setShader(whiteShader)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
 	elseif self.state == DYING then
-		print("DEATH TIMER: " .. self.deathTimer)
 		deadBodyShader:send("death_timer", self.deathTimer)
 		love.graphics.setShader(deadBodyShader)
 	end
