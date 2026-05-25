@@ -71,6 +71,7 @@ function Weapon:update(dt)
 	end
 end
 
+---@return boolean
 -- tenta realizar um ataque, caso bem sucedido, atualiza o estado/animação da arma
 function Weapon:attack()
 	if self.atk.canAttack then
@@ -79,7 +80,9 @@ function Weapon:attack()
 		if self.animations[ATTACKING] then
 			self.animations[ATTACKING]:reset()
 		end
+		return true
 	end
+	return false
 end
 
 ---@param idleSettings AnimSettings
@@ -116,17 +119,19 @@ function Weapon:draw(camera)
 	local viewPos = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	
+
 	-- inverte arma no segundo e terceiro quadrantes
 	local flipY = (self.rotation / math.pi < -0.5 and self.rotation / math.pi >= -1.5) and -1 or 1
-	
-	local p = self.owner.invulnerableTimer > 0 and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer)/self.owner.defaultInvulnerableTime or 0
+
+	local p = self.owner.invulnerableTimer > 0
+			and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+		or 0
 	local defaultScale = 3
-	local scaleX = defaultScale - 0.8 * math.sin(2*math.pi * p)
-	local scaleY = defaultScale + 0.8 * math.sin(2*math.pi * p)
+	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
 	local offset = {
 		x = animation.frameDim.width / 2,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height/2) * defaultScale) / scaleY,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 
 	love.graphics.draw(

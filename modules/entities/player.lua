@@ -7,6 +7,7 @@ require("modules.engine.animation")
 require("modules.systems.collision")
 require("modules.entities.entity")
 require("modules.systems.inventory")
+require("modules.systems.inputbuffer")
 require("modules.utils.colors")
 require("modules.utils.constructors")
 require("modules.utils.shapes")
@@ -52,6 +53,7 @@ players = {}
 ---@field building any
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
+---@field inputBuffer InputBuffer
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -96,6 +98,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.defaultInvulnerableTime = 0.3
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
+	player.inputBuffer = InputBuffer.new(player)
 
 	collisionManager:register(player)
 	return player
@@ -151,6 +154,7 @@ function Player:update(dt)
 		end
 		w:update(dt)
 	end
+	self.inputBuffer:update(dt)
 	self:updateInvulnerability(dt)
 	self:updateBuildingMode(dt)
 	self:updateState()
@@ -315,9 +319,11 @@ function Player:endBuildingMode()
 end
 
 ---@param key string
--- verifica se o `Player` está pressionando a tecla de ação 1,
--- caso esteja em diálogo, avança o diálogo; caso contrário, chama a função de ataque dele
-function Player:checkAction1(key)
+---@param isBuffered boolean
+-- verifica se o `Player` está pressionando a tecla de ação 1, e então
+-- realiza a ação correta de acordo com o contexto
+function Player:checkAction1(key, isBuffered)
+	-- casos em que ignoramos o input
 	if key ~= self.controls.act1 or self.uiManager.activeScene then
 		return
 	end
@@ -327,13 +333,33 @@ function Player:checkAction1(key)
 		return
 	end
 
-	if self.inDialogue then
+	-- daqui pra frente APENAS ações que não podem ser feitas
+	-- quando defendendo
+	if self.state == DEFENDING then
+		return
+	end
+
+	-- imagino que não queremos que o buffer afete o diálogo
+	if self.inDialogue and not isBuffered then
 		DialogueManager:getDialogueByPlayer(self):advance()
 		return
 	end
 
+	-- controlará se iremos bufferizar o input atual ou não
+	local shouldBuffer = false
+
 	if self.weapon then
-		self.weapon:attack()
+		if not isBuffered then
+			shouldBuffer = not self.weapon:attack()
+		elseif isBuffered then
+			if self.weapon:attack() then
+				self.inputBuffer:pop(self.controls.act1)
+			end
+		end
+	end
+
+	if shouldBuffer then
+		self.inputBuffer:buffer(key)
 	end
 end
 
