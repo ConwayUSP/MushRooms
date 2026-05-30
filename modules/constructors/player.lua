@@ -1,11 +1,12 @@
----@return AnimSettings, AnimSettings, AnimSettings
+---@return AnimSettings, AnimSettings, AnimSettings, AnimSettings
 -- retorna as configurações das animações de `Player`
 function getPlayersAnimSettings()
 	local quadSize = { width = 32, height = 32 }
 	local idleAnimSettings = newAnimSetting(2, quadSize, 0.5, true, 1)
 	local defAnimSettings = newAnimSetting(15, quadSize, 0.05, true, 12)
 	local walkAnimSettings = newAnimSetting(4, quadSize, 0.18, true, 1)
-	return idleAnimSettings, defAnimSettings, walkAnimSettings
+	local dyingAnimSettings = newAnimSetting(2, quadSize, 0.1, false)
+	return idleAnimSettings, defAnimSettings, walkAnimSettings, dyingAnimSettings
 end
 
 -- inicializa o jogador 1 - Mush
