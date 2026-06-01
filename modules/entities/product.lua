@@ -18,11 +18,7 @@ require("modules.systems.shaders")
 ---@field state string
 ---@field hasShadow boolean
 ---@field shadowWidth number
----@field physics PhysicsSettings
----@field onInteract function?
----@field customUpdate function?
----@field customEnter function?
----@field customExit function?
+---@field makeInteractive function
 
 Product = setmetatable({}, { __index = Entity })
 Product.__index = Product
@@ -31,20 +27,14 @@ Product.type = RESOURCE
 ---@param prodType Type
 ---@param name string
 ---@param description string
----@param hitboxes Hitboxes
----@param physics? PhysicsSettings
----@param onInteract? function
----@param customUpdate? function
----@param customEnter? function
----@param customExit? function
+---@param makeInteractive function
 ---@diagnostic disable: inject-field
 -- cria uma nova instância de Product
-function Product.new(prodType, name, description, hitboxes, physics, onInteract, customUpdate, customEnter, customExit)
+function Product.new(prodType, name, description, makeInteractive)
 	---@type Product
 	local product
 	product = setmetatable({}, Product) ---@diagnostic disable-line
-	local productPhysics = physics or physicsSettings(math.huge)
-	Entity.init(product, name, vec(0, 0), hitboxes, nil, productPhysics)
+	Entity.init(product, name)
 
 	product.subtype = prodType -- se o recurso é BUILDING ou FOOD
 	product.actualized = prodType ~= BUILDING -- construções não começam reais (precisam ser posicionadas antes)
@@ -53,11 +43,7 @@ function Product.new(prodType, name, description, hitboxes, physics, onInteract,
 	product.animations = {}
 	product.spriteSheets = {}
 	product.hasShadow = true
-	product.physics = productPhysics
-	product.onInteract = onInteract or function() end
-	product.customUpdate = customUpdate
-	product.customEnter = customEnter
-	product.customExit = customExit
+	product.makeInteractive = makeInteractive
 
 	if prodType == BUILDING then
 		product.update = Interactive.update

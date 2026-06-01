@@ -249,24 +249,8 @@ function Room:toggleDoors()
 end
 
 function Room:addBuilding(building)
-	local interactive = Interactive.new(
-		building.name,
-		building.pos,
-		building.hb,
-		self,
-		building.physics,
-		building.onInteract,
-		building.customUpdate,
-		building.customEnter,
-		building.customExit
-	)
-
-	interactive.state = building.state
-	interactive.spriteSheets = building.spriteSheets
-	interactive.animations = building.animations
-	interactive.hasShadow = building.hasShadow
-	interactive.shadowWidth = building.shadowWidth
-
+	local interactive = building.makeInteractive(building.pos, self)
+	table.insert(self.interactives, interactive)
 	collisionManager:register(interactive)
 	return interactive
 end

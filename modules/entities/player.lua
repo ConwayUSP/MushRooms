@@ -173,7 +173,6 @@ function Player:update(dt)
 	self:updateBuildingMode(dt)
 	self:updateState()
 	self:updateParticles(dt)
-	self:updateFirecamp(dt)
 	self:resolveInteractive()
 end
 
@@ -298,17 +297,6 @@ function Player:updateBuildingPos()
 	end
 end
 
----@param dt number
--- cura o player lentamente enquanto ele estiver no fogo
-function Player:updateFirecamp(dt)
-	local cap = 40
-	if self.inFirecamp and self.state ~= DYING and self.hp < cap then
-		self.hp = math.min(self.hp + 4 * dt, 40)
-		print("curando no fogo, hp atual: " .. math.floor(self.hp))
-
-	end
-end
-
 -- começa o modo de construção/posicionamento de algum objeto
 function Player:startBuildingMode(building)
 	debugTable("building", building)
@@ -322,7 +310,7 @@ function Player:updateBuildingMode(dt)
 	if self.building then
 		self.building:update(dt)
 		self.buildingModeTimer = self.buildingModeTimer + dt
-		self:unequipWeapon()
+		-- self:unequipWeapon()
 	end
 end
 
@@ -576,6 +564,10 @@ function Player:chooseBestInteractive(list)
 	end
 
 	return best
+end
+
+function Player:heal(amount)
+	self.hp = math.min(self.hp + amount, 100)
 end
 
 function Player:takeDamage(damage)
