@@ -249,9 +249,10 @@ function Room:toggleDoors()
 end
 
 function Room:addBuilding(building)
-	table.insert(self.interactives, building)
-	building.room = self
-	collisionManager:register(building)
+	local interactive = building.makeInteractive(building.pos, self)
+	table.insert(self.interactives, interactive)
+	collisionManager:register(interactive)
+	return interactive
 end
 
 ----------------------------------------

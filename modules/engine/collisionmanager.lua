@@ -169,6 +169,8 @@ function CollisionManager:clearHitboxesByRoom(room)
 	for _, obs in pairs(room.obstacles) do
 		self:unregister(obs)
 	end
+
+
 end
 
 -- verifica se as listas de hitboxes precisam ser atualizadas
@@ -337,9 +339,9 @@ function CollisionManager:handleCollisions()
 			end
 		end
 
-		if not hitSomeInteractive and player.interactiveObj and player.interactiveObj.type == INTERACTIVE then
-			self:onPlayerInteractiveExit(player, player.interactiveObj)
-		end
+		-- if not hitSomeInteractive and player.interactiveObj and player.interactiveObj.type == INTERACTIVE then
+		-- 	self:onPlayerInteractiveExit(player, player.interactiveObj)
+		-- end
 	end
 
 	--------- PLAYER / INIMIGO ----------
@@ -499,12 +501,8 @@ end
 ---@param player Player
 -- trata a colisão entre um `enemy` e um `player`
 function CollisionManager:onEnemyPlayer(enemy, player)
-	if player.invulnerableTimer > 0 then
-		return
-	end
-
-	print(player.name .. " hit by enemy " .. enemy.name)
-	player:setInvulnerable()
+	-- dano de contato
+	player:takeDamage(10)
 end
 
 ---@param player Player
@@ -521,15 +519,12 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 	attack.targetsDamaged[player] = true
 	attack.piercesLeft = attack.piercesLeft - 1
 
-	if player.invulnerableTimer > 0 then
+	if not player:takeDamage(attack.dmg) then
 		return
 	end
 
-	print(player.name .. " hit by enemy " .. attack.attacker.name)
-
-	-- F = m.a, mas como nem todo ataque possui acaleração, vou usar a "velocidade" como base do impulso
+	-- F = m.a, mas como nem todo ataque possui aceleração, vou usar a "velocidade" como base do impulso
 	applyImpulse(player, scaleVec(attack.vel, attack.mass * 0.5))
-	player:setInvulnerable()
 	attack:onHit(player)
 end
 
@@ -558,13 +553,6 @@ end
 -- trata o início de colisão de um `player` com um objeto `interactive`
 function CollisionManager:onPlayerInteractive(player, inter)
 	player:considerInteractive(inter)
-end
-
----@param player Player
----@param inter Interactive
--- trata o fim de colisão entre um `player` e um objeto `interactive`
-function CollisionManager:onPlayerInteractiveExit(player, inter)
-	inter:onExit(player)
 end
 
 ---@param attackA AtkEvent

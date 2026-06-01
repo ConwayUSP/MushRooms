@@ -54,6 +54,7 @@ players = {}
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
 ---@field inputBuffer InputBuffer
+---@field inFirecamp boolean
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -99,6 +100,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
 	player.inputBuffer = InputBuffer.new(player)
+	player.inFirecamp = false
 
 	collisionManager:register(player)
 	return player
@@ -107,11 +109,15 @@ end
 ---@param idleSettings AnimSettings
 ---@param defSettings AnimSettings
 ---@param WalkSettings AnimSettings
+---@param dyingSettings AnimSettings
 -- adiciona animações à tabela do `Player`, associando-as aos seus estados respectivos
-function Player:addAnimations(idleSettings, defSettings, WalkSettings)
+function Player:addAnimations(idleSettings, defSettings, WalkSettings, dyingSettings)
 	----------------- IDLE -----------------
 	local path = pngPathFormat({ "assets", "animations", "players", self.name, IDLE })
 	addAnimation(self, path, IDLE, idleSettings)
+	----------------- DYING -----------------
+	path = pngPathFormat({ "assets", "animations", "players", self.name, DYING })
+	addAnimation(self, path, DYING, dyingSettings)
 	--------------- DEFENDING --------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, DEFENDING })
 	addAnimation(self, path, DEFENDING, defSettings)
@@ -145,6 +151,14 @@ end
 ---@param dt number
 -- move o `Player`, atualiza seu estado e o de suas animações e efeitos de partícula
 function Player:update(dt)
+	if self.state == DYING then
+		self:updateInvulnerability(dt)
+		self.animations[self.state]:update(dt)
+		self.candidateInteractives = {}
+		self.interactiveObj = nil
+		return
+	end
+
 	self:move(dt)
 	self.animations[self.state]:update(dt)
 	for _, w in pairs(self.weapons) do
@@ -165,7 +179,7 @@ end
 ---@param dt number
 -- movimenta o `Player` de acordo com o input do jogador
 function Player:move(dt)
-	if self.uiManager.activeScene then
+	if self.state == DYING or self.uiManager.activeScene then
 		return
 	end
 
@@ -296,6 +310,7 @@ function Player:updateBuildingMode(dt)
 	if self.building then
 		self.building:update(dt)
 		self.buildingModeTimer = self.buildingModeTimer + dt
+		-- self:unequipWeapon()
 	end
 end
 
@@ -324,7 +339,7 @@ end
 -- realiza a ação correta de acordo com o contexto
 function Player:checkAction1(key, isBuffered)
 	-- casos em que ignoramos o input
-	if key ~= self.controls.act1 or self.uiManager.activeScene then
+	if key ~= self.controls.act1 or self.uiManager.activeScene or self.state == DYING then
 		return
 	end
 
@@ -367,7 +382,7 @@ end
 -- verifica se o `Player` está pressionando a tecla de ação 2
 -- caso positivo, executa a ação correta dependendo do contexto
 function Player:checkAction2(key)
-	if key ~= self.controls.act2 or self.uiManager.activeScene then
+	if key ~= self.controls.act2 or self.uiManager.activeScene or self.state == DYING then
 		return
 	end
 	if self.building then
@@ -400,6 +415,10 @@ end
 ---@param key string
 -- verifica se o `Player` está pressionando a combinação de teclas para abrir o inventário
 function Player:checkSpecialActions(key)
+	if self.state == DYING then
+		return
+	end
+
 	if key == "i" and love.keyboard.isDown(self.controls.act1) then
 		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
 	end
@@ -444,6 +463,10 @@ function Player:hasWeapon(weaponName)
 		end
 	end
 	return false
+end
+
+function Player:unequipWeapon()
+	self.weapon = nil
 end
 
 ---@return boolean
@@ -543,6 +566,39 @@ function Player:chooseBestInteractive(list)
 	return best
 end
 
+function Player:heal(amount)
+	self.hp = math.min(self.hp + amount, 100)
+end
+
+function Player:takeDamage(damage)
+	if self.state == DYING or self:isInvulnerable() then
+		return false
+	end
+
+	self:setInvulnerable()
+	self.hp = math.max(self.hp - damage, 0)
+	
+	print(self.name .. " took " .. damage .. " damage" .. "(hp: " .. self.hp .. ")")
+
+	if self.hp <= 0 then
+		self:die()
+	end
+	return true
+end
+
+function Player:die()
+	if self.state == DYING then
+		return
+	end
+
+	print(self.name .. " died")
+
+	self.state = DYING
+	self:unequipWeapon()
+	stopMovement(self)
+	
+end
+
 ---@param camera Camera
 -- renderiza o `Player` na perspectiva da `camera`
 function Player:draw(camera)
@@ -556,7 +612,11 @@ function Player:draw(camera)
 	if self:isInvulnerable() then
 		love.graphics.setShader(whiteShader)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
+	elseif self.inFirecamp then
+		-- TODO: implementar shader legal enquanto estiver healando
 	end
+
+	-- TODO: usar algum tipo de "vinheta" na tela para indicar que o player está com pouca vida (igual no Deadly Encounter)
 
 	-- desenhando o player em si
 	local viewPos = camera:viewPos(self.pos)
@@ -576,7 +636,7 @@ function Player:draw(camera)
 
 	-- desenhando o efeito de partículas da defesa em cima do player
 	love.graphics.draw(self.particles[DEFENDING], particles_offset.x, particles_offset.y)
-	if self:isInvulnerable() then
+	if self:isInvulnerable() or self.inFirecamp then
 		love.graphics.setShader()
 	end
 end

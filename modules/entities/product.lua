@@ -8,7 +8,7 @@ require("modules.systems.shaders")
 -- Classe Product
 ----------------------------------------
 
----@class Product
+---@class Product : Entity
 ---@field name string
 ---@field subtype Type
 ---@field description string
@@ -18,6 +18,7 @@ require("modules.systems.shaders")
 ---@field state string
 ---@field hasShadow boolean
 ---@field shadowWidth number
+---@field makeInteractive function
 
 Product = setmetatable({}, { __index = Entity })
 Product.__index = Product
@@ -26,11 +27,14 @@ Product.type = RESOURCE
 ---@param prodType Type
 ---@param name string
 ---@param description string
+---@param makeInteractive function
+---@diagnostic disable: inject-field
 -- cria uma nova instância de Product
-function Product.new(prodType, name, description, hitboxes)
+function Product.new(prodType, name, description, makeInteractive)
 	---@type Product
-	local product = setmetatable({}, Product) ---@diagnostic disable-line
-	Entity.init(product, name, vec(0, 0), hitboxes, nil, physicsSettings(math.huge))
+	local product
+	product = setmetatable({}, Product) ---@diagnostic disable-line
+	Entity.init(product, name)
 
 	product.subtype = prodType -- se o recurso é BUILDING ou FOOD
 	product.actualized = prodType ~= BUILDING -- construções não começam reais (precisam ser posicionadas antes)
@@ -39,6 +43,7 @@ function Product.new(prodType, name, description, hitboxes)
 	product.animations = {}
 	product.spriteSheets = {}
 	product.hasShadow = true
+	product.makeInteractive = makeInteractive
 
 	if prodType == BUILDING then
 		product.update = Interactive.update
@@ -46,6 +51,7 @@ function Product.new(prodType, name, description, hitboxes)
 
 	return product
 end
+---@diagnostic enable: inject-field
 
 function Product:draw(camera)
 	if not self.actualized then

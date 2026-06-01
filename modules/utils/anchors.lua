@@ -69,6 +69,10 @@ ANCHORS = {
 	-- Produtos
 	chest = floorAnchor(10),
 	firecamp = floorAnchor(10),
+
+	-- Attacks
+	nuclear_shot = floorAnchor(4),
+	pebble_shot = floorAnchor(4),
 }
 
 ----------------------------------------
