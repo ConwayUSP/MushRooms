@@ -94,11 +94,12 @@ Attack.type = ATTACK
 ---@param updateFunc function
 ---@param onHit function
 ---@param trajectoryFunc? MovementFunc
+---@param attackFunc? function
 ---@return Attack
 -- `Attacks` agem como emissores de `AttackEvents`;
 -- eles armazenam as configurações, dados iniciais
 -- de um ataque e informações de controle (como o cooldown)
-function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFunc)
+function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFunc, attackFunc)
 	local attack = setmetatable({}, Attack)
 	attack.name = name                          -- nome do tipo de ataque
 	attack.subtype = atkSettings.subtype        -- indica se o ataque é melee, ranged ou outro tipo
@@ -119,9 +120,14 @@ function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFunc)
 	attack.updateEvent = updateFunc             -- função executada para cada AttackEvent, atualizando seu estado atual
 	attack.onHit = onHit                        -- função executada toda vez que um ataque acertar um alvo
 	attack.trajectoryFunc = trajectoryFunc      -- função que define a trajetória do ataque/projétil
+	attack.attackFunc = attackFunc              -- função que define a criação dos AttackEvents (padrão circular, em cone, etc.)
 	-- Atributos fixos na instanciação
 	attack.events = {}
 	return attack
+end
+
+function Attack:addAttackFunc(attackFunc)
+	self.attackFunc = attackFunc
 end
 
 ---@param intactSettings AnimSettings
@@ -141,11 +147,19 @@ function Attack:attack(attacker, origin, direction)
 	self.timer = self.cooldown()
 	self.canAttack = false
 
-	local atkEvent = AttackEvent.new(self, attacker, origin, direction)
-	if self.animIntactSettings and self.animBreakingSettings then
-		atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
+	local attacks = {}
+	if self.attackFunc then
+		attacks = self.attackFunc(self, attacker, origin, direction)
+	else
+		table.insert(attacks, AttackEvent.new(self, attacker, origin, direction))
 	end
-	table.insert(self.events, atkEvent)
+	
+	for _, atkEvent in ipairs(attacks) do
+		if self.animIntactSettings and self.animBreakingSettings then
+			atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
+		end
+		table.insert(self.events, atkEvent)
+	end
 end
 
 ---@param dt number

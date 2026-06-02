@@ -46,6 +46,12 @@ function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 	return attack
 end
 
+---@param ally boolean
+---@param cooldown function
+---@param speed number
+---@param trajectoryFunc? MovementFunc
+---@return Attack
+-- um tiro nuclear
 function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
@@ -68,6 +74,11 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 	return attack
 end
 
+---@param ally boolean
+---@param duration number
+---@param cooldown function
+---@return Attack
+-- um ataque rotatório corpo-a-corpo (sem animação)
 function newRotatoryAttack(ally, duration, cooldown)
 	local hb = hitbox(Circle.new(40), vec(0, -20))
 	local hbs = hitboxes({ hb })
@@ -84,4 +95,81 @@ function newRotatoryAttack(ally, duration, cooldown)
 	attack.hasShadow = false
 
 	return attack
+end
+
+
+---@param min integer
+---@param max integer
+---@param ang? rad
+---@return function
+-- função que gera múltiplos `AttackEvents` em um padrão circular, com `min` e `max` controlando a quantidade de eventos gerados
+function defaultCircularAttackFunc(min, max, ang)
+	return function(atk, attacker, origin, direction)
+		local atks = {}
+		for i = min, max do
+			local dirIncrement = ang and (ang/(max - min) * i) or math.rad(360/(max - min)) * i
+			local newDirection = direction + dirIncrement
+
+			local atkEvent = AttackEvent.new(atk, attacker, origin, newDirection)
+			table.insert(atks, atkEvent)
+		end
+
+		return atks
+	end
+end
+
+---@param ally boolean
+---@param cooldown function
+---@param speed number
+---@param trajectoryFunc MovementFunc
+---@return Attack
+-- um tiro de pedrinha em círculo
+function newPebbleCircularAttack(ally, duration, cooldown, speed, trajectoryFunc)
+	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+	local attackFunc = defaultCircularAttackFunc(1, 8)
+	pebble:addAttackFunc(attackFunc)
+
+	return pebble
+end
+
+---@param ally boolean
+---@param cooldown function
+---@param speed number
+---@param trajectoryFunc MovementFunc
+---@return Attack
+-- um tiro de pedrinha em cone
+function newPebbleConeAttack(ally, duration, cooldown, speed, trajectoryFunc)
+	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+	local attackFunc = defaultCircularAttackFunc(-1, 1, math.rad(30))
+	pebble:addAttackFunc(attackFunc)
+
+	return pebble
+end
+
+---@param ally boolean
+---@param duration number
+---@param cooldown function
+---@param speed number
+---@param trajectoryFunc MovementFunc
+---@return Attack
+-- tiro de pedrinha que alterna entre circular e cone
+function newPebbleCircularConeAttack(ally, duration, cooldown, speed, trajectoryFunc)
+	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+	local useCircular = true
+
+	local attackFunc = function(atk, attacker, origin, direction)
+		local nextAttackFunc
+		if useCircular then
+			nextAttackFunc = defaultCircularAttackFunc(1, 30)
+		else
+			nextAttackFunc = defaultCircularAttackFunc(-1, 1, math.rad(30))
+		end
+
+		useCircular = not useCircular
+		return nextAttackFunc(atk, attacker, origin, direction)
+	end
+
+	pebble:addAttackFunc(attackFunc)
+
+	return pebble
 end
