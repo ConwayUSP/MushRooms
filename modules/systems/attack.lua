@@ -350,13 +350,14 @@ function AttackEvent:draw(camera)
 	local quad = animation.frames[animation.currFrame]
 	local flipY = (self.direction / math.pi < -0.5 and self.direction / math.pi >= -1.5 and not self.animDir) and -1
 		or 1
+	local velDir = self.subtype == RANGED_ATTACK and math.atan2(self.vel.y, self.vel.x) or self.direction
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
 		viewPos.x,
 		viewPos.y,
-		self.direction + self.animDir, -- corrigindo a rotação para que o sprite olhe para a direção do ataque
+		velDir + self.animDir, -- corrigindo a rotação para que o sprite olhe para a direção do ataque
 		3,
 		3 * flipY,
 		animation.frameDim.width / 2,
