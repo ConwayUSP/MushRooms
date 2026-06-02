@@ -142,7 +142,9 @@ function Attack:attack(attacker, origin, direction)
 	self.canAttack = false
 
 	local atkEvent = AttackEvent.new(self, attacker, origin, direction)
-	atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
+	if self.animIntactSettings and self.animBreakingSettings then
+		atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
+	end
 	table.insert(self.events, atkEvent)
 end
 
@@ -155,7 +157,9 @@ function Attack:update(dt)
 		self.updateEvent(e, dt)
 
 		if self.subtype == MELEE_ATTACK then
-			e.animations[INTACT]:update(dt)
+			if e.animations[INTACT] then
+				e.animations[INTACT]:update(dt)
+			end
 
 			if e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1 then
 				e.active = false
@@ -169,13 +173,15 @@ function Attack:update(dt)
 				collisionManager:unregister(e)
 			else
 				if e.state == BREAKING then
-					if e.breakingFinished then
+					if not e.animations[BREAKING] or e.breakingFinished then
 						table.remove(self.events, i)
 					else
 						e.animations[BREAKING]:update(dt)
 					end
 				else
-					e.animations[e.state]:update(dt)
+					if e.animations[e.state] then
+						e.animations[e.state]:update(dt)
+					end
 					applyPhysics(e, dt)
 				end
 			end
@@ -335,18 +341,23 @@ end
 ---@param camera Camera
 -- desenha o evento de ataque no canvas atual segundo a perpectiva da `camera`
 function AttackEvent:draw(camera)
+	if not self.animations[self.state] then
+		return
+	end
+
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local flipY = (self.direction / math.pi < -0.5 and self.direction / math.pi >= -1.5 and not self.animDir) and -1
 		or 1
+	local velDir = self.subtype == RANGED_ATTACK and math.atan2(self.vel.y, self.vel.x) or self.direction
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
 		viewPos.x,
 		viewPos.y,
-		self.direction + self.animDir, -- corrigindo a rotação para que o sprite olhe para a direção do ataque
+		velDir + self.animDir, -- corrigindo a rotação para que o sprite olhe para a direção do ataque
 		3,
 		3 * flipY,
 		animation.frameDim.width / 2,

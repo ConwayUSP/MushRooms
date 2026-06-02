@@ -316,6 +316,28 @@ function CollisionManager:handleCollisions()
 		end
 	end
 
+	------------- ATAQUE / INTERATIVO --------------
+	for attack, attackhb in pairs(registry[PLAYER_ATTACK]) do
+		for inter, interhb in pairs(registry[INTERACTIVE]) do
+			local hit = checkColision(attackhb.default, attack, interhb.default, inter)
+
+			if hit then
+				self:onAttackObstacle(attack, inter)
+			end
+		end
+	end
+
+	------------- ATAQUE / INTERATIVO --------------
+	for attack, attackhb in pairs(registry[ENEMY_ATTACK]) do
+		for inter, interhb in pairs(registry[INTERACTIVE]) do
+			local hit = checkColision(attackhb.default, attack, interhb.default, inter)
+
+			if hit then
+				self:onAttackObstacle(attack, inter)
+			end
+		end
+	end
+
 	------- PLAYER / DESTRUTIVEL --------
 	for destr, destrhb in pairs(registry[DESTRUCTIBLE]) do
 		for player, playerhb in pairs(registry[PLAYER]) do
@@ -579,5 +601,6 @@ end
 ---@param obstacle Obstacle
 -- trata a colisão entre um ataque e um obstáculo
 function CollisionManager:onAttackObstacle(attack, obstacle)
+	print("Ataque colidiu com um obstáculo!")
 	attack:reduceBounces()
 end

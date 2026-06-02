@@ -19,16 +19,16 @@ require("modules.systems.movement")
 function straightMovement()
 	return function(entity, dt)
 		local desiredVel = polarToVec(entity.direction or 0, entity.speed)
-		applySteering(entity, desiredVel)
+		applySteering(entity, desiredVel, 20)
 	end
 end
 
 ---@param period? number
 ---@param ampDeg? rad
 ---@return MovementFunc
-function zigZagMovement(period, ampDeg)
-	local period = period or 1
-	local ampDeg = ampDeg or math.rad(45)
+function zigZagMovement(ampDeg, period)
+	period = period or 1
+	ampDeg = ampDeg or math.rad(45)
 	local time = 0
 
 	return function(entity, dt)
@@ -38,14 +38,14 @@ function zigZagMovement(period, ampDeg)
 		local desiredVel = polarToVec(targetAngle, entity.speed)
 		-- aplicando um steering pesado para forçar uma mudança abrupta de
 		-- direção, quase que ignorando a inércia
-		applySteering(entity, desiredVel)
+		applySteering(entity, desiredVel, 20)
 	end
 end
 
 ---@param ampDeg? rad
 ---@return MovementFunc
 function sineMovement(ampDeg, frequency)
-	local ampDeg = ampDeg or math.rad(60)
+	ampDeg = ampDeg or math.rad(60)
 	local freq = frequency or 5
 	local time = 0
 
@@ -61,14 +61,14 @@ end
 ---@param safeDistance number
 ---@param duration number
 ---@param baseCooldown number
----@param angleVariance? rad
+---@param angleVar? rad
 ---@param easingFunc? easingFunc
 ---@return MovementFunc
-function avoidTargetMovement(safeDistance, duration, baseCooldown, angleVariance, easingFunc)
-	local angleVar = angleVariance or 0
-	local timer = 0
-	local duration = duration
+function avoidTargetMovement(safeDistance, duration, baseCooldown, angleVar, easingFunc)
+	duration = duration
+	angleVar = angleVar or 0
 	local cooldown = baseCooldown
+	local timer = 0
 	local escapeDir = nil
 
 	return function(entity, dt)
@@ -146,5 +146,34 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 				cooldown = baseCooldown + math.random()
 			end
 		end
+	end
+end
+
+function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
+	local changeInterval = 0.25
+	local time = 0
+	local cooldown = baseCooldown
+	local randomAngle = math.random() * 2 * math.pi
+	easingFunc = easingFunc or function(t)
+		return t
+	end
+
+	return function(entity, dt)
+		if cooldown > 0 then
+			cooldown = cooldown - dt
+			return
+		end
+
+		time = time + dt
+		local t = math.min(time / duration, 1)
+		local intensity = easingFunc(1 - t)
+
+		if time >= changeInterval then
+			time = time - changeInterval
+			randomAngle = math.random() * 2 * math.pi
+		end
+
+		local desiredVel = polarToVec(randomAngle, entity.speed * bonusSpeed * intensity)
+		applySteering(entity, desiredVel, 10)
 	end
 end

@@ -152,15 +152,19 @@ end
 -- move o `Player`, atualiza seu estado e o de suas animações e efeitos de partícula
 function Player:update(dt)
 	if self.state == DYING then
-		self:updateInvulnerability(dt)
-		self.animations[self.state]:update(dt)
 		self.candidateInteractives = {}
 		self.interactiveObj = nil
-		return
+	else
+		self:move(dt)
+		self.inputBuffer:update(dt)
+		self:updateBuildingMode(dt)
+		self:updateState()
+		self:resolveInteractive()
 	end
-
-	self:move(dt)
+	
 	self.animations[self.state]:update(dt)
+	self:updateParticles(dt)
+	self:updateInvulnerability(dt)
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
 		if w == self.weapon then
@@ -168,12 +172,6 @@ function Player:update(dt)
 		end
 		w:update(dt)
 	end
-	self.inputBuffer:update(dt)
-	self:updateInvulnerability(dt)
-	self:updateBuildingMode(dt)
-	self:updateState()
-	self:updateParticles(dt)
-	self:resolveInteractive()
 end
 
 ---@param dt number

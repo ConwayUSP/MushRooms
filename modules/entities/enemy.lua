@@ -29,6 +29,7 @@ require("table")
 ---@field setProjectileAtk function
 ---@field isReallyDead boolean
 ---@field leavesBody boolean
+---@field movements? table<string, MovementFunc>
 
 Enemy = setmetatable({}, { __index = Entity })
 Enemy.__index = Enemy
@@ -43,9 +44,10 @@ Enemy.type = ENEMY
 ---@param hitboxes Hitboxes
 ---@param room Room
 ---@param atkFrames number[]
+---@param movements? table<string, MovementFunc>
 ---@return Enemy
 -- cria uma instância de `Enemy`
-function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, atkFrames)
+function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, atkFrames, movements)
 	---@type Enemy
 	local enemy = setmetatable({}, Enemy) ---@diagnostic disable-line
 	enemy:init(name, spawnPos, hitboxes, room, physics)
@@ -67,8 +69,9 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy.defaultInvulnerableTime = 0.2   -- tempo padrão de invulnerabilidade após levar dano
 	enemy.hasShadow = true                -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	enemy.shadowWidth = 25
-	enemy.isReallyDead = false            -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
-	enemy.leavesBody = true               -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
+	enemy.isReallyDead = false -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
+	enemy.leavesBody = true -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
+	enemy.movements = movements or {} -- tabela de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
 
 	table.insert(room.enemies, enemy)
 	return enemy
@@ -130,12 +133,8 @@ function Enemy:initAttackAnim(anim)
 		self.isAttacking = false
 		self.selectedAtk = math.random(#self.atk)
 		self.hasTriggeredAttackThisAnim = false
+		-- stopMovement(self)
 	end
-end
-
--- verifica se um estado é de ataque
-function Enemy:isAttackState(state)
-	return state == ATTACKING_UP or state == ATTACKING_DOWN or state == ATTACKING_LEFT or state == ATTACKING_RIGHT
 end
 
 -- reseta todas as animações de ataque para o primeiro frame
@@ -148,6 +147,11 @@ function Enemy:resetAttackAnimations()
 			anim.timer = 0
 		end
 	end
+end
+
+-- verifica se um estado é de ataque
+function Enemy:isAttackState(state)
+	return state == ATTACKING_UP or state == ATTACKING_DOWN or state == ATTACKING_LEFT or state == ATTACKING_RIGHT
 end
 
 -- sincroniza o frame atual entre todas as animações de ataque
@@ -201,39 +205,22 @@ function Enemy:die()
 	end
 end
 
-function Enemy:attack()
-	-- as condições para tentar um ataque não são cumpridas
-	if not self.target or not self.target.pos or not self.atk[self.selectedAtk] then
-		return
-	end
-	if self.atk[self.selectedAtk].canAttack and not self.isAttacking then
-		self.isAttacking = true
-		self.hasTriggeredAttackThisAnim = false
-		self.attackJustStarted = true
-	end
-end
-
-function Enemy:updateAttack()
-	if self.isAttacking then
-		local anim = self.animations[self.state]
-
-		if anim.currFrame >= self.atkFrame[self.selectedAtk] and not self.hasTriggeredAttackThisAnim then
-			local dir = math.atan2(self.target.pos.y - self.pos.y, self.target.pos.x - self.pos.x)
-			self.atk[self.selectedAtk]:attack(self, self.pos, dir)
-			self.hasTriggeredAttackThisAnim = true
+function Enemy:updateMotion(dt)
+	if self.state ~= DYING then
+		if self.isAttacking then
+			local movementFunc = self.movements[self.atk[self.selectedAtk].name]
+			if movementFunc then
+				movementFunc(self, dt)
+			end
+		else
+			self.move(self, dt)
 		end
-	end
-end
-
----@param dt number
--- atualiza os estados do inimigo e seus ataques, além de movê-lo
-function Enemy:update(dt)
-	self:defineTarget()
-	if self.move and self.state ~= DYING and not self.isAttacking then
-		self:move(dt)
-	elseif self.state == DYING then
+	else
 		self.deathTimer = self.deathTimer + dt
 	end
+end
+
+function Enemy:updateAttackState(dt)
 	self.atk[self.selectedAtk]:updateTimer(dt)
 	for _, atk in pairs(self.atk) do
 		atk:update(dt)
@@ -251,7 +238,41 @@ function Enemy:update(dt)
 	if self.isAttacking then
 		self:synchronizeAttackAnimations()
 	end
+end
+
+function Enemy:attack()
+	-- as condições para tentar um ataque não são cumpridas
+	if not self.target or not self.target.pos or not self.atk[self.selectedAtk] then
+		return
+	end
+	if self.atk[self.selectedAtk].canAttack and not self.isAttacking then
+		self.isAttacking = true
+		self.attackTimer = 0
+		self.hasTriggeredAttackThisAnim = false
+		self.attackJustStarted = true
+	end
+end
+
+
+---@param dt number
+-- atualiza os estados do inimigo e seus ataques, além de movê-lo
+function Enemy:update(dt)
+	self:defineTarget()
+	self:updateMotion(dt)
+	self:updateAttackState(dt)
 	applyPhysics(self, dt)
+end
+
+function Enemy:updateAttack()
+	if self.isAttacking then
+		local anim = self.animations[self.state]
+
+		if anim.currFrame >= self.atkFrame[self.selectedAtk] and not self.hasTriggeredAttackThisAnim then
+			local dir = math.atan2(self.target.pos.y - self.pos.y, self.target.pos.x - self.pos.x)
+			self.atk[self.selectedAtk]:attack(self, self.pos, dir)
+			self.hasTriggeredAttackThisAnim = true
+		end
+	end
 end
 
 ----------------------------------------
