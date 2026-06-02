@@ -1,13 +1,17 @@
 extern vec2 shadow_center;
 extern vec2 shadow_radii;
 extern float time;
+extern float zoom;
+extern vec2 viewport_size;
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-    vec2 offset = screen_coords - shadow_center;
+    vec2 viewport_center = viewport_size * 0.5;
+    vec2 unzoomed_coords = (screen_coords - viewport_center) / max(zoom, 0.0001) + viewport_center;
+    vec2 offset = unzoomed_coords - shadow_center;
     vec2 dither_coords = floor(offset / 3); // faz os "pixels" de dithering entrarem na escala do jogo
     vec2 dither_offset = (dither_coords + 0.5) * 3;
     vec2 normalized_pos = dither_offset / shadow_radii;

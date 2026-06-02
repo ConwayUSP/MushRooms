@@ -201,6 +201,8 @@ function renderEntities(camera)
 					ditherShadowShader:send("shadow_center", { viewPos.x, viewPos.y })
 					ditherShadowShader:send("shadow_radii", { rx, ry })
 					ditherShadowShader:send("time", love.timer.getTime())
+					ditherShadowShader:send("zoom", camera.zoom)
+					ditherShadowShader:send("viewport_size", { camera.viewport.width, camera.viewport.height })
 
 					love.graphics.circle("fill", viewPos.x, viewPos.y, rx)
 
