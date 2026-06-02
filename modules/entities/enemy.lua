@@ -53,21 +53,21 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy:init(name, spawnPos, hitboxes, room, physics)
 
 	-- atributos que variam
-	enemy.hp = hp -- pontos de vida do inimigo
-	enemy.move = move -- função de movimento do inimigo
-	enemy.atk = attacks -- objetos Attack associados ao inimigo (caso possua)
-	enemy.atkFrame = atkFrames -- frames para
+	enemy.hp = hp                         -- pontos de vida do inimigo
+	enemy.move = move                     -- função de movimento do inimigo
+	enemy.atk = attacks                   -- objetos Attack associados ao inimigo (caso possua)
+	enemy.atkFrame = atkFrames            -- frames para
 	-- atributos fixos na instanciação
-	enemy.selectedAtk = 1 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
-	enemy.state = IDLE -- define o estado atual do inimigo, estreitamente relacionado às animações
-	enemy.spriteSheets = {} -- no tipo imagem do love
-	enemy.animations = {} -- as chaves são estados e os valores são Animações
-	enemy.target = nil -- alvo atual do inimigo
-	enemy.isAttacking = false -- indica se o inimigo está atualmente atacando
+	enemy.selectedAtk = 1                 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
+	enemy.state = IDLE                    -- define o estado atual do inimigo, estreitamente relacionado às animações
+	enemy.spriteSheets = {}               -- no tipo imagem do love
+	enemy.animations = {}                 -- as chaves são estados e os valores são Animações
+	enemy.target = nil                    -- alvo atual do inimigo
+	enemy.isAttacking = false             -- indica se o inimigo está atualmente atacando
 	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
-	enemy.attackJustStarted = false -- indica se um novo ataque acabou de começar
-	enemy.defaultInvulnerableTime = 0.2 -- tempo padrão de invulnerabilidade após levar dano
-	enemy.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
+	enemy.attackJustStarted = false       -- indica se um novo ataque acabou de começar
+	enemy.defaultInvulnerableTime = 0.2   -- tempo padrão de invulnerabilidade após levar dano
+	enemy.hasShadow = true                -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	enemy.shadowWidth = 25
 	enemy.isReallyDead = false -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
 	enemy.leavesBody = true -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
@@ -353,7 +353,7 @@ function Enemy:draw(camera)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local p = (self.invulnerableTimer > 0 and self.state ~= DYING)
-			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.6 * math.sin(2 * math.pi * p)
