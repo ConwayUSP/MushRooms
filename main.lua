@@ -33,7 +33,7 @@ appleCake.beginSession()
 
 debugMode = false
 inventoryOpen = false
-window = { scale = 1, offset = vec(0, 0) }
+window = { scale = 1, initialW = 1280, initialH = 720 }
 gameCtx = MENU_CTX
 local updateProfile
 local drawProfile
@@ -100,19 +100,13 @@ function love.keyreleased(key, scancode)
 end
 
 function love.resize(w, h)
-	local sx = w / window.width
-	local sy = h / window.height
+	local sx = w / window.initialW
+	local sy = h / window.initialH
 	window.scale = math.max(sx, sy)
-	local offsetX = (w - window.width * window.scale) / 2
-	local offsetY = (h - window.height * window.scale) / 2
-	window.offset = vec(offsetX, offsetY)
+	window.width = w / window.scale
+	window.height = h / window.scale
 
-	for i, _ in pairs(cameras) do
-		cameras[i] = nil
-	end
-	for _, p in pairs(players) do
-		newCamera(p)
-	end
+	newCameras() -- o tamanho das câmeras precisa mudar
 end
 
 ----------------------------------------

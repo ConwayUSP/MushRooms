@@ -76,25 +76,25 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
 
 	-- atributos que variam
-	player.id = #players + 1 -- número do jogador
-	player.hp = 100 -- pontos de vida
-	player.controls = controls -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
-	player.colors = colors -- paleta de cores do jogador
+	player.id = #players + 1                     -- número do jogador
+	player.hp = 100                              -- pontos de vida
+	player.controls = controls                   -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.colors = colors                       -- paleta de cores do jogador
 	-- atributos fixos na instanciação
-	player.movementVec = { x = 0, y = 0 } -- vetor de direção e magnitude do movimento do jogador
-	player.state = IDLE -- define o estado atual do jogador, estreitamente relacionado às animações
-	player.spriteSheets = {} -- no tipo imagem do love
-	player.animations = {} -- as chaves são estados e os valores são Animações
-	player.particles = {} -- efeitos de partícula emitidos pelo player
-	player.weapons = {} -- lista das armas que o jogador possui
-	player.weapon = nil -- arma equipada
-	player.inDialogue = false -- se o player está em diálogo
-	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
-	player.inventory = Inventory.new(player) -- inventário do jogador
-	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
+	player.movementVec = { x = 0, y = 0 }        -- vetor de direção e magnitude do movimento do jogador
+	player.state = IDLE                          -- define o estado atual do jogador, estreitamente relacionado às animações
+	player.spriteSheets = {}                     -- no tipo imagem do love
+	player.animations = {}                       -- as chaves são estados e os valores são Animações
+	player.particles = {}                        -- efeitos de partícula emitidos pelo player
+	player.weapons = {}                          -- lista das armas que o jogador possui
+	player.weapon = nil                          -- arma equipada
+	player.inDialogue = false                    -- se o player está em diálogo
+	player.interactiveObj = nil                  -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
+	player.inventory = Inventory.new(player)     -- inventário do jogador
+	player.candidateInteractives = {}            -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
-	player.building = nil -- construção que o player está posicionando para construir
+	player.building = nil                        -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
 	player.defaultInvulnerableTime = 0.3
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
@@ -577,7 +577,7 @@ function Player:takeDamage(damage)
 
 	self:setInvulnerable()
 	self.hp = math.max(self.hp - damage, 0)
-	
+
 	print(self.name .. " took " .. damage .. " damage" .. "(hp: " .. self.hp .. ")")
 
 	if self.hp <= 0 then
@@ -596,7 +596,6 @@ function Player:die()
 	self.state = DYING
 	self:unequipWeapon()
 	stopMovement(self)
-	
 end
 
 ---@param camera Camera
@@ -623,7 +622,7 @@ function Player:draw(camera)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local p = self.invulnerableTimer > 0
-			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
@@ -654,7 +653,7 @@ function newPlayer()
 		return false
 	end
 	CONSTRUCTORS[PLAYER][#players + 1]()
-	newCamera(players[#players])
+	newCameras() -- cria novas câmeras para cada player
 
 	return true
 end

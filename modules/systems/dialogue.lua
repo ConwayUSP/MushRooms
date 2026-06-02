@@ -9,7 +9,7 @@ require("table")
 -- Variáveis
 ----------------------------------------
 
-local DIALOGUE_ZOOM = 1
+local DIALOGUE_ZOOM = 0.4
 
 ----------------------------------------
 -- Classe Diálogo
@@ -55,7 +55,7 @@ function Dialogue:start()
 	local playerCamera = getCameraByPlayer(self.listener)
 	if playerCamera then
 		playerCamera:changeTarget(self.speaker)
-		playerCamera.targetZoom = DIALOGUE_ZOOM
+		playerCamera.targetZoom = playerCamera.startingZoom + DIALOGUE_ZOOM
 	end
 
 	-- diálogo introdutório
@@ -105,7 +105,7 @@ function Dialogue:endDialogue()
 	local playerCamera = getCameraByPlayer(self.listener)
 	if playerCamera then
 		playerCamera:changeTarget(self.listener)
-		playerCamera.targetZoom = 1
+		playerCamera.targetZoom = playerCamera.startingZoom
 	end
 
 	self.listener.inDialogue = false

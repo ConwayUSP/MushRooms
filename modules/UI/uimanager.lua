@@ -97,7 +97,7 @@ end
 function UIManager:toggleScene(sceneType)
 	local newState = not self.scenes[sceneType].active
 	self.scenes[sceneType].active = newState
-	
+
 	if newState then
 		self.activeScene = sceneType
 	else
@@ -142,7 +142,6 @@ function UIManager:draw(camera)
 	else
 		love.graphics.setCanvas()
 		love.graphics.push()
-		love.graphics.translate(window.offset.x, window.offset.y)
 		love.graphics.scale(window.scale)
 
 		love.graphics.draw(self.canvas, self.canvasPos.x, self.canvasPos.y)
