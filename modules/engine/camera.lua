@@ -65,7 +65,7 @@ function Camera.new(pos, viewport, canvas, canvasPos, player)
 	camera.shakeTimer = 0                    -- tempo restante do shake
 	-- atributos de zoom
 	camera.startingZoom = camera:calculateZoom()
-	camera.zoom = 1                      -- zoom atual
+	camera.zoom = camera.startingZoom + 0.1
 	camera.targetZoom = camera.startingZoom -- zoom desejado
 	camera.zoomSpeed = 3                 -- velocidade da transição
 	-- atributos de cinemática
@@ -285,9 +285,9 @@ end
 function transferCameraState(oldCamera, newCamera)
 	newCamera.zoom = oldCamera.zoom
 	newCamera.targetZoom = oldCamera.targetZoom
+	newCamera.zoomSpeed = oldCamera.zoomSpeed
 	newCamera.target = oldCamera.target
 	newCamera.targetPos = oldCamera.targetPos
-	newCamera.startingZoom = oldCamera.startingZoom
 	newCamera.shakeDuration = oldCamera.shakeDuration
 	newCamera.shakeIntensity = oldCamera.shakeIntensity
 	newCamera.shakeOffset = oldCamera.shakeOffset
