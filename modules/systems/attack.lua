@@ -142,7 +142,9 @@ function Attack:attack(attacker, origin, direction)
 	self.canAttack = false
 
 	local atkEvent = AttackEvent.new(self, attacker, origin, direction)
-	atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
+	if self.animIntactSettings and self.animBreakingSettings then
+		atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
+	end
 	table.insert(self.events, atkEvent)
 end
 
@@ -155,7 +157,9 @@ function Attack:update(dt)
 		self.updateEvent(e, dt)
 
 		if self.subtype == MELEE_ATTACK then
-			e.animations[INTACT]:update(dt)
+			if e.animations[INTACT] then
+				e.animations[INTACT]:update(dt)
+			end
 
 			if e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1 then
 				e.active = false
@@ -169,13 +173,15 @@ function Attack:update(dt)
 				collisionManager:unregister(e)
 			else
 				if e.state == BREAKING then
-					if e.breakingFinished then
+					if not e.animations[BREAKING] or e.breakingFinished then
 						table.remove(self.events, i)
 					else
 						e.animations[BREAKING]:update(dt)
 					end
 				else
-					e.animations[e.state]:update(dt)
+					if e.animations[e.state] then
+						e.animations[e.state]:update(dt)
+					end
 					applyPhysics(e, dt)
 				end
 			end
@@ -335,6 +341,10 @@ end
 ---@param camera Camera
 -- desenha o evento de ataque no canvas atual segundo a perpectiva da `camera`
 function AttackEvent:draw(camera)
+	if not self.animations[self.state] then
+		return
+	end
+
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]

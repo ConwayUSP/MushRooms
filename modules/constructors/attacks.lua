@@ -67,3 +67,21 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 
 	return attack
 end
+
+function newRotatoryAttack(ally, duration, cooldown)
+	local hb = hitbox(Circle.new(40), vec(0, -20))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting(MELEE_ATTACK, ally, 20, duration, hbs, cooldown, 1, 0, 1, 0, 1, 2, 1)
+	local updateFunc = function(e, dt)
+		e:baseUpdate(dt)
+		e.pos = e.attacker.pos
+	end
+	local onHitFunc = function(e, t)
+		print("Rotatory Attack acertou um alvo")
+	end
+
+	local attack = Attack.new("Rotatory Attack", settings, updateFunc, onHitFunc)
+	attack.hasShadow = false
+
+	return attack
+end

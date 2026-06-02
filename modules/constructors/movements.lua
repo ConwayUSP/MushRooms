@@ -148,3 +148,32 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 		end
 	end
 end
+
+function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
+	local changeInterval = 0.25
+	local time = 0
+	local cooldown = baseCooldown
+	local randomAngle = math.random() * 2 * math.pi
+	easingFunc = easingFunc or function(t)
+		return t
+	end
+
+	return function(entity, dt)
+		if cooldown > 0 then
+			cooldown = cooldown - dt
+			return
+		end
+
+		time = time + dt
+		local t = math.min(time / duration, 1)
+		local intensity = easingFunc(1 - t)
+
+		if time >= changeInterval then
+			time = time - changeInterval
+			randomAngle = math.random() * 2 * math.pi
+		end
+
+		local desiredVel = polarToVec(randomAngle, entity.speed * bonusSpeed * intensity)
+		applySteering(entity, desiredVel, 10)
+	end
+end
