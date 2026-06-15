@@ -24,10 +24,10 @@ require("modules.utils.types")
 ---@param ally boolean
 ---@param cooldown function
 ---@param speed number
----@param trajectoryFunc? MovementFunc
+---@param trajectoryFuncBuilder? function
 ---@return Attack
 -- um tiro de pedrinha
-function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local hb = hitbox(Circle.new(15))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting(RANGED_ATTACK, ally, 15, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 4, 2, 1)
@@ -38,7 +38,7 @@ function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 		print("Pebble Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, trajectoryFunc)
+	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, trajectoryFuncBuilder)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -52,7 +52,7 @@ end
 ---@param trajectoryFunc? MovementFunc
 ---@return Attack
 -- um tiro nuclear
-function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 1, 2, 1)
@@ -66,7 +66,7 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
 		print("Nuclear Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, trajectoryFunc)
+	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, trajectoryFuncBuilder)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -121,11 +121,11 @@ end
 ---@param ally boolean
 ---@param cooldown function
 ---@param speed number
----@param trajectoryFunc MovementFunc
+---@param trajectoryFuncBuilder? function
 ---@return Attack
 -- um tiro de pedrinha em círculo
-function newPebbleCircularAttack(ally, duration, cooldown, speed, trajectoryFunc)
-	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+function newPebbleCircularAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
+	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local attackFunc = defaultCircularAttackFunc(1, 8)
 	pebble:addAttackFunc(attackFunc)
 
@@ -135,11 +135,11 @@ end
 ---@param ally boolean
 ---@param cooldown function
 ---@param speed number
----@param trajectoryFunc MovementFunc
+---@param trajectoryFuncBuilder? function
 ---@return Attack
 -- um tiro de pedrinha em cone
-function newPebbleConeAttack(ally, duration, cooldown, speed, trajectoryFunc)
-	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+function newPebbleConeAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
+	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local attackFunc = defaultCircularAttackFunc(-1, 1, math.rad(30))
 	pebble:addAttackFunc(attackFunc)
 
@@ -153,8 +153,8 @@ end
 ---@param trajectoryFunc MovementFunc
 ---@return Attack
 -- tiro de pedrinha que alterna entre circular e cone
-function newPebbleCircularConeAttack(ally, duration, cooldown, speed, trajectoryFunc)
-	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFunc)
+function newPebbleCircularConeAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
+	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local useCircular = true
 
 	local attackFunc = function(atk, attacker, origin, direction)

@@ -12,10 +12,9 @@ require("modules.utils.easing")
 -- cria um inimigo do tipo Gato Nuclear
 function newNuclearCat(spawnPos, room)
 	local movementFunc = avoidTargetMovement(350, 0.75, 1.25, math.rad(30), Easing.inOutQuad)
-	-- local attack = newPebbleShotAttack(false, 2.5, 5.0, 500, sineMovement(math.rad(60)))
 	local atksCooldown = randMultiCooldown({ 1.0, 2.0, 3.0 })
-	local attack = newNuclearShotAttack(false, 5.0, atksCooldown, 400, zigZagMovement(math.rad(45), 0.5))
-	local attackSlow = newNuclearShotAttack(false, 10.0, atksCooldown, 300, straightMovement())
+	local attack = newNuclearShotAttack(false, 5.0, atksCooldown, 400, function() return zigZagMovement(math.rad(45), 0.5) end)
+	local attackSlow = newNuclearShotAttack(false, 10.0, atksCooldown, 300, function() return straightMovement() end)
 	local atks = { attack, attackSlow }
 	local hb = hitbox(Rectangle.new(40, 70))
 	local hbs = hitboxes({ hb })
