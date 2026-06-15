@@ -16,6 +16,7 @@ require("modules.utils.types")
 ---@field callback fun(...?: any)
 ---@field update fun(dt: number)
 ---@field start fun()
+---@field stop fun()
 
 Timer = {}
 Timer.__index = Timer
@@ -80,4 +81,9 @@ function Timer:start()
     else
         self.time = self.duration
     end
+end
+
+-- para de rodar o timer
+function Timer:stop()
+    self.active = false
 end

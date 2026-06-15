@@ -12,6 +12,7 @@ require("modules.utils.colors")
 require("modules.utils.constructors")
 require("modules.utils.shapes")
 require("modules.utils.states")
+require("modules.utils.timer")
 require("modules.utils.types")
 require("modules.utils.utils")
 require("modules.utils.vec")
@@ -22,6 +23,7 @@ require("table")
 ----------------------------------------
 
 players = {}
+local MAX_HP = 100
 
 ----------------------------------------
 -- Classe Player
@@ -54,7 +56,7 @@ players = {}
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
 ---@field inputBuffer InputBuffer
----@field inFirecamp boolean
+---@field healingTimer Timer
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -77,7 +79,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 
 	-- atributos que variam
 	player.id = #players + 1                     -- número do jogador
-	player.hp = 100                              -- pontos de vida
+	player.hp = MAX_HP                           -- pontos de vida
 	player.controls = controls                   -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
 	player.colors = colors                       -- paleta de cores do jogador
 	-- atributos fixos na instanciação
@@ -100,7 +102,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
 	player.inputBuffer = InputBuffer.new(player)
-	player.inFirecamp = false
+	player.healingTimer = Timer.new(math.huge, true)
 
 	collisionManager:register(player)
 	return player
@@ -156,12 +158,13 @@ function Player:update(dt)
 		self.interactiveObj = nil
 	else
 		self:move(dt)
+		self.healingTimer:update(dt)
 		self.inputBuffer:update(dt)
 		self:updateBuildingMode(dt)
 		self:updateState()
 		self:resolveInteractive()
 	end
-	
+
 	self.animations[self.state]:update(dt)
 	self:updateParticles(dt)
 	self:updateInvulnerability(dt)
@@ -565,7 +568,7 @@ function Player:chooseBestInteractive(list)
 end
 
 function Player:heal(amount)
-	self.hp = math.min(self.hp + amount, 100)
+	self.hp = math.min(self.hp + amount, MAX_HP)
 end
 
 function Player:takeDamage(damage)
@@ -606,13 +609,6 @@ function Player:draw(camera)
 	}
 	love.graphics.draw(self.particles[WALKING_UP], particles_offset.x, particles_offset.y)
 
-	if self:isInvulnerable() then
-		love.graphics.setShader(whiteShader)
-		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
-	elseif self.inFirecamp then
-		-- TODO: implementar shader legal enquanto estiver healando
-	end
-
 	-- TODO: usar algum tipo de "vinheta" na tela para indicar que o player está com pouca vida (igual no Deadly Encounter)
 
 	-- desenhando o player em si
@@ -629,11 +625,27 @@ function Player:draw(camera)
 		x = animation.frameDim.width / 2,
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
+
+	if self:isInvulnerable() then
+		love.graphics.setShader(whiteShader)
+		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
+	elseif self.healingTimer.active then
+		local qx, qy, qw, qh = quad:getViewport()
+		local imgW, imgH = self.spriteSheets[self.state]:getDimensions()
+		local u_min = qx / imgW
+		local v_min = qy / imgH
+		local u_width = qw / imgW
+		local v_height = qh / imgH
+		love.graphics.setShader(healingShader)
+		healingShader:send("time", self.healingTimer.time)
+		healingShader:send("quad_info", { u_min, v_min, u_width, v_height })
+	end
+
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
 	-- desenhando o efeito de partículas da defesa em cima do player
 	love.graphics.draw(self.particles[DEFENDING], particles_offset.x, particles_offset.y)
-	if self:isInvulnerable() or self.inFirecamp then
+	if self:isInvulnerable() or self.healingTimer.active then
 		love.graphics.setShader()
 	end
 end

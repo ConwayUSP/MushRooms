@@ -48,8 +48,7 @@ function newFirecamp()
 			table.insert(firecamp.playersHealing, player)
 		end
 
-		print("Player entered firecamp")
-		player.inFirecamp = true
+		player.healingTimer:start()
 	end
 	local customUpdate = function(self, dt)
 		if not self.playersHealing then
@@ -75,8 +74,7 @@ function newFirecamp()
 			end
 		end
 
-		print("Player exited firecamp")
-		player.inFirecamp = false
+		player.healingTimer:stop()
 	end
 
 	local animSettings = {}
