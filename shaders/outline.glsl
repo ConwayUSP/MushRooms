@@ -12,16 +12,16 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 
   // percorre vizinhança para detectar borda
   for (float x = -thickness; x <= thickness; x++) {
-      for (float y = -thickness; y <= thickness; y++) {
-        vec2 offset = vec2(x, y) * px;
-        vec4 neigborPixel = Texel(texture, texture_coords + offset);
+    for (float y = -thickness; y <= thickness; y++) {
+      vec2 offset = vec2(x, y) * px;
+      vec4 neigborPixel = Texel(texture, texture_coords + offset);
 
-        maxAlpha = max(maxAlpha, neigborPixel.a);
-      }
+      maxAlpha = max(maxAlpha, neigborPixel.a);
+    }
   }
 
   // se o pixel atual é semitransparente, mas seu vizinho (maxAlpha) não é, pinta a borda
-  if (pixel.a < 0.1 && maxAlpha > 0.1) 
+  if (pixel.a < 0.1 && maxAlpha > 0.1)
     return outlineColor;
 
   // se não, retorna o pixel do jeito que ele entrou

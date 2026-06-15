@@ -58,6 +58,8 @@ function Npc.new(description, spawnPos, hitboxes, room)
 	npc.inDialogue = false -- se o npc está em diálogo
 	npc.reachable = false -- indica se algum player está perto o suficiente para falar com o NPC
 	npc.playersInReach = {} -- tabela para rastrear quais players estão ao alcance do NPC
+	npc.hasShadow = true
+	npc.shadowWidth = 15
 
 	table.insert(room.npcs, npc)
 	return npc

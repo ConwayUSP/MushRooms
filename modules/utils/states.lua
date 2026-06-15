@@ -20,7 +20,7 @@ ATTACKING_RIGHT = "attacking right"
 HURTING = "hurting" -- tomando dano
 DYING = "dying"
 
-------------- DESTRUTÍVEIS -------------
+------------- DESTRUTÍVEIS / ATAQUES -------------
 
 INTACT = "intact"
 BREAKING = "breaking"
@@ -29,6 +29,14 @@ BROKEN = "broken"
 ------------- INTERAGIVEIS -------------
 
 MOVING = "moving"
+OPEN = "open"
+OPENING = "opening"
+CLOSED = "closed"
+CLOSING = "closing"
+
+-------------- CONSTRUÇÕES -------------
+
+ACTIVE = "active"
 
 ------------ ELEMENTOS DE UI -----------
 

@@ -175,6 +175,17 @@ function pairKey(a, b)
 	return tostring(a) .. "|" .. tostring(b)
 end
 
+---@param table table
+---@return number
+-- equivalente ao operador #, mas para tabelas indexadas por não-números
+function tableLen(table)
+	local len = 0
+	for _, _ in pairs(table) do
+		len = len + 1
+	end
+	return len
+end
+
 ----------------------------------------
 -- Funções matemáticas
 ----------------------------------------
@@ -253,6 +264,18 @@ end
 
 ---@param parts string[]
 ---@return string
+-- transforma uma lista de nomes de pastas em um caminho para o diretório final
+function dirPathFormat(parts)
+	local path = pathlizeName(parts[1])
+	for i = 2, #parts, 1 do
+		path = path .. "/" .. pathlizeName(parts[i])
+	end
+	print(path)
+	return path
+end
+
+---@param parts string[]
+---@return string
 -- transforma uma lista de pastas e um nome de arquivo em um caminho para o arquivo
 function pngPathFormat(parts)
 	local path = ""
@@ -264,4 +287,16 @@ function pngPathFormat(parts)
 		end
 	end
 	return path
+end
+
+----------------------------------------
+-- Funções de Debug
+----------------------------------------
+
+function debugTable(tableName, table)
+	print("--- TABLE: " .. tableName .. " ---")
+	for k, v in pairs(table) do
+		print(tostring(k) .. " = " .. tostring(v))
+	end
+	print("----------------------------------")
 end

@@ -2,6 +2,8 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.resources")
+require("modules.constructors.weapons")
+require("modules.utils.entities")
 require("modules.utils.utils")
 
 ----------------------------------------
@@ -14,42 +16,27 @@ end
 
 function _spawnDropDebugHandler(numberKey)
 	local spawn = false
+	local constructors = {}
 
-	if numberKey == "1" then
-		_spawnDropAtPlayer(newKatana(), false)
-		spawn = true
-	elseif numberKey == "2" then
-		_spawnDropAtPlayer(newSlingShot(), false)
-		spawn = true
-	elseif numberKey == "3" then
-		_spawnDropAtPlayer(COIN, true)
-		spawn = true
-	elseif numberKey == "4" then
-		_spawnDropAtPlayer(newWood(), true)
-		spawn = true
-	elseif numberKey == "5" then
-		_spawnDropAtPlayer(newStone(), true)
-		spawn = true
-	elseif numberKey == "6" then
-		_spawnDropAtPlayer(newBone(), true)
-		spawn = true
-	elseif numberKey == "7" then
-		_spawnDropAtPlayer(newFeather(), true)
-		spawn = true
-	elseif numberKey == "8" then
-		_spawnDropAtPlayer(newIron(), true)
-		spawn = true
-	elseif numberKey == "9" then
-		_spawnDropAtPlayer(newGold(), true)
-		spawn = true
-	elseif numberKey == "0" then
-		_spawnDropAtPlayer(newBread(), true)
-		spawn = true
+	for _, constructor in pairs(CONSTRUCTORS[RESOURCE]) do
+		table.insert(constructors, constructor)
+	end
+	table.insert(constructors, newKatana)
+	table.insert(constructors, newSlingShot)
+
+	local idx = math.random(tableLen(constructors))
+	local c = 0
+	for _, constructor in pairs(constructors) do
+		c = c + 1
+		if c == idx then
+			_spawnDropAtPlayer(constructor(), true)
+			spawn = true
+		end
 	end
 
 	return spawn
 end
 
 function _spawnDropAtPlayer(drop, autoPick)
-	spawnItem(drop, players[1].pos, players[1].room, autoPick, getAnchor(players[1], FLOOR), vec(0, -500))
+	spawnDrop(drop, players[1].pos, players[1].room, autoPick, getAnchor(players[1], FLOOR), vec(0, -500))
 end

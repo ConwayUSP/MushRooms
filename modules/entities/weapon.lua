@@ -3,7 +3,7 @@
 ----------------------------------------
 require("modules.engine.animation")
 require("modules.entities.entity")
-require("modules.systems.attacks")
+require("modules.systems.attack")
 require("modules.utils.shapes")
 require("modules.utils.types")
 
@@ -42,9 +42,9 @@ function Weapon.new(name, ammo, attack)
 	weapon.atk = attack -- instância de Attack associada à arma
 	-- atributos fixos na instanciação
 	weapon.canShoot = false
-	weapon.target = nil   -- inimigo para o qual a arma está mirando
-	weapon.rotation = 0   -- rotação da arma em radianos
-	weapon.state = IDLE   -- estado atual da arma
+	weapon.target = nil -- inimigo para o qual a arma está mirando
+	weapon.rotation = 0 -- rotação da arma em radianos
+	weapon.state = IDLE -- estado atual da arma
 	weapon.spriteSheets = {} -- no tipo imagem do love
 	weapon.animations = {} -- as chaves são estados e os valores são Animações
 	return weapon
@@ -63,6 +63,7 @@ end
 ---@param dt number
 -- atualiza o estado, o cooldown e o ataque da arma
 function Weapon:update(dt)
+	self.atk:updateTimer(dt)
 	self.atk:update(dt)
 
 	if self.atk.canAttack then
@@ -70,15 +71,18 @@ function Weapon:update(dt)
 	end
 end
 
+---@return boolean
 -- tenta realizar um ataque, caso bem sucedido, atualiza o estado/animação da arma
 function Weapon:attack()
-	if self.atk:tryAttack() then
+	if self.atk.canAttack then
 		self.atk:attack(self.owner, self.owner.pos, self.rotation)
 		self.state = ATTACKING
 		if self.animations[ATTACKING] then
 			self.animations[ATTACKING]:reset()
 		end
+		return true
 	end
+	return false
 end
 
 ---@param idleSettings AnimSettings
@@ -101,25 +105,48 @@ end
 -- renderiza a arma na perspectiva da `camera`
 function Weapon:draw(camera)
 	-- Não renderiza armas de jogadores se defendendo
-	if self.owner.state == DEFENDING then
+	if self.owner.state == DEFENDING or self.owner.building then
 		return
 	end
-	local wViewPos = camera:viewPos(self.owner.pos)
+
+	love.graphics.setColor(1, 1, 1, 1)
+
+	if self.owner:isInvulnerable() then
+		love.graphics.setShader(whiteShader)
+		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
+	end
+
+	local viewPos = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
+
 	-- inverte arma no segundo e terceiro quadrantes
 	local flipY = (self.rotation / math.pi < -0.5 and self.rotation / math.pi >= -1.5) and -1 or 1
 
-	love.graphics.setColor(1, 1, 1, 1)
+	local p = self.owner.invulnerableTimer > 0
+			and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+		or 0
+	local defaultScale = 3
+	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
+	local offset = {
+		x = animation.frameDim.width / 2,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
+	}
+
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
-		wViewPos.x,
-		wViewPos.y,
+		viewPos.x,
+		viewPos.y,
 		self.rotation,
-		3,
-		3 * flipY,
-		animation.frameDim.width / 2 - 5,
-		animation.frameDim.height / 2 - 5
+		scaleX,
+		scaleY * flipY,
+		offset.x,
+		offset.y
 	)
+
+	if self.owner:isInvulnerable() then
+		love.graphics.setShader()
+	end
 end

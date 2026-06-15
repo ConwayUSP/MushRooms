@@ -19,12 +19,9 @@ function renderRooms(camera)
 				goto nextroom
 			end
 
-			love.graphics.setColor(r.color.r, r.color.g, r.color.b, r.color.a)
-			local roomViewPos = camera:viewPos(r.limits.p1)
-			love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 6, 6)
+			local roomViewPos = addVec(camera:viewPos(r.limits.p1), vec(Room.spacingH / 2, Room.spacingV / 2))
+			love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 3, 3)
 
-			-- reseta a cor de renderização
-			love.graphics.setColor(1, 1, 1, 1)
 			::nextroom::
 		end
 	end
@@ -43,6 +40,7 @@ function renderEntities(camera)
 		-- Adiciona destrutíveis
 		for _, d in pairs(r.destructibles) do
 			table.insert(drawList, {
+				it = d,
 				y = d.pos.y + getAnchor(d, FLOOR),
 				draw = function()
 					d:draw(camera)
@@ -52,16 +50,31 @@ function renderEntities(camera)
 		-- Adiciona objetos interativos
 		for _, i in pairs(r.interactives) do
 			table.insert(drawList, {
+				it = i,
 				y = i.pos.y + getAnchor(i, FLOOR),
 				draw = function()
 					i:draw(camera)
 				end,
 			})
 		end
-		-- Adiciona items
-		for _, i in pairs(r.items) do
+		-- Adiciona portas
+		for _, d in pairs(r.doors) do
 			table.insert(drawList, {
-				y = i.floorY + getAnchor(i, FLOOR),
+				it = d,
+				y = d.pos.y + getAnchor(d, FLOOR),
+				draw = function()
+					d:draw(camera)
+				end,
+			})
+		end
+		-- Adiciona drops
+		for _, i in pairs(r.drops) do
+			local dropScale = (i.object and i.object.type == RESOURCE) and 1.875 or 3
+
+			i.scale = dropScale
+			table.insert(drawList, {
+				it = i,
+				y = i.floorY + getAnchor(i, FLOOR, dropScale),
 				draw = function()
 					i:draw(camera)
 				end,
@@ -70,21 +83,30 @@ function renderEntities(camera)
 		-- Adiciona inimigos
 		for _, e in pairs(r.enemies) do
 			table.insert(drawList, {
+				it = e,
 				y = e.pos.y + getAnchor(e, FLOOR),
 				draw = function()
 					e:draw(camera)
 				end,
 			})
 			-- Adiciona ataques de inimigos
-			if e.atk then
-				for _, ev in pairs(e.atk.events) do
-					ev:draw(camera)
+			for _, a in pairs(e.atk) do
+				for _, ev in pairs(a.events) do
+					table.insert(drawList, {
+						it = ev,
+						y = ev.pos.y + getAnchor(ev, FLOOR) + getAnchor(e, FLOOR),
+						draw = function()
+							ev:draw(camera)
+						end,
+					})
 				end
 			end
 		end
+
 		-- Adiciona NPCs
 		for _, npc in pairs(r.npcs) do
 			table.insert(drawList, {
+				it = npc,
 				y = npc.pos.y + getAnchor(npc, FLOOR),
 				draw = function()
 					npc:draw(camera)
@@ -95,6 +117,7 @@ function renderEntities(camera)
 		-- Adiciona obstáculos
 		for _, obs in pairs(r.obstacles) do
 			table.insert(drawList, {
+				it = obs,
 				y = obs.pos.y + getAnchor(obs, FLOOR),
 				draw = function()
 					obs:draw(camera)
@@ -103,9 +126,10 @@ function renderEntities(camera)
 		end
 	end
 
-	-- Adiciona jogadores e suas possíveis armas
+	-- Adiciona jogadores e suas possíveis armas e construções
 	for _, p in pairs(players) do
 		table.insert(drawList, {
+			it = p,
 			y = p.pos.y + getAnchor(p, FLOOR),
 			draw = function()
 				p:draw(camera)
@@ -116,6 +140,7 @@ function renderEntities(camera)
 			local w = p.weapon
 			local offsetY = (w.rotation / math.pi < -1 or w.rotation / math.pi > 0) and 2 or -2
 			table.insert(drawList, {
+				it = w,
 				y = p.pos.y + getAnchor(p, FLOOR) + offsetY, -- mesma altura do jogador, mas deslocado para frente ou para trás
 				draw = function()
 					w:draw(camera)
@@ -125,8 +150,66 @@ function renderEntities(camera)
 
 		for _, w in pairs(p.weapons) do
 			for _, e in pairs(w.atk.events) do
-				e:draw(camera)
+				table.insert(drawList, {
+					it = e,
+					y = e.pos.y + getAnchor(e, FLOOR) + getAnchor(p, FLOOR),
+					draw = function()
+						e:draw(camera)
+					end,
+				})
 			end
+		end
+
+		if p.building then
+			local b = p.building
+			table.insert(drawList, {
+				it = b,
+				y = b.pos.y + getAnchor(b, FLOOR),
+				draw = function()
+					b:draw(camera)
+				end,
+			})
+		end
+	end
+
+	-- Construir sombras separadamente para não mutar drawList durante iteração
+	local shadows = {}
+	for _, obj in ipairs(drawList) do
+		if obj.it and obj.it.hasShadow then
+			local sx = (obj.it.pos and obj.it.pos.x) or 0
+			local sy = obj.y - 1
+
+			local frameWidth
+			local scale = obj.it.scale or 3
+
+			if obj.it.shadowWidth then
+				frameWidth = obj.it.shadowWidth * scale
+			else
+				frameWidth = 16 * scale
+			end
+
+			-- largura da sombra proporcional à largura do sprite
+			local rx = frameWidth / 2
+			local ry = rx * 0.4
+
+			table.insert(shadows, {
+				y = sy,
+				draw = function()
+					love.graphics.setColor(0, 0, 0.1, 1.0)
+					love.graphics.setShader(ditherShadowShader)
+					local viewPos = camera:viewPos(vec(sx, sy))
+					ditherShadowShader:send("shadow_center", { viewPos.x, viewPos.y })
+					ditherShadowShader:send("shadow_radii", { rx, ry })
+					ditherShadowShader:send("time", love.timer.getTime())
+					ditherShadowShader:send("zoom", camera.zoom)
+					ditherShadowShader:send("viewport_size", { camera.viewport.width, camera.viewport.height })
+
+					love.graphics.circle("fill", viewPos.x, viewPos.y, rx)
+
+					love.graphics.setColor(1, 1, 1, 1)
+					love.graphics.setShader()
+				end,
+			})
 		end
 	end
 
@@ -134,6 +217,12 @@ function renderEntities(camera)
 	table.sort(drawList, function(a, b)
 		return a.y < b.y
 	end)
+
+	for _, s in ipairs(shadows) do
+		s.draw()
+	end
+
+	love.graphics.setBlendMode("alpha")
 
 	-- Desenha na ordem correta
 	for _, obj in ipairs(drawList) do
@@ -165,6 +254,7 @@ function renderHitboxes(camera)
 	---@type table<string, table<Entity, Hitboxes>>
 	local registry = collisionManager.registry
 
+	love.graphics.setLineWidth(3)
 	for _, reg in pairs(registry) do
 		for entity, hitboxes in pairs(reg) do
 			renderSolids(camera, hitboxes.solids, entity)
@@ -172,6 +262,7 @@ function renderHitboxes(camera)
 			renderTriggers(camera, hitboxes.triggers, entity)
 		end
 	end
+	love.graphics.setLineWidth(1)
 end
 
 ---@param camera Camera
@@ -183,7 +274,7 @@ function renderSolids(camera, hitboxes, entity)
 		return
 	end
 
-	love.graphics.setColor(1, 0, 0, 0.5)
+	love.graphics.setColor(1, 0.3, 0.3, 0.8)
 	for _, hb in ipairs(hitboxes) do
 		renderByShape(camera, hb, entity)
 	end
@@ -199,7 +290,7 @@ function renderDefaults(camera, hitboxes, entity)
 		return
 	end
 
-	love.graphics.setColor(0, 0, 1, 0.5)
+	love.graphics.setColor(0.3, 0.3, 1, 0.8)
 	for _, hb in ipairs(hitboxes) do
 		renderByShape(camera, hb, entity)
 	end
@@ -215,7 +306,7 @@ function renderTriggers(camera, hitboxes, entity)
 		return
 	end
 
-	love.graphics.setColor(0, 1, 0, 0.5)
+	love.graphics.setColor(0.3, 1, 0.3, 0.8)
 	for _, hb in ipairs(hitboxes) do
 		renderByShape(camera, hb, entity)
 	end
@@ -223,10 +314,6 @@ function renderTriggers(camera, hitboxes, entity)
 end
 
 function renderByShape(camera, hitbox, entity)
-	if entity.type == ROOM then
-		return
-	end
-
 	local worldHb = buildWorldHitbox(hitbox, entity.pos)
 
 	if worldHb.shape.shape == CIRCLE then
@@ -243,7 +330,7 @@ end
 --- renderiza a hitbox circular na perspectiva da `camera`
 function renderCircleHitbox(camera, hitbox)
 	local viewPos = camera:viewPos(hitbox.offset)
-	love.graphics.circle("fill", viewPos.x, viewPos.y, hitbox.shape.radius)
+	love.graphics.circle("line", viewPos.x, viewPos.y, hitbox.shape.radius)
 end
 
 ---@param camera Camera
@@ -252,7 +339,7 @@ end
 function renderRectangleHitbox(camera, hitbox)
 	local viewPos = camera:viewPos(hitbox.offset)
 	love.graphics.rectangle(
-		"fill",
+		"line",
 		viewPos.x - hitbox.shape.width / 2,
 		viewPos.y - hitbox.shape.height / 2,
 		hitbox.shape.width,

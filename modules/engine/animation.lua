@@ -85,7 +85,7 @@ end
 -- cria uma animação com o spritesheet na localização indicada
 -- por `path` e as configurações dadas por `settings`
 function newAnimation(path, settings)
-	local sheetImg = love.graphics.newImage(path)
+	local sheetImg = assetManager:getImage(path)
 	local frames = {}
 	local gap = 4
 	local sWidth = sheetImg:getWidth()
@@ -143,7 +143,14 @@ end
 function addAnimation(entity, path, action, settings)
 	local animation = newAnimation(path, settings)
 	entity.animations[action] = animation
-	entity.spriteSheets[action] = love.graphics.newImage(path)
+	entity.spriteSheets[action] = assetManager:getImage(path)
+end
+
+function addAnimations(entity, pathStart, settings)
+	for state, s in pairs(settings) do
+		local path = pngPathFormat({ pathStart, state })
+		addAnimation(entity, path, state, s)
+	end
 end
 
 return Animation

@@ -2,10 +2,12 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.particles")
+require("modules.constructors.craftings")
 require("modules.engine.animation")
-require("modules.engine.collision")
+require("modules.systems.collision")
 require("modules.entities.entity")
 require("modules.systems.inventory")
+require("modules.systems.inputbuffer")
 require("modules.utils.colors")
 require("modules.utils.constructors")
 require("modules.utils.shapes")
@@ -47,6 +49,12 @@ players = {}
 ---@field inventory Inventory
 ---@field candidateInteractives Interactive|Npc[]
 ---@field uiManager table
+---@field craftingManager CraftingManager
+---@field building any
+---@field buildingModeTimer number
+---@field startBuildingMode function
+---@field inputBuffer InputBuffer
+---@field inFirecamp boolean
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -68,23 +76,31 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
 
 	-- atributos que variam
-	player.id = #players + 1                   -- número do jogador
-	player.hp = 100                            -- pontos de vida
-	player.controls = controls                 -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
-	player.colors = colors                     -- paleta de cores do jogador
+	player.id = #players + 1                     -- número do jogador
+	player.hp = 100                              -- pontos de vida
+	player.controls = controls                   -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.colors = colors                       -- paleta de cores do jogador
 	-- atributos fixos na instanciação
-	player.movementVec = { x = 0, y = 0 }      -- vetor de direção e magnitude do movimento do jogador
-	player.state = IDLE                        -- define o estado atual do jogador, estreitamente relacionado às animações
-	player.spriteSheets = {}                   -- no tipo imagem do love
-	player.animations = {}                     -- as chaves são estados e os valores são Animações
-	player.particles = {}                      -- efeitos de partícula emitidos pelo player
-	player.weapons = {}                        -- lista das armas que o jogador possui
-	player.weapon = nil                        -- arma equipada
-	player.inDialogue = false                  -- se o player está em diálogo
-	player.interactiveObj = nil                -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
-	player.inventory = Inventory.new(player)   -- inventário do jogador
-	player.candidateInteractives = {}          -- lista de objetos interativos próximos ao jogador
+	player.movementVec = { x = 0, y = 0 }        -- vetor de direção e magnitude do movimento do jogador
+	player.state = IDLE                          -- define o estado atual do jogador, estreitamente relacionado às animações
+	player.spriteSheets = {}                     -- no tipo imagem do love
+	player.animations = {}                       -- as chaves são estados e os valores são Animações
+	player.particles = {}                        -- efeitos de partícula emitidos pelo player
+	player.weapons = {}                          -- lista das armas que o jogador possui
+	player.weapon = nil                          -- arma equipada
+	player.inDialogue = false                    -- se o player está em diálogo
+	player.interactiveObj = nil                  -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
+	player.inventory = Inventory.new(player)     -- inventário do jogador
+	player.candidateInteractives = {}            -- lista de objetos interativos próximos ao jogador
+	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
+	player.building = nil                        -- construção que o player está posicionando para construir
+	player.buildingModeTimer = 0
+	player.defaultInvulnerableTime = 0.3
+	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
+	player.shadowWidth = 25
+	player.inputBuffer = InputBuffer.new(player)
+	player.inFirecamp = false
 
 	collisionManager:register(player)
 	return player
@@ -93,11 +109,15 @@ end
 ---@param idleSettings AnimSettings
 ---@param defSettings AnimSettings
 ---@param WalkSettings AnimSettings
+---@param dyingSettings AnimSettings
 -- adiciona animações à tabela do `Player`, associando-as aos seus estados respectivos
-function Player:addAnimations(idleSettings, defSettings, WalkSettings)
+function Player:addAnimations(idleSettings, defSettings, WalkSettings, dyingSettings)
 	----------------- IDLE -----------------
 	local path = pngPathFormat({ "assets", "animations", "players", self.name, IDLE })
 	addAnimation(self, path, IDLE, idleSettings)
+	----------------- DYING -----------------
+	path = pngPathFormat({ "assets", "animations", "players", self.name, DYING })
+	addAnimation(self, path, DYING, dyingSettings)
 	--------------- DEFENDING --------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, DEFENDING })
 	addAnimation(self, path, DEFENDING, defSettings)
@@ -131,8 +151,20 @@ end
 ---@param dt number
 -- move o `Player`, atualiza seu estado e o de suas animações e efeitos de partícula
 function Player:update(dt)
-	self:move(dt)
+	if self.state == DYING then
+		self.candidateInteractives = {}
+		self.interactiveObj = nil
+	else
+		self:move(dt)
+		self.inputBuffer:update(dt)
+		self:updateBuildingMode(dt)
+		self:updateState()
+		self:resolveInteractive()
+	end
+	
 	self.animations[self.state]:update(dt)
+	self:updateParticles(dt)
+	self:updateInvulnerability(dt)
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
 		if w == self.weapon then
@@ -140,15 +172,15 @@ function Player:update(dt)
 		end
 		w:update(dt)
 	end
-	self:updateInvulnerability(dt)
-	self:updateState()
-	self:updateParticles(dt)
-	self:resolveInteractive()
 end
 
 ---@param dt number
 -- movimenta o `Player` de acordo com o input do jogador
 function Player:move(dt)
+	if self.state == DYING or self.uiManager.activeScene then
+		return
+	end
+
 	local movementDir = vec(0, 0)
 	if self.state == DEFENDING or self.inDialogue then
 		return
@@ -183,6 +215,8 @@ function Player:move(dt)
 	applyForce(self, walkForce)
 	applyPhysics(self, dt)
 
+	-- atualizando objetos cujo movimento depende do Player
+	self:updateBuildingPos()
 	self:updateParticlesPos()
 	if self.weapon then
 		-- separa a orientação da arma em dois casos para amenizar o bug ao colidir com paredes
@@ -254,21 +288,91 @@ function Player:updateParticlesPos()
 	self.particles[WALKING_UP]:setPosition(self.pos.x, self.pos.y + 24)
 end
 
+-- faz com que a construção fique na direção aproximada em que o player está olhando (considera colisões)
+function Player:updateBuildingPos()
+	if self.building then
+		setPos(self.building, addVec(self.pos, scaleVec(normalize(self.vel), 100)))
+	end
+end
+
+-- começa o modo de construção/posicionamento de algum objeto
+function Player:startBuildingMode(building)
+	debugTable("building", building)
+	self.building = building
+	setPos(self.building, addVec(self.pos, vec(100, 0)))
+	self.buildingModeTimer = 0
+	self.uiManager:deactivateAllScenes()
+end
+
+function Player:updateBuildingMode(dt)
+	if self.building then
+		self.building:update(dt)
+		self.buildingModeTimer = self.buildingModeTimer + dt
+		-- self:unequipWeapon()
+	end
+end
+
+-- posiciona a construção e
+function Player:build()
+	-- timer necessário para não bugar e construir imediatamente ao comprar
+	if self.building and self.buildingModeTimer > 0.5 then
+		-- !TODO: consumir recursos do player
+		self.building.actualized = true
+		self.room:addBuilding(self.building)
+		self.building = nil
+	end
+end
+
+-- sai do modo construção
+function Player:endBuildingMode()
+	if self.buildingModeTimer > 0.5 then
+		self.building = nil
+		self.buildingModeTimer = 0
+	end
+end
+
 ---@param key string
--- verifica se o `Player` está pressionando a tecla de ação 1,
--- caso esteja em diálogo, avança o diálogo; caso contrário, chama a função de ataque dele
-function Player:checkAction1(key)
-	if key ~= self.controls.act1 then
+---@param isBuffered boolean
+-- verifica se o `Player` está pressionando a tecla de ação 1, e então
+-- realiza a ação correta de acordo com o contexto
+function Player:checkAction1(key, isBuffered)
+	-- casos em que ignoramos o input
+	if key ~= self.controls.act1 or self.uiManager.activeScene or self.state == DYING then
 		return
 	end
 
-	if self.inDialogue then
+	if self.building then
+		self:build()
+		return
+	end
+
+	-- daqui pra frente APENAS ações que não podem ser feitas
+	-- quando defendendo
+	if self.state == DEFENDING then
+		return
+	end
+
+	-- imagino que não queremos que o buffer afete o diálogo
+	if self.inDialogue and not isBuffered then
 		DialogueManager:getDialogueByPlayer(self):advance()
 		return
 	end
 
+	-- controlará se iremos bufferizar o input atual ou não
+	local shouldBuffer = false
+
 	if self.weapon then
-		self.weapon:attack()
+		if not isBuffered then
+			shouldBuffer = not self.weapon:attack()
+		elseif isBuffered then
+			if self.weapon:attack() then
+				self.inputBuffer:pop(self.controls.act1)
+			end
+		end
+	end
+
+	if shouldBuffer then
+		self.inputBuffer:buffer(key)
 	end
 end
 
@@ -276,10 +380,12 @@ end
 -- verifica se o `Player` está pressionando a tecla de ação 2
 -- caso positivo, executa a ação correta dependendo do contexto
 function Player:checkAction2(key)
-	if key ~= self.controls.act2 then
+	if key ~= self.controls.act2 or self.uiManager.activeScene or self.state == DYING then
 		return
 	end
-	if self.interactiveObj then
+	if self.building then
+		self:endBuildingMode()
+	elseif self.interactiveObj then
 		if self.interactiveObj.type == NPC then
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
 			stopMovement(self)
@@ -307,8 +413,18 @@ end
 ---@param key string
 -- verifica se o `Player` está pressionando a combinação de teclas para abrir o inventário
 function Player:checkSpecialActions(key)
+	if self.state == DYING then
+		return
+	end
+
 	if key == "i" and love.keyboard.isDown(self.controls.act1) then
 		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
+	end
+	if key == "c" and love.keyboard.isDown(self.controls.act1) then
+		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
+	end
+	if key == "p" and love.keyboard.isDown(self.controls.act1) then
+		self.room:toggleDoors()
 	end
 end
 
@@ -347,6 +463,10 @@ function Player:hasWeapon(weaponName)
 	return false
 end
 
+function Player:unequipWeapon()
+	self.weapon = nil
+end
+
 ---@return boolean
 -- coleta uma moeda; função não séria
 function Player:collectCoin()
@@ -365,37 +485,37 @@ function Player:collectResource(resource)
 	return success
 end
 
----@param item Item
--- coleta um item e o marca como coletado
-function Player:collectItem(item)
+---@param drop Drop
+-- coleta um drop e o marca como coletado
+function Player:collectDrop(drop)
 	local result = false
-	if item.object.type == WEAPON then
-		result = self:collectWeapon(item.object)
+	if drop.object.type == WEAPON then
+		result = self:collectWeapon(drop.object)
 		if result then
-			self:equipWeapon(item.object.name)
+			self:equipWeapon(drop.object.name)
 		end
-	elseif item.object.type == ITEM then
+	elseif drop.object.type == drop then
 		result = self:collectCoin()
-	elseif item.object.type == RESOURCE then
-		result = self:collectResource(item.object)
+	elseif drop.object.type == RESOURCE then
+		result = self:collectResource(drop.object)
 	end
 	if result then
-		item:setCollected()
+		drop:setCollected()
 	end
 end
 
----@param item Item
--- verifica se condições-chave para a coleta de um item
--- são verdadeiras, caso positivo, coleta o item
-function Player:tryCollectItem(item)
-	if not item.canPick then
+---@param drop Drop
+-- verifica se condições-chave para a coleta de um drop
+-- são verdadeiras, caso positivo, coleta o drop
+function Player:tryCollectDrop(drop)
+	if not drop.canPick then
 		return
 	end
-	if item.autoPick then
-		self:collectItem(item)
+	if drop.autoPick then
+		self:collectDrop(drop)
 		return
 	elseif love.keyboard.isDown(self.controls.act2) then
-		self:collectItem(item)
+		self:collectDrop(drop)
 		return
 	end
 end
@@ -444,6 +564,38 @@ function Player:chooseBestInteractive(list)
 	return best
 end
 
+function Player:heal(amount)
+	self.hp = math.min(self.hp + amount, 100)
+end
+
+function Player:takeDamage(damage)
+	if self.state == DYING or self:isInvulnerable() then
+		return false
+	end
+
+	self:setInvulnerable()
+	self.hp = math.max(self.hp - damage, 0)
+
+	print(self.name .. " took " .. damage .. " damage" .. "(hp: " .. self.hp .. ")")
+
+	if self.hp <= 0 then
+		self:die()
+	end
+	return true
+end
+
+function Player:die()
+	if self.state == DYING then
+		return
+	end
+
+	print(self.name .. " died")
+
+	self.state = DYING
+	self:unequipWeapon()
+	stopMovement(self)
+end
+
 ---@param camera Camera
 -- renderiza o `Player` na perspectiva da `camera`
 function Player:draw(camera)
@@ -455,20 +607,35 @@ function Player:draw(camera)
 	love.graphics.draw(self.particles[WALKING_UP], particles_offset.x, particles_offset.y)
 
 	if self:isInvulnerable() then
-		return
+		love.graphics.setShader(whiteShader)
+		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
+	elseif self.inFirecamp then
+		-- TODO: implementar shader legal enquanto estiver healando
 	end
+
+	-- TODO: usar algum tipo de "vinheta" na tela para indicar que o player está com pouca vida (igual no Deadly Encounter)
+
 	-- desenhando o player em si
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
+	local p = self.invulnerableTimer > 0
+		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+		or 0
+	local defaultScale = 3
+	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
 	local offset = {
 		x = animation.frameDim.width / 2,
-		y = animation.frameDim.height / 2,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
 	-- desenhando o efeito de partículas da defesa em cima do player
 	love.graphics.draw(self.particles[DEFENDING], particles_offset.x, particles_offset.y)
+	if self:isInvulnerable() or self.inFirecamp then
+		love.graphics.setShader()
+	end
 end
 
 ----------------------------------------
@@ -484,7 +651,7 @@ function newPlayer()
 		return false
 	end
 	CONSTRUCTORS[PLAYER][#players + 1]()
-	newCamera(players[#players])
+	newCameras() -- cria novas câmeras para cada player
 
 	return true
 end

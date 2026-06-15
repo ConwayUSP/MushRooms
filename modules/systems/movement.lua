@@ -77,7 +77,8 @@ end
 
 ---@param entity any
 ---@param impulseVec Vec
--- aplica um impulso instantâneo à entidade, alterando sua velocidade
+-- aplica um impulso equivalente a força aplicada durante um segundo instantaneamente
+-- F*Δt = m*Δv => Vf = Vi + F/m (quando Δt = 1s)
 function applyImpulse(entity, impulseVec)
-	entity.vel = addVec(entity.vel, impulseVec)
+	entity.vel = addVec(entity.vel, scaleVec(impulseVec, 1 / entity.mass))
 end

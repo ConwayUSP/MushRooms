@@ -2,7 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.entities.room")
-require("modules.systems.blueprints")
+require("modules.systems.blueprint")
 require("modules.utils.utils")
 
 ----------------------------------------

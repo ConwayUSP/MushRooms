@@ -1,11 +1,11 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.weapon")
+require("modules.constructors.weapons")
 require("modules.engine.animation")
-require("modules.engine.collision")
+require("modules.systems.collision")
 require("modules.entities.entity")
-require("modules.systems.loots")
+require("modules.systems.loot")
 require("modules.utils.states")
 require("modules.utils.types")
 require("modules.utils.utils")
@@ -135,9 +135,9 @@ function Destructible:spawnLoot()
 		if math.random() < el.chance then
 			local amount = math.random(el.amountRange.min, el.amountRange.max)
 			for _ = 1, amount do
-				local itemPos = vec(self.pos.x, self.pos.y)
+				local dropPos = vec(self.pos.x, self.pos.y)
 				local impulseVec = vec(math.random(-100, 100), -math.random(300, 400))
-				spawnItem(el.object, itemPos, self.room, el.autoPick, math.random(-10, 20), impulseVec)
+				spawnDrop(el.object, dropPos, self.room, el.autoPick, math.random(-10, 20), impulseVec)
 			end
 		end
 	end

@@ -1,4 +1,11 @@
 outlineShader = love.graphics.newShader("shaders/outline.glsl")
+positioningShader = love.graphics.newShader("shaders/positioning.glsl")
+rescaleShader = love.graphics.newShader("shaders/rescale.glsl")
+whiteShader = love.graphics.newShader("shaders/white.glsl")
+ditherShadowShader = love.graphics.newShader("shaders/dithershadow.glsl")
+deadBodyShader = love.graphics.newShader("shaders/deadbody.glsl")
+
+rescaleShader:send("new_res", { 20, 20 })
 
 ---@param image table
 ---@param x number

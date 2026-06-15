@@ -49,7 +49,11 @@ end
 ---@field acc Vec
 ---@field speedRange range
 ---@field restitution number
----@field isStatic boolean
+---@field defaultInvulnerableTime number
+---@field invulnerableTimer number	
+---@field blinkTimer number
+---@field hasShadow? boolean
+---@field shadowWidth? number
 Entity = {}
 Entity.__index = Entity
 
@@ -74,20 +78,38 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics)
 	self.acc = physics.initialAcc
 	self.speedRange = physics.speedRange
 	self.restitution = physics.restitution or 0
-	self.isStatic = physics.mass == math.huge
 
+	self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
 	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
+	-- self.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 end
 
 function Entity:updateInvulnerability(dt)
 	if self.invulnerableTimer > 0 then
 		self.invulnerableTimer = self.invulnerableTimer - dt
-		self.blinkTimer = (self.blinkTimer + dt * 10) % 1
+		-- self.blinkTimer = (self.blinkTimer + dt * 10) % 1
 	end
 end
 
 function Entity:isInvulnerable()
-	local blink = 0.5
-	return self.invulnerableTimer > 0 and self.blinkTimer < blink
+	return self.invulnerableTimer > 0
+end
+
+function Entity:setInvulnerable(duration)
+	self.defaultInvulnerableTime = self.defaultInvulnerableTime or duration
+	self.invulnerableTimer = self.defaultInvulnerableTime
+end
+
+---@param camera Camera
+-- função de renderização padrão das entidades
+function Entity:draw(camera)
+	local viewPos = camera:viewPos(self.pos)
+	local anim = self.animations[self.state]
+	local quad = anim.frames[anim.currFrame]
+	local offset = {
+		x = anim.frameDim.width / 2,
+		y = anim.frameDim.height / 2,
+	}
+	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
 end

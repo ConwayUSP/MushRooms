@@ -9,7 +9,7 @@ require("table")
 -- Variáveis
 ----------------------------------------
 
-local DIALOGUE_ZOOM = 1
+local DIALOGUE_ZOOM = 0.4
 
 ----------------------------------------
 -- Classe Diálogo
@@ -55,7 +55,7 @@ function Dialogue:start()
 	local playerCamera = getCameraByPlayer(self.listener)
 	if playerCamera then
 		playerCamera:changeTarget(self.speaker)
-		playerCamera.targetZoom = DIALOGUE_ZOOM
+		playerCamera.targetZoom = playerCamera.startingZoom + DIALOGUE_ZOOM
 	end
 
 	-- diálogo introdutório
@@ -105,7 +105,7 @@ function Dialogue:endDialogue()
 	local playerCamera = getCameraByPlayer(self.listener)
 	if playerCamera then
 		playerCamera:changeTarget(self.listener)
-		playerCamera.targetZoom = 1
+		playerCamera.targetZoom = playerCamera.startingZoom
 	end
 
 	self.listener.inDialogue = false
@@ -132,7 +132,7 @@ function Dialogue:draw(camera)
 		local width = dialogueBoxImg:getWidth()
 		local padding = 20
 		love.graphics.draw(dialogueBoxImg, viewPos.x, viewPos.y, 0, 3, 3, width / 2, 12)
-		love.graphics.setFont(tempFont)
+		love.graphics.setFont(mushFont)
 		local textX = viewPos.x + padding - width * 1.5
 		local textWidth = width * 3 - 2 * padding
 		love.graphics.printf(text, textX, viewPos.y, textWidth, "center")
@@ -159,7 +159,6 @@ function DialogueManager:start(dialogue, speaker, listener)
 		return
 	end
 
-	print("Iniciando diálogo entre " .. speaker.name .. " e " .. listener.name)
 	self.dialogues[speaker] = dialogue
 
 	dialogue.speaker = speaker
@@ -173,7 +172,6 @@ end
 function DialogueManager:cleanDialogue(dialogue)
 	if self.dialogues[dialogue.speaker] then
 		self.dialogues[dialogue.speaker] = nil
-		print("Finalizando diálogo...")
 	end
 end
 

@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações de módulos
 ----------------------------------------
-require("modules.engine.collision")
+require("modules.systems.collision")
 require("modules.entities.player")
 require("modules.entities.room")
 

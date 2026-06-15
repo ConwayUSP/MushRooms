@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.systems.blueprints")
+require("modules.systems.blueprint")
 require("modules.utils.constructors")
 require("modules.utils.types")
 require("modules.utils.utils")
@@ -49,10 +49,11 @@ EVENT_ROOM = "event room"
 ---@field explored boolean
 ---@field destructibles Destructible[]
 ---@field interactives Interactive[]
----@field items Item[]
+---@field drops Drop[]
 ---@field enemies Enemy[]
 ---@field npcs Npc[]
 ---@field obstacles Obstacle[]
+---@field doors Interactive[]
 ---@field playersInRoom Set
 ---@field populate function
 ---@field visit function
@@ -60,8 +61,10 @@ EVENT_ROOM = "event room"
 
 Room = {}
 Room.__index = Room
-Room.stdDim = { width = 1536, height = 1536 }
 Room.type = ROOM
+Room.stdDim = { width = 1536, height = 1536 }
+Room.spacingV = 360
+Room.spacingH = 96
 
 ---@param pos Vec
 ---@param dimensions Size
@@ -87,17 +90,20 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.explored = false -- se algum jogador já entrou na sala ou não
 	room.destructibles = {} -- lista de objetos destrutíveis da sala
 	room.interactives = {} -- lista de objetos interativos na sala
-	room.items = {} -- lista de itens dropados na sala
+	room.doors = {} -- lista de portas da sala
+	room.drops = {} -- lista de itens dropados na sala
 	room.enemies = {} -- lista de inimigos na sala
 	room.npcs = {} -- lista de NPCs na sala
 	room.obstacles = {} -- lista de obstáculos na sala
 	room.playersInRoom = Set.new() -- lista de jogadores na sala
 
+	room:addWallsAndDoors()
+
 	return room
 end
 
 ---@param dt number
--- atualiza os destrutíveis, inimigos e items da sala
+-- atualiza os destrutíveis, inimigos e drops da sala
 function Room:update(dt)
 	-- atualiza destrutíveis
 	for _, d in pairs(self.destructibles) do
@@ -107,9 +113,13 @@ function Room:update(dt)
 	for _, i in pairs(self.interactives) do
 		i:update(dt)
 	end
-	-- atualiza items
-	for _, item in pairs(self.items) do
-		item:update(dt)
+	-- atualiza portas
+	for _, d in pairs(self.doors) do
+		d:update(dt)
+	end
+	-- atualiza drops
+	for _, drop in pairs(self.drops) do
+		drop:update(dt)
 	end
 	-- atualiza inimigos
 	for _, e in pairs(self.enemies) do
@@ -199,10 +209,50 @@ end
 ---@param pos Vec
 -- instancia uma entidade e a insere na lista correspondente da sala
 function Room:spawn(entity, pos)
-	-- print("Tipo: " .. entity.type .. " Nome: " .. entity.name)
 	local constructor = CONSTRUCTORS[entity.type][entity.name]
 	local real_pos = addVec(pos, self.pos)
 	constructor(real_pos, self) -- instancia a entidade na sala
+end
+
+-- coloca paredes e portas ao redor da sala
+function Room:addWallsAndDoors()
+	-- perdoe a quantidade de números mágicos nessa função T~T
+	local doors = { DOOR_UP, DOOR_LEFT, DOOR_RIGHT, DOOR_DOWN }
+	local doorsRelPos = {
+		vec(0, -Room.stdDim.height / 2 - 80),
+		vec(-Room.stdDim.width / 2 - 47, -120),
+		vec(Room.stdDim.width / 2 + 47, -120),
+		vec(0, Room.stdDim.height / 2 + 40),
+	}
+	local walls = { WALL_UP, WALL_DOWN, WALL_LEFT_BACK, WALL_LEFT_FRONT, WALL_RIGHT_BACK, WALL_RIGHT_FRONT }
+	local wallsRelPos = {
+		vec(0, -Room.stdDim.height / 2 - 114),
+		vec(0, Room.stdDim.height / 2 + 114),
+		vec(-Room.stdDim.width / 2 - 44, -Room.stdDim.height / 2 + 282),
+		vec(-Room.stdDim.width / 2 - 44, 258),
+		vec(Room.stdDim.width / 2 + 44, -Room.stdDim.height / 2 + 282),
+		vec(Room.stdDim.width / 2 + 44, 258),
+	}
+	for i = 1, #doors do
+		CONSTRUCTORS[doors[i].type][doors[i].name](addVec(self.pos, doorsRelPos[i]), self, doors[i])
+	end
+	for i = 1, #walls do
+		CONSTRUCTORS[walls[i].type][walls[i].name](addVec(self.pos, wallsRelPos[i]), self)
+	end
+end
+
+-- abre as portas se estiverem fechadas e fecha elas se estiverem abertas
+function Room:toggleDoors()
+	for _, d in pairs(self.doors) do
+		d:onInteract()
+	end
+end
+
+function Room:addBuilding(building)
+	local interactive = building.makeInteractive(building.pos, self)
+	table.insert(self.interactives, interactive)
+	collisionManager:register(interactive)
+	return interactive
 end
 
 ----------------------------------------
@@ -220,8 +270,8 @@ function getRoomAt(pos)
 	return nil
 end
 
----@param pos any
----@param dimensions any
+---@param pos Vec
+---@param dimensions Size
 ---@param roomType? RoomType
 -- cria uma nova sala no índice indicado por `pos` da
 -- lista global de salas (`rooms`)
@@ -246,15 +296,23 @@ function newRoom(pos, dimensions, roomType)
 	-- escolhendo uma blueprint para a sala
 	roomType = roomType or randRoomType()
 	local blueprint = randRoomBlueprint(roomType)
-	-- gerando os atributos derivadoss
-	local p1 = vec(pos.x * Room.stdDim.width, pos.y * Room.stdDim.height)
-	local p2 = vec(p1.x + dimensions.width, p1.y + dimensions.height)
+
+	-- posicionando a sala
+	local leftLimit = pos.x * (dimensions.width + Room.spacingH) - Room.spacingH
+	local topLimit = pos.y * (dimensions.height + Room.spacingV) - Room.spacingV
+	local rightLimit = leftLimit + dimensions.width + Room.spacingH
+	local bottomLimit = topLimit + dimensions.height + Room.spacingV
+	local p1 = vec(leftLimit, topLimit)
+	local p2 = vec(rightLimit, bottomLimit)
 	local limits = { p1 = p1, p2 = p2 }
-	local hb = hitbox(Rectangle.new(dimensions.width, dimensions.height))
+	local hb = hitbox(Rectangle.new(dimensions.width + Room.spacingH, dimensions.height + Room.spacingV))
 	local hbs = hitboxes({}, {}, { hb })
+
+	-- decorando a sala
 	local sprites = {}
-	sprites.floor = love.graphics.newImage("assets/sprites/rooms/testRoom.png")
-	sprites.floor:setFilter("nearest", "nearest")
+	--sprites.floor = love.graphics.newImage("assets/sprites/rooms/test_room.png")
+	sprites.floor = assetManager:getImage("assets/sprites/rooms/test_room.png")
+
 	-- instanciando e populando com entidades (inimigos, destrutíveis, etc)
 	local room = Room.new(pos, dimensions, hbs, limits, blueprint, sprites)
 	room:populate(blueprint.spawnpoints)
@@ -263,7 +321,6 @@ end
 
 -- cria a sala inicial do jogo e suas 4 vizinhas
 function createInitialRooms()
-	-- cria a sala inicial do jogo e suas vizinhas
 	newRoom({ x = 0, y = 0 }, Room.stdDim)
 	rooms[0][0]:setExplored()
 end

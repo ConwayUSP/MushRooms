@@ -1,15 +1,16 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.dialogue")
+require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
 require("modules.engine.animation")
 require("modules.engine.camera")
-require("modules.engine.collision")
+require("modules.engine.collisionmanager")
 require("modules.engine.renderization")
+require("modules.engine.assetmanager")
 require("modules.entities.destructible")
 require("modules.entities.enemy")
-require("modules.entities.item")
+require("modules.entities.drop")
 require("modules.entities.player")
 require("modules.entities.room")
 require("modules.entities.weapon")
@@ -17,11 +18,12 @@ require("modules.systems.dialogue")
 require("modules.tooling.roomcontrol")
 require("modules.tooling.spawnDrop")
 require("modules.tooling.turtledebug")
+require("modules.tooling.fpsvisor")
+require("modules.systems.shaders")
 require("game")
 require("table")
 
 local appleCake = require("libs.applecake")(true)
-appleCake = require("libs.applecake")()
 appleCake.setBuffer(true)
 appleCake.beginSession()
 
@@ -31,7 +33,7 @@ appleCake.beginSession()
 
 debugMode = false
 inventoryOpen = false
-window = { scale = 1, offset = vec(0, 0) }
+window = { scale = 1, initialW = 1280, initialH = 720 }
 gameCtx = MENU_CTX
 local updateProfile
 local drawProfile
@@ -44,6 +46,10 @@ function love.keypressed(key, scancode, isrepeat)
 	-- esc fecha o jogo
 	if key == "escape" then
 		quitGame()
+	end
+
+	for _, p in pairs(players) do
+		p.uiManager:keypressed(key, isrepeat)
 	end
 
 	-- repassa para os UI managers
@@ -94,19 +100,13 @@ function love.keyreleased(key, scancode)
 end
 
 function love.resize(w, h)
-	local sx = w / window.width
-	local sy = h / window.height
+	local sx = w / window.initialW
+	local sy = h / window.initialH
 	window.scale = math.max(sx, sy)
-	local offsetX = (w - window.width * window.scale) / 2
-	local offsetY = (h - window.height * window.scale) / 2
-	window.offset = vec(offsetX, offsetY)
+	window.width = w / window.scale
+	window.height = h / window.scale
 
-	for i, _ in pairs(cameras) do
-		cameras[i] = nil
-	end
-	for _, p in pairs(players) do
-		newCamera(p)
-	end
+	newCameras() -- o tamanho das câmeras precisa mudar
 end
 
 ----------------------------------------
@@ -117,6 +117,9 @@ function love.load()
 	-- muda o filtro padrão para eliminar o efeito de blur
 	love.graphics.setDefaultFilter("nearest", "nearest")
 
+	-- carregando o gerenciador de assets
+	assetManager = AssetManager.init()
+
 	-- carregando a biblioteca de UI
 	globalUIManager = initGlobalUIManager()
 
@@ -124,7 +127,8 @@ function love.load()
 	math.randomseed(os.time())
 
 	-- definindo a fonte padrão do jogo
-	tempFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 16)
+	mushFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 16)
+	love.graphics.setFont(mushFont)
 
 	-- definindo as dimensões iniciais do jogo
 	window.width = 1280
@@ -168,6 +172,7 @@ function love.update(dt)
 	-------------- UI -------------
 	::uiupdate::
 	globalUIManager:update(dt)
+	updateFPSVisor(dt)
 
 	-- encerrando o profiling
 	updateProfile:stop()
@@ -186,6 +191,10 @@ function love.draw()
 	end
 
 	globalUIManager:draw()
+
+	if debugMode then
+		drawFPSVisor()
+	end
 
 	-- encerrando o profiling
 	drawProfile:stop()
