@@ -16,7 +16,7 @@ function newChest()
 	local onInteract = function(chest, player)
 		print("Player interacted with chest")
 	end
-	
+
 	local animSettings = {}
 	animSettings[IDLE] = newAnimSetting(1, size(128, 128), 1, true, 1)
 	animSettings[ACTIVE] = newAnimSetting(1, size(128, 128), 1, true, 1)
@@ -24,11 +24,11 @@ function newChest()
 
 	local makeInteractive = function(pos, room)
 		local chestInteractive = Interactive.new(CHEST.name, pos, hb, room, physics, onInteract)
-		addAnimations(chestInteractive, pathStart, animSettings)	
-	
+		addAnimations(chestInteractive, pathStart, animSettings)
+
 		return chestInteractive
 	end
-	
+
 	local chest = Product.new(BUILDING, CHEST.name, CHEST.description, makeInteractive)
 
 	addAnimations(chest, pathStart, animSettings)
@@ -43,7 +43,7 @@ function newFirecamp()
 	local onInteract = function() end
 	local onEnter = function(firecamp, player)
 		if not firecamp.playersHealing then
-			firecamp.playersHealing = {player}
+			firecamp.playersHealing = { player }
 		else
 			table.insert(firecamp.playersHealing, player)
 		end
@@ -78,21 +78,22 @@ function newFirecamp()
 		print("Player exited firecamp")
 		player.inFirecamp = false
 	end
-	
+
 	local animSettings = {}
 	animSettings[IDLE] = newAnimSetting(2, size(128, 128), 0.2, true, 1)
 	animSettings[ACTIVE] = newAnimSetting(2, size(128, 128), 0.2, true, 1)
 	local pathStart = dirPathFormat({ "assets", "animations", "products", BUILDING, FIRECAMP.name })
-	
+
 	local makeInteractive = function(pos, room)
-		local firecampInteractive = Interactive.new(FIRECAMP.name, pos, hb, room, physics, onInteract, customUpdate, onEnter, onExit)
+		local firecampInteractive =
+			Interactive.new(FIRECAMP.name, pos, hb, room, physics, onInteract, customUpdate, onEnter, onExit)
 		addAnimations(firecampInteractive, pathStart, animSettings)
 
 		return firecampInteractive
 	end
 
 	local firecamp = Product.new(BUILDING, FIRECAMP.name, FIRECAMP.description, makeInteractive)
-	
+
 	addAnimations(firecamp, pathStart, animSettings)
 	firecamp.shadowWidth = 35
 	return firecamp
