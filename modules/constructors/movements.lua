@@ -42,18 +42,52 @@ function zigZagMovement(ampDeg, period)
 	end
 end
 
----@param ampDeg? rad
+---@param amplitude? integer
+---@param frequency? integer
 ---@return MovementFunc
-function sineMovement(ampDeg, frequency)
-	ampDeg = ampDeg or math.rad(60)
-	local freq = frequency or 5
+function sineMovement(amplitude, frequency)
 	local time = 0
 
 	return function(entity, dt)
 		time = time + dt
-		local offset = math.sin(time * freq) * ampDeg
-		local targetAngle = (entity.direction or 0) + offset
-		local desiredVel = polarToVec(targetAngle, entity.speed)
+
+		local forward = polarToVec(entity.direction or 0, entity.speed)
+		local tangent = normalize(tangentVec(forward))
+		local side = scaleVec(tangent, math.sin(frequency * time) * amplitude)
+		local desiredVel = addVec(forward, side)
+
+		applySteering(entity, desiredVel, 20)
+	end
+end
+
+---@param amplitude? integer
+---@param frequency? integer
+---@return MovementFunc
+function sineMovement(amplitude, frequency)
+	local time = 0
+	
+	return function(entity, dt)
+		time = time + dt
+
+		local forward = polarToVec(entity.direction or 0, entity.speed)
+		local tangent = normalize(tangentVec(forward))
+		local side = scaleVec(tangent, math.sin(frequency * time) * amplitude)
+		local desiredVel = addVec(forward, side)
+
+		applySteering(entity, desiredVel, 20)
+	end
+end
+
+function orbitalMovement(radius, angularSpeed, speed)
+	local angle = 0
+
+	return function(entity, dt)
+		angle = angle + angularSpeed * dt
+
+		local forwardVel = polarToVec(entity.direction, speed or entity.speed)
+		local orbitVel = polarToVec(angle + math.pi/2, angularSpeed * radius)
+		local desiredVel = addVec(forwardVel, orbitVel)
+
 		applySteering(entity, desiredVel, 20)
 	end
 end

@@ -80,7 +80,7 @@ end
 ---@field animBreakingSettings table
 ---@field updateEvent function
 ---@field onHit function
----@field trajectoryFunc? MovementFunc
+---@field trajectoryFuncBuilder? function
 ---@field events AtkEvent[]
 ---@field hasShadow boolean
 ---@field shadowWidth number
@@ -93,13 +93,13 @@ Attack.type = ATTACK
 ---@param atkSettings AtkSetting
 ---@param updateFunc function
 ---@param onHit function
----@param trajectoryFunc? MovementFunc
+---@param trajectoryFuncBuilder? function
 ---@param attackFunc? function
 ---@return Attack
 -- `Attacks` agem como emissores de `AttackEvents`;
 -- eles armazenam as configurações, dados iniciais
 -- de um ataque e informações de controle (como o cooldown)
-function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFunc, attackFunc)
+function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFuncBuilder, attackFunc)
 	local attack = setmetatable({}, Attack)
 	attack.name = name                          -- nome do tipo de ataque
 	attack.subtype = atkSettings.subtype        -- indica se o ataque é melee, ranged ou outro tipo
@@ -119,7 +119,7 @@ function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFunc, attack
 	attack.canAttack = true                     -- se pode gerar um AttackEvent ou não
 	attack.updateEvent = updateFunc             -- função executada para cada AttackEvent, atualizando seu estado atual
 	attack.onHit = onHit                        -- função executada toda vez que um ataque acertar um alvo
-	attack.trajectoryFunc = trajectoryFunc      -- função que define a trajetória do ataque/projétil
+	attack.trajectoryFuncBuilder = trajectoryFuncBuilder -- função que define a trajetória do ataque/projétil
 	attack.attackFunc = attackFunc              -- função que define a criação dos AttackEvents (padrão circular, em cone, etc.)
 	-- Atributos fixos na instanciação
 	attack.events = {}
@@ -225,6 +225,7 @@ end
 ---@field pos Vec
 ---@field vel Vec
 ---@field acc Vec
+---@field trajectoryFunc? MovementFunc
 ---@field bouncesLeft number
 ---@field piercesLeft number
 ---@field target any
@@ -277,7 +278,9 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.direction = direction                           -- ângulo do ataque em radianos
 	atkEvent.bouncesLeft = attackState.bounces               -- número de ricochetes restantes
 	atkEvent.piercesLeft = attackState.pierces               -- número de alvos atravessáveis restantes
-	atkEvent.trajectoryFunc = attackState.trajectoryFunc     -- função que define a trajetória do ataque/projétil
+	atkEvent.trajectoryFunc = attackState.trajectoryFuncBuilder 
+		and attackState.trajectoryFuncBuilder() 
+		or nil     																						 -- função que define a trajetória do ataque/projétil
 	atkEvent.onHit = attackState.onHit                       -- função executada ao acertar um alvo
 	atkEvent.target = attacker.target                        -- alvo do ataque
 	atkEvent.ignoreSolids = attackState.subtype == MELEE_ATTACK -- se o ataque colide com sólidos ou não
