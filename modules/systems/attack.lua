@@ -76,15 +76,18 @@ end
 ---@field name string
 ---@field timer number
 ---@field canAttack boolean
----@field animIntactSettings table
----@field animBreakingSettings table
+---@field animIntactSettings AnimSettings
+---@field animBreakingSettings? AnimSettings
 ---@field updateEvent function
 ---@field onHit function
+---@field onShot function
 ---@field trajectoryFuncBuilder? function
+---@field rotationFunc? function
 ---@field events AtkEvent[]
+---@field weapon? Weapon
 ---@field hasShadow boolean
 ---@field shadowWidth number
----@field addAnimations fun(self: Attack, intactSettings: AnimSettings, breakingSettings: AnimSettings)
+---@field addAnimations fun(self: Attack, intactSettings: AnimSettings, breakingSettings?: AnimSettings)
 Attack = {}
 Attack.__index = Attack
 Attack.type = ATTACK
@@ -92,14 +95,15 @@ Attack.type = ATTACK
 ---@param name string
 ---@param atkSettings AtkSetting
 ---@param updateFunc function
----@param onHit function
+---@param onHit? function
+---@param onShot? function
 ---@param trajectoryFuncBuilder? function
----@param attackFunc? function
+---@param rotationFunc? function
 ---@return Attack
 -- `Attacks` agem como emissores de `AttackEvents`;
 -- eles armazenam as configurações, dados iniciais
 -- de um ataque e informações de controle (como o cooldown)
-function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFuncBuilder, attackFunc)
+function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFuncBuilder, rotationFunc)
 	local attack = setmetatable({}, Attack)
 	attack.name = name                          -- nome do tipo de ataque
 	attack.subtype = atkSettings.subtype        -- indica se o ataque é melee, ranged ou outro tipo
@@ -118,12 +122,19 @@ function Attack.new(name, atkSettings, updateFunc, onHit, trajectoryFuncBuilder,
 	attack.timer = 0                            -- timer do cooldown, ao chegar em 0 permite gerar ataques
 	attack.canAttack = true                     -- se pode gerar um AttackEvent ou não
 	attack.updateEvent = updateFunc             -- função executada para cada AttackEvent, atualizando seu estado atual
-	attack.onHit = onHit                        -- função executada toda vez que um ataque acertar um alvo
-	attack.trajectoryFuncBuilder = trajectoryFuncBuilder -- função que define a trajetória do ataque/projétil
-	attack.attackFunc = attackFunc              -- função que define a criação dos AttackEvents (padrão circular, em cone, etc.)
+	attack.onHit = onHit or function () end     -- função executada toda vez que um ataque acertar um alvo
+	attack.onShot = onShot or function () end   -- função executada quando um ataque é disparado
+	attack.trajectoryFuncBuilder = 
+		trajectoryFuncBuilder 										-- função que define a trajetória do ataque/projétil
+	attack.rotationFunc = rotationFunc          -- função que define a rotação do ataque/projétil
+
 	-- Atributos fixos na instanciação
 	attack.events = {}
 	return attack
+end
+
+function Attack:setWeapon(weapon)
+	self.weapon = weapon
 end
 
 function Attack:addAttackFunc(attackFunc)
@@ -131,7 +142,7 @@ function Attack:addAttackFunc(attackFunc)
 end
 
 ---@param intactSettings AnimSettings
----@param breakingSettings AnimSettings
+---@param breakingSettings? AnimSettings
 -- adiciona as animações de ataque e destruição à `Attack` de acordo
 function Attack:addAnimations(intactSettings, breakingSettings)
 	self.animIntactSettings = intactSettings
@@ -147,6 +158,8 @@ function Attack:attack(attacker, origin, direction)
 	self.timer = self.cooldown()
 	self.canAttack = false
 
+	self:onShot()
+
 	local attacks = {}
 	if self.attackFunc then
 		attacks = self.attackFunc(self, attacker, origin, direction)
@@ -155,7 +168,7 @@ function Attack:attack(attacker, origin, direction)
 	end
 	
 	for _, atkEvent in ipairs(attacks) do
-		if self.animIntactSettings and self.animBreakingSettings then
+		if self.animIntactSettings then
 			atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
 		end
 		table.insert(self.events, atkEvent)
@@ -219,6 +232,7 @@ end
 ----------------------------------------
 
 ---@class AtkEvent : Attack, Entity
+---@field atk Attack
 ---@field attacker any
 ---@field origin Vec
 ---@field direction rad
@@ -267,6 +281,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	)
 	atkEvent:init(attackState.name, origin, hitboxes, nil, physics)
 
+	atkEvent.atk = attackState
 	atkEvent.name = attackState.name                         -- para descobrirmos o caminho até os assets
 	atkEvent.ally = attackState.ally                         -- para definir quem é afetado pelo ataque
 	atkEvent.subtype = attackState.subtype                   -- subtipo do ataque, como melee, ranged, etc
@@ -281,6 +296,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.trajectoryFunc = attackState.trajectoryFuncBuilder 
 		and attackState.trajectoryFuncBuilder() 
 		or nil     																						 -- função que define a trajetória do ataque/projétil
+	atkEvent.rotationFunc = attackState.rotationFunc         -- função que define a rotação do ataque/projétil
 	atkEvent.onHit = attackState.onHit                       -- função executada ao acertar um alvo
 	atkEvent.target = attacker.target                        -- alvo do ataque
 	atkEvent.ignoreSolids = attackState.subtype == MELEE_ATTACK -- se o ataque colide com sólidos ou não
@@ -348,10 +364,12 @@ function AttackEvent:addAnimation(intactSettings, breakingSettings)
 	local path = pngPathFormat({ "assets", "animations", "attacks", self.name, INTACT })
 	addAnimation(self, path, INTACT, intactSettings)
 	--------------- BREAKING ---------------
-	path = pngPathFormat({ "assets", "animations", "attacks", self.name, BREAKING })
-	addAnimation(self, path, BREAKING, breakingSettings)
-	self.animations[BREAKING].onFinish = function()
-		self.breakingFinished = true
+	if breakingSettings then
+		path = pngPathFormat({ "assets", "animations", "attacks", self.name, BREAKING })
+		addAnimation(self, path, BREAKING, breakingSettings)
+		self.animations[BREAKING].onFinish = function()
+			self.breakingFinished = true
+		end
 	end
 end
 
@@ -367,14 +385,20 @@ function AttackEvent:draw(camera)
 	local quad = animation.frames[animation.currFrame]
 	local flipY = (self.direction / math.pi < -0.5 and self.direction / math.pi >= -1.5 and not self.animDir) and -1
 		or 1
-	local velDir = self.subtype == RANGED_ATTACK and math.atan2(self.vel.y, self.vel.x) or self.direction
+	
+	local rotation
+	if self.rotationFunc then
+		rotation = self:rotationFunc()
+	else
+		rotation = self.direction
+	end
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
 		viewPos.x,
 		viewPos.y,
-		velDir + self.animDir, -- corrigindo a rotação para que o sprite olhe para a direção do ataque
+		rotation,
 		3,
 		3 * flipY,
 		animation.frameDim.width / 2,

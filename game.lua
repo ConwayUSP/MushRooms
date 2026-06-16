@@ -23,7 +23,9 @@ function startGame()
 	newPlayer()
 	-- debug
 	players[1]:collectWeapon(newSlingShot())
-	players[1]:equipWeapon(SLING_SHOT.name)
+	players[1]:collectWeapon(newKatana())
+	players[1]:collectWeapon(newBoomerangue())
+	players[1]:equipWeapon(BOOMERANGUE.name)
 	gameCtx = GAMEPLAY_CTX
 	globalUIManager:deactivateAllScenes()
 end

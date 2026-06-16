@@ -36,10 +36,20 @@ end
 -- cria uma arma do tipo Estilingue
 function newSlingShot()
 	local cooldown = constCooldown(0.4)
-	local attack = newPebbleConeAttack(true, 5, cooldown, 300, function() return orbitalMovement(100, 10, 200) end)
+	local attack = newPebbleShotAttack(true, 5, cooldown, 1400, function() return straightMovement() end)
 	local slingshot = Weapon.new(SLING_SHOT.name, math.huge, attack)
 	local idleAnimSettings = newAnimSetting(2, { width = 64, height = 64 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(10, { width = 64, height = 64 }, 0.05, false, 1)
 	slingshot:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return slingshot
+end
+
+---@return Weapon
+-- cria uma arma do tipo Boomerangue
+function newBoomerangue()
+	local attack = newBoomerangueAttack(true, 1600)
+	local boomerangue = Weapon.new(BOOMERANGUE.name, 1, attack)
+	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
+	boomerangue:addAnimations(idleAnimSettings)
+	return boomerangue
 end

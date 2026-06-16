@@ -30,15 +30,18 @@ require("modules.utils.types")
 function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local hb = hitbox(Circle.new(15))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 15, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 4, 2, 1)
+	local settings = newAtkSetting(RANGED_ATTACK, ally, 15, duration, hbs, cooldown, 1, speed, 0.1, 0, 4, 2, 1)
 	local animIntact = newAnimSetting(5, { width = 16, height = 16 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 16, height = 16 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
+	local rotationFunc = function (e)
+		return math.atan2(e.vel.y, e.vel.x)
+	end
 	local onHitFunc = function(e, t)
 		print("Pebble Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, trajectoryFuncBuilder)
+	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -49,7 +52,7 @@ end
 ---@param ally boolean
 ---@param cooldown function
 ---@param speed number
----@param trajectoryFunc? MovementFunc
+---@param trajectoryFuncBuilder? function
 ---@return Attack
 -- um tiro nuclear
 function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
@@ -58,16 +61,46 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 1, 2, 1)
 	local animIntact = newAnimSetting(3, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 32, height = 32 }, 0.05, false, 1)
-	local updateFunc = function(e, dt)
-		AttackEvent.baseUpdate(e, dt)
-		e.animDir = -math.rad(90)
+	local updateFunc = AttackEvent.baseUpdate
+	local rotationFunc = function (e)
+		return -math.rad(90) + math.atan2(e.vel.y, e.vel.x)
 	end
 	local onHitFunc = function(e, t)
 		print("Nuclear Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, trajectoryFuncBuilder)
+	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 10
+
+	return attack
+end
+
+---@param ally boolean
+---@param speed number
+---@return Attack
+-- um tiro nuclear
+function newBoomerangueAttack(ally, speed)
+	local cooldown = constCooldown(0.1)
+	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, 0.2) end
+	local hb = hitbox(Circle.new(25))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting(RANGED_ATTACK, ally, 12, math.huge, hbs, cooldown, 1, speed, 0.1, 0, math.huge, math.huge, 1)
+	local anim = newAnimSetting(12, { width = 32, height = 32 }, 0.1, true, 1)
+	local updateFunc = AttackEvent.baseUpdate
+	local rotationFunc = function (e)
+		return e.age * 12
+	end
+	local onHitFunc = function(e, t)
+		print("Boomerangue acertou um alvo")
+	end
+	local onShotFunc = function (e)
+		e.weapon.visible = false
+	end
+
+	local attack = Attack.new("Boomerangue", settings, updateFunc, onHitFunc, onShotFunc, trajectoryFuncBuilder, rotationFunc)
+	attack:addAnimations(anim)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
 
@@ -91,7 +124,7 @@ function newRotatoryAttack(ally, duration, cooldown)
 		print("Rotatory Attack acertou um alvo")
 	end
 
-	local attack = Attack.new("Rotatory Attack", settings, updateFunc, onHitFunc)
+	local attack = Attack.new("Rotatory Attack", settings, updateFunc, onHitFunc, nil)
 	attack.hasShadow = false
 
 	return attack
@@ -150,7 +183,7 @@ end
 ---@param duration number
 ---@param cooldown function
 ---@param speed number
----@param trajectoryFunc MovementFunc
+---@param trajectoryFuncBuilder MovementFunc
 ---@return Attack
 -- tiro de pedrinha que alterna entre circular e cone
 function newPebbleCircularConeAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
