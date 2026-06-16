@@ -27,6 +27,7 @@ GLOB = registerEntity(NPC, "Glob")
 ---------------- ARMAS -----------------
 KATANA = registerEntity(WEAPON, "Katana")
 SLING_SHOT = registerEntity(WEAPON, "Sling Shot")
+BOOMERANGUE = registerEntity(WEAPON, "Boomerangue")
 
 ------------- DESTRUTÍVEIS -------------
 JAR = registerEntity(DESTRUCTIBLE, "jar")

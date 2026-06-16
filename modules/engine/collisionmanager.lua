@@ -601,6 +601,5 @@ end
 ---@param obstacle Obstacle
 -- trata a colisão entre um ataque e um obstáculo
 function CollisionManager:onAttackObstacle(attack, obstacle)
-	print("Ataque colidiu com um obstáculo!")
 	attack:reduceBounces()
 end

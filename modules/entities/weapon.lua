@@ -15,12 +15,13 @@ require("modules.utils.types")
 ---@field ammo number
 ---@field atk Attack
 ---@field canShoot boolean
+---@field visible boolean
 ---@field target any
 ---@field rotation rad
 ---@field state string
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
----@field addAnimations fun(self: Weapon, idleSettings: AnimSettings, weaponAtkSettings: AnimSettings): nil
+---@field addAnimations fun(self: Weapon, idleSettings: AnimSettings, weaponAtkSettings?: AnimSettings): nil
 
 Weapon = setmetatable({}, { __index = Entity })
 Weapon.__index = Weapon
@@ -40,8 +41,10 @@ function Weapon.new(name, ammo, attack)
 	-- atributos que variam
 	weapon.ammo = ammo -- número de munições
 	weapon.atk = attack -- instância de Attack associada à arma
+	weapon.atk:setWeapon(weapon) -- associa a arma ao ataque
 	-- atributos fixos na instanciação
 	weapon.canShoot = false
+	weapon.visible = true
 	weapon.target = nil -- inimigo para o qual a arma está mirando
 	weapon.rotation = 0 -- rotação da arma em radianos
 	weapon.state = IDLE -- estado atual da arma
@@ -74,7 +77,8 @@ end
 ---@return boolean
 -- tenta realizar um ataque, caso bem sucedido, atualiza o estado/animação da arma
 function Weapon:attack()
-	if self.atk.canAttack then
+	if self.ammo > 0 and self.atk.canAttack then
+		self.ammo = self.ammo - 1
 		self.atk:attack(self.owner, self.owner.pos, self.rotation)
 		self.state = ATTACKING
 		if self.animations[ATTACKING] then
@@ -86,15 +90,18 @@ function Weapon:attack()
 end
 
 ---@param idleSettings AnimSettings
----@param weaponAtkSettings AnimSettings
+---@param weaponAtkSettings? AnimSettings
 -- inicializa as animações de `Weapon` e as associa com seus respectivos estados
 function Weapon:addAnimations(idleSettings, weaponAtkSettings)
 	-- animação idle
 	local path = pngPathFormat({ "assets", "animations", "weapons", self.name, IDLE })
 	addAnimation(self, path, IDLE, idleSettings)
-	-- animação da arma ao atacar
-	path = pngPathFormat({ "assets", "animations", "weapons", self.name, ATTACKING })
-	addAnimation(self, path, ATTACKING, weaponAtkSettings)
+	
+	if weaponAtkSettings then
+			-- animação da arma ao atacar
+		path = pngPathFormat({ "assets", "animations", "weapons", self.name, ATTACKING })
+		addAnimation(self, path, ATTACKING, weaponAtkSettings)
+	end
 end
 
 ----------------------------------------
@@ -105,7 +112,7 @@ end
 -- renderiza a arma na perspectiva da `camera`
 function Weapon:draw(camera)
 	-- Não renderiza armas de jogadores se defendendo
-	if self.owner.state == DEFENDING or self.owner.building then
+	if self.owner.state == DEFENDING or self.owner.building or not self.visible then
 		return
 	end
 
@@ -124,14 +131,14 @@ function Weapon:draw(camera)
 	local flipY = (self.rotation / math.pi < -0.5 and self.rotation / math.pi >= -1.5) and -1 or 1
 
 	local p = self.owner.invulnerableTimer > 0
-			and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+		and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
 		or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
 	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
 	local offset = {
-		x = animation.frameDim.width / 2,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
+		x = animation.frameDim.width / 2 - 8,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY - 8,
 	}
 
 	love.graphics.draw(

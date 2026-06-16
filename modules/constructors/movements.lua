@@ -85,10 +85,40 @@ function orbitalMovement(radius, angularSpeed, speed)
 		angle = angle + angularSpeed * dt
 
 		local forwardVel = polarToVec(entity.direction, speed or entity.speed)
-		local orbitVel = polarToVec(angle + math.pi/2, angularSpeed * radius)
+		local orbitVel = polarToVec(angle + entity.direction - math.pi/2, angularSpeed * radius)
 		local desiredVel = addVec(forwardVel, orbitVel)
 
 		applySteering(entity, desiredVel, 20)
+	end
+end
+
+function boomerangMovement(returnSpeed, timing)
+	-- local isFirst = true
+	timing = timing or 0.5
+
+	return function(entity, dt)
+		-- if isFirst then
+		-- 	isFirst = false
+		-- 	local forward = polarToVec(entity.direction, initSpeed)
+		-- 	applySteering(entity, forward, 20)
+		-- end
+
+		if entity.age < timing then
+			return
+		end
+
+		local dir = subVec(entity.attacker.pos, entity.pos)
+
+		if lenVec(dir) < 50 then
+			entity.atk.weapon.ammo = 1
+			entity.atk.weapon.visible = true
+			entity:destroy()
+			return
+		end
+
+		local desiredVel = scaleVec(normalize(dir), returnSpeed)
+		applySteering(entity, desiredVel, 1)
+		
 	end
 end
 

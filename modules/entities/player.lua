@@ -170,7 +170,7 @@ function Player:update(dt)
 	self:updateInvulnerability(dt)
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
-		if w == self.weapon then
+		if w == self.weapon and self.weapon.animations[self.weapon.state] then
 			self.weapon.animations[self.weapon.state]:update(dt)
 		end
 		w:update(dt)
