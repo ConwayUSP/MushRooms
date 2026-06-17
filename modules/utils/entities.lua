@@ -84,8 +84,7 @@ WALL_RIGHT_BACK = registerEntity(OBSTACLE, "wall right back")
 WALL_RIGHT_FRONT = registerEntity(OBSTACLE, "wall right front")
 
 ------------------ BUILDINGS -----------------
-FIRECAMP =
-	registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
+FIRECAMP = registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
 CHEST = registerEntity(BUILDING, "chest", "It's bigger on the inside than it looks... and it's made with love")
 ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
 KITCHEN = registerEntity(BUILDING, "kitchen")
@@ -102,3 +101,6 @@ DOOR_LEFT = registerEntity(INTERACTIVE, "door left")
 DOOR_RIGHT = registerEntity(INTERACTIVE, "door right")
 DOOR_DOWN = registerEntity(INTERACTIVE, "door down")
 TURTLE = registerEntity(INTERACTIVE, "turtle")
+
+------------ BLESSINGS ---------------
+ARCHER_BLESSING = registerEntity(BLESSING, "archer blessing")

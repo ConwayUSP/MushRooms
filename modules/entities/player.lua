@@ -4,9 +4,10 @@
 require("modules.constructors.particles")
 require("modules.constructors.craftings")
 require("modules.engine.animation")
-require("modules.systems.collision")
 require("modules.entities.entity")
 require("modules.entities.artifact")
+require("modules.systems.blessing")
+require("modules.systems.collision")
 require("modules.systems.inventory")
 require("modules.systems.inputbuffer")
 require("modules.utils.colors")
@@ -55,6 +56,7 @@ local MAX_HP = 100
 ---@field candidateInteractives Interactive|Npc[]
 ---@field uiManager table
 ---@field craftingManager CraftingManager
+---@field blessingManager BlessingManager
 ---@field building any
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
@@ -101,6 +103,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
+	player.blessingManager = BlessingManager.new() -- gerenciador de bênçãos do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
 	player.defaultInvulnerableTime = 0.3
@@ -555,6 +558,8 @@ function Player:collectDrop(drop)
 		result = self:collectCoin()
 	elseif drop.object.type == RESOURCE then
 		result = self:collectResource(drop.object)
+	elseif drop.object.type == BLESSING then
+		result = self.blessingManager:equip(drop.object)
 	end
 	if result then
 		drop:setCollected()
