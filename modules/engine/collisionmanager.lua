@@ -505,7 +505,7 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 		return
 	end
 
-	attack.targetsDamaged[enemy] = true
+	attack.targetsDamaged[enemy] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if enemy.invulnerableTimer > 0 then
@@ -538,7 +538,7 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 		return
 	end
 
-	attack.targetsDamaged[player] = true
+	attack.targetsDamaged[player] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if not player:takeDamage(attack.dmg) then

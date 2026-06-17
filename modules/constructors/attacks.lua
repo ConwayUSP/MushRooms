@@ -27,10 +27,25 @@ require("modules.utils.types")
 ---@param trajectoryFuncBuilder? function
 ---@return Attack
 -- um tiro de pedrinha
-function newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
+function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local hb = hitbox(Circle.new(15))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 15, duration, hbs, cooldown, 1, speed, 0.1, 0, 4, 2, 1)
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 15,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		initialSpeed = speed,
+		accFactor = -speed / 2,
+		restitution = 1,
+		friction = 0,
+		bounces = 3,
+		pierces = 2,
+		-- tick = 0.5
+	})
+
 	local animIntact = newAnimSetting(5, { width = 16, height = 16 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 16, height = 16 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
@@ -58,7 +73,21 @@ end
 function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 30, duration, hbs, cooldown, 1, speed, 0.1, -speed / 2, 1, 2, 1)
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 30,
+		dur = duration,
+		hb = hbs,
+		cooldown = cooldown,
+		initialMass = 1,
+		initialSpeed = speed,
+		friction = 0,
+		accFactor = -speed / 2,
+		restitution = 1,
+		bounces = 2,
+		pierces = 1
+	})
 	local animIntact = newAnimSetting(3, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
@@ -86,7 +115,22 @@ function newBoomerangueAttack(ally, speed)
 	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, 0.2) end
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(RANGED_ATTACK, ally, 12, math.huge, hbs, cooldown, 1, speed, 0.1, 0, math.huge, math.huge, 1)
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 12,
+		dur = math.huge,
+		hb = hbs,
+		cooldown = cooldown,
+		initialMass = 1,
+		initialSpeed = speed,
+		friction = 0,
+		accFactor = 0,
+		restitution = 1,
+		bounces = math.huge,
+		pierces = math.huge,
+		tick = 0.2
+	})
 	local anim = newAnimSetting(12, { width = 32, height = 32 }, 0.1, true, 1)
 	local updateFunc = AttackEvent.baseUpdate
 	local rotationFunc = function (e)
@@ -115,7 +159,15 @@ end
 function newRotatoryAttack(ally, duration, cooldown)
 	local hb = hitbox(Circle.new(40), vec(0, -20))
 	local hbs = hitboxes({ hb })
-	local settings = newAtkSetting(MELEE_ATTACK, ally, 20, duration, hbs, cooldown, 1, 0, 1, 0, 1, 2, 1)
+	local settings = newAtkSetting({
+		subtype = MELEE_ATTACK,
+		ally = ally,
+		dmg = 20,
+		dur = duration,
+		hb = hbs,
+		cooldown = cooldown,
+		tick = 0.5
+	})
 	local updateFunc = function(e, dt)
 		e:baseUpdate(dt)
 		e.pos = e.attacker.pos

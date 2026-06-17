@@ -21,50 +21,27 @@ require("modules.utils.utils")
 ---@field restitution number
 ---@field bounces number
 ---@field pierces number
+---@field tick number
 
----@param subtype string
----@param ally boolean
----@param damage number
----@param duration number
----@param hitboxes Hitboxes
----@param mass? number
----@param speed? number
----@param friction? number
----@param acceleration? number
----@param restitution? number
----@param bounces? number
----@param pierces? number
+---@param config table
 ---@return AtkSetting
 -- construtor complementar ao anterior, usado para ataques de projétil
-function newAtkSetting(
-	subtype,
-	ally,
-	damage,
-	duration,
-	hitboxes,
-	cooldown,
-	mass,
-	speed,
-	friction,
-	acceleration,
-	bounces,
-	pierces,
-	restitution
-)
+function newAtkSetting(config)
 	return {
-		subtype = subtype,
-		ally = ally,
-		dmg = damage,
-		dur = duration,
-		hb = hitboxes,
-		cooldown = cooldown,
-		initialMass = mass or 1,
-		initialSpeed = speed or 0,
-		friction = friction or 1,
-		accFactor = acceleration or 0,
-		bounces = bounces or 0,
-		pierces = pierces or math.huge,
-		restitution = restitution or 0,
+		subtype = config.subtype,
+		ally = config.ally,
+		dmg = config.dmg,
+		hb = config.hb,
+		cooldown = config.cooldown,
+		dur = config.dur or 1,
+		initialMass = config.initialMass or 1,
+		initialSpeed = config.initialSpeed or 0,
+		friction = config.friction or 1,
+		accFactor = config.accFactor or 0,
+		bounces = config.bounces or 0,
+		pierces = config.pierces or math.huge,
+		restitution = config.restitution or 0.2,
+		tick = config.tick or math.huge
 	}
 end
 
@@ -118,6 +95,7 @@ function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFunc
 	attack.hb = atkSettings.hb                  -- hitboxes do ataque
 	attack.bounces = atkSettings.bounces        -- quantas vezes o ataque pode ricochetear (caso seja projétil)
 	attack.pierces = atkSettings.pierces        -- quantas vezes o ataque pode atravessar um alvo
+	attack.tick = atkSettings.tick              -- tempo mínimo entre acertos em um mesmo alvo
 	attack.cooldown = atkSettings.cooldown      -- tempo que deve passar entre ataques
 	attack.timer = 0                            -- timer do cooldown, ao chegar em 0 permite gerar ataques
 	attack.canAttack = true                     -- se pode gerar um AttackEvent ou não
@@ -293,6 +271,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.direction = direction                           -- ângulo do ataque em radianos
 	atkEvent.bouncesLeft = attackState.bounces               -- número de ricochetes restantes
 	atkEvent.piercesLeft = attackState.pierces               -- número de alvos atravessáveis restantes
+	atkEvent.tick = attackState.tick                         -- tempo mínimo entre acertos em um mesmo alvo
 	atkEvent.trajectoryFunc = attackState.trajectoryFuncBuilder 
 		and attackState.trajectoryFuncBuilder() 
 		or nil     																						 -- função que define a trajetória do ataque/projétil
@@ -323,12 +302,19 @@ end
 -- atualiza o estado interno de um evento de ataque (`AttackEvent`)
 function AttackEvent:baseUpdate(dt)
 	self.age = self.age + dt
+	self.timer = self.timer - dt
 
 	-- aplica função de trajetória se existir
 	if self.trajectoryFunc then
 		self.trajectoryFunc(self, dt)
 	end
-	self.timer = self.timer - dt
+
+	for key, e in pairs(self.targetsDamaged) do
+		e.timer = e.timer - dt
+		if e.timer <= 0 then
+			self.targetsDamaged[key] = nil
+		end
+	end
 end
 
 function AttackEvent:reducePierces()
