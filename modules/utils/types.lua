@@ -12,6 +12,7 @@ DROP = "drop"
 DESTRUCTIBLE = "destructible"
 INTERACTIVE = "interactive"
 OBSTACLE = "obstacle"
+ARTIFACT = "artifact"
 
 ---------- ATAQUES ----------
 ATTACK = "attack"

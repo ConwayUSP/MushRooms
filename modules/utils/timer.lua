@@ -8,11 +8,11 @@ require("modules.utils.types")
 ----------------------------------------
 
 ---@class Timer
----@field time number tempo atual do timer
----@field increasing boolean se for true significa que cresce ou invés de decrescer, o padrão é `false`
----@field active boolean se inativo, o timer está congelado
----@field limit number limite do timer, o padrão é `0`
----@field goingOff boolean vira true no frame exato em que o timer chegar em seu limite, funciona como um sinal
+---@field time number
+---@field increasing boolean
+---@field active boolean
+---@field limit number
+---@field goingOff boolean
 ---@field callback fun(...?: any)
 ---@field update fun(dt: number)
 ---@field start fun()
@@ -27,63 +27,63 @@ Timer.__index = Timer
 ---@return table
 -- Cria um novo timer de `limite` segundos, com uma possível função de callback atrelada
 function Timer.new(duration, increasing, callback)
-    local t = setmetatable({}, Timer)
-    t.increasing = increasing
-    t.callback = callback
-    if increasing then
-        t.limit = duration
-        t.time = 0
-    else
-        t.limit = 0
-        t.time = duration
-    end
-    t.active = false
-    t.goingOff = false
-    return t
+	local t = setmetatable({}, Timer)
+	t.increasing = increasing -- se for true significa que cresce ou invés de decrescer, o padrão é false
+	t.callback = callback  -- função de callback, é chamada assim que o timer chegar ao fim
+	if increasing then
+		t.limit = duration -- limite do timer
+		t.time = 0         -- tempo atual do timer
+	else
+		t.limit = 0        -- limite do timer
+		t.time = duration  -- tempo atual do timer
+	end
+	t.active = false       -- se inativo, o timer está congelado
+	t.goingOff = false     -- vira true no frame exato em que o timer chegar em seu limite, funciona como um sinal
+	return t
 end
 
--- atualiza o tempo do timer e seus atributos, além de possivelmente chamar um callback
+-- atualiza o tempo do timer e seus atributos, além de possivelmente chamar o callback
 function Timer:update(dt)
-    -- desligando o "alarme"
-    if self.goindOff then
-        self.goindOff = false
-    end
+	-- desligando o "alarme"
+	if self.goindOff then
+		self.goindOff = false
+	end
 
-    if not self.active then
-        return
-    end
+	if not self.active then
+		return
+	end
 
-    if self.increasing then
-        self.time = self.time + dt
-        if self.time < self.limit then
-            return -- retorno precoce
-        end
-    else
-        self.time = self.time - dt
-        if self.time > self.limit then
-            return -- retorno precoce
-        end
-    end
+	if self.increasing then
+		self.time = self.time + dt
+		if self.time < self.limit then
+			return -- retorno precoce
+		end
+	else
+		self.time = self.time - dt
+		if self.time > self.limit then
+			return -- retorno precoce
+		end
+	end
 
-    -- fim dessa contagem
-    self.active = false
-    self.goingOff = true
-    if self.callback then
-        self.callback()
-    end
+	-- fim dessa contagem
+	self.active = false
+	self.goingOff = true
+	if self.callback then
+		self.callback()
+	end
 end
 
--- começa a contagem do timer desde o início
+-- começa a contagem do tempo desde o início, tornando o timer ativo
 function Timer:start()
-    self.active = true
-    if self.increasing then
-        self.time = 0
-    else
-        self.time = self.duration
-    end
+	self.active = true
+	if self.increasing then
+		self.time = 0
+	else
+		self.time = self.duration
+	end
 end
 
--- para de rodar o timer
+-- para de rodar o timer, mas não reseta o atributo time
 function Timer:stop()
-    self.active = false
+	self.active = false
 end
