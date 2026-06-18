@@ -32,7 +32,6 @@ function InputBuffer:update(dt)
 	for input, timer in pairs(self.buff) do
 		if timer > 0 then
 			self.buff[input] = timer - dt
-			-- !WARNING: quebra a responsabilidade da classe de forma grotesca
 			self.player:checkAction1(input, true)
 		end
 	end

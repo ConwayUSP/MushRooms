@@ -169,8 +169,6 @@ function CollisionManager:clearHitboxesByRoom(room)
 	for _, obs in pairs(room.obstacles) do
 		self:unregister(obs)
 	end
-
-
 end
 
 -- verifica se as listas de hitboxes precisam ser atualizadas
@@ -524,14 +522,16 @@ end
 -- trata a colisão entre um `enemy` e um `player`
 function CollisionManager:onEnemyPlayer(enemy, player)
 	-- dano de contato
-	player:takeDamage(10)
+	if not player.invisible then
+		player:takeDamage(10)
+	end
 end
 
 ---@param player Player
 ---@param attack AtkEvent
 -- trata a colisão entre um `player` e um `attack` inimigo
 function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
-	if not attack.active then
+	if not attack.active or player.invisible then
 		return
 	end
 	if attack.targetsDamaged[player] then

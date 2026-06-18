@@ -29,6 +29,9 @@ KATANA = registerEntity(WEAPON, "Katana")
 SLING_SHOT = registerEntity(WEAPON, "Sling Shot")
 BOOMERANGUE = registerEntity(WEAPON, "Boomerangue")
 
+-------------- ARTEFATOS ---------------
+INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")
+
 ------------- DESTRUTÍVEIS -------------
 JAR = registerEntity(DESTRUCTIBLE, "jar")
 BARREL = registerEntity(DESTRUCTIBLE, "barrel")

@@ -6,6 +6,7 @@ require("modules.constructors.craftings")
 require("modules.engine.animation")
 require("modules.systems.collision")
 require("modules.entities.entity")
+require("modules.entities.artifact")
 require("modules.systems.inventory")
 require("modules.systems.inputbuffer")
 require("modules.utils.colors")
@@ -40,8 +41,10 @@ local MAX_HP = 100
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
 ---@field particles table<string, ParticleSystem>
----@field weapons table[]
----@field weapon table
+---@field weapons Weapon[]
+---@field weapon Weapon
+---@field artifacts Artifact[]
+---@field artifact Artifact
 ---@field invulnerableTimer number
 ---@field blinkTimer number
 ---@field addAnimations function
@@ -78,25 +81,27 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
 
 	-- atributos que variam
-	player.id = #players + 1                     -- número do jogador
-	player.hp = MAX_HP                           -- pontos de vida
-	player.controls = controls                   -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
-	player.colors = colors                       -- paleta de cores do jogador
+	player.id = #players + 1 -- número do jogador
+	player.hp = MAX_HP -- pontos de vida
+	player.controls = controls -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.colors = colors -- paleta de cores do jogador
 	-- atributos fixos na instanciação
-	player.movementVec = { x = 0, y = 0 }        -- vetor de direção e magnitude do movimento do jogador
-	player.state = IDLE                          -- define o estado atual do jogador, estreitamente relacionado às animações
-	player.spriteSheets = {}                     -- no tipo imagem do love
-	player.animations = {}                       -- as chaves são estados e os valores são Animações
-	player.particles = {}                        -- efeitos de partícula emitidos pelo player
-	player.weapons = {}                          -- lista das armas que o jogador possui
-	player.weapon = nil                          -- arma equipada
-	player.inDialogue = false                    -- se o player está em diálogo
-	player.interactiveObj = nil                  -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
-	player.inventory = Inventory.new(player)     -- inventário do jogador
-	player.candidateInteractives = {}            -- lista de objetos interativos próximos ao jogador
+	player.movementVec = { x = 0, y = 0 } -- vetor de direção e magnitude do movimento do jogador
+	player.state = IDLE -- define o estado atual do jogador, estreitamente relacionado às animações
+	player.spriteSheets = {} -- no tipo imagem do love
+	player.animations = {} -- as chaves são estados e os valores são Animações
+	player.particles = {} -- efeitos de partícula emitidos pelo player
+	player.weapons = {} -- lista das armas que o jogador possui
+	player.weapon = nil -- arma equipada
+	player.artifacts = {} -- lista de artefatos (itens ativos) que o jogador possui
+	player.artifact = nil -- artefato equipado
+	player.inDialogue = false -- se o player está em diálogo
+	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
+	player.inventory = Inventory.new(player) -- inventário do jogador
+	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
-	player.building = nil                        -- construção que o player está posicionando para construir
+	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
 	player.defaultInvulnerableTime = 0.3
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
@@ -174,6 +179,9 @@ function Player:update(dt)
 			self.weapon.animations[self.weapon.state]:update(dt)
 		end
 		w:update(dt)
+	end
+	for _, a in pairs(self.artifacts) do
+		a:update(dt)
 	end
 end
 
@@ -300,7 +308,6 @@ end
 
 -- começa o modo de construção/posicionamento de algum objeto
 function Player:startBuildingMode(building)
-	debugTable("building", building)
 	self.building = building
 	setPos(self.building, addVec(self.pos, vec(100, 0)))
 	self.buildingModeTimer = 0
@@ -332,6 +339,19 @@ function Player:endBuildingMode()
 		self.building = nil
 		self.buildingModeTimer = 0
 	end
+end
+
+---@param key any
+-- trata inputs de teclado. Se `key` não fizer parte dos controles do player, é ignorado
+function Player:processKeyInput(key)
+	-- DEBUG -------------
+	if key == "i" and self.artifact then
+		self.artifact:use()
+	end
+	----------------------
+	self:checkSpecialActions(key)
+	self:checkAction1(key, false)
+	self:checkAction2(key)
 end
 
 ---@param key string
@@ -431,7 +451,7 @@ function Player:checkSpecialActions(key)
 	end
 end
 
----@param weapon any
+---@param weapon Weapon
 ---@return boolean
 -- adiciona uma arma ao arsenal do `Player` caso ele não a tenha
 function Player:collectWeapon(weapon)
@@ -468,6 +488,40 @@ end
 
 function Player:unequipWeapon()
 	self.weapon = nil
+end
+
+---@param artifact Artifact
+---@return boolean
+-- tenta coletar um artefato, retorna um booleano indicando o sucesso
+function Player:collectArtifact(artifact)
+	if #self.artifacts >= 2 then
+		return false
+	else
+		self.artifacts[#self.artifacts + 1] = artifact
+		return true
+	end
+end
+
+---@param artifactName string
+-- define um artefato de nome `artifactName` como sendo o equipado, se o jogador tiver um
+function Player:equipArtifact(artifactName)
+	for _, a in pairs(self.artifacts) do
+		if a.name == artifactName then
+			self.artifact = a
+		end
+	end
+end
+
+---@param artifactName string
+---@return boolean
+-- retorna true se o player tiver o artefato e false se ele não tiver
+function Player:hasArtifact(artifactName)
+	for _, a in pairs(self.artifacts) do
+		if a.name == artifactName then
+			return true
+		end
+	end
+	return false
 end
 
 ---@return boolean
@@ -616,7 +670,7 @@ function Player:draw(camera)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local p = self.invulnerableTimer > 0
-		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
@@ -626,6 +680,7 @@ function Player:draw(camera)
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 
+	-- SHADERS (para situações específicas)
 	if self:isInvulnerable() then
 		love.graphics.setShader(whiteShader)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
@@ -639,13 +694,21 @@ function Player:draw(camera)
 		love.graphics.setShader(healingShader)
 		healingShader:send("time", self.healingTimer.time)
 		healingShader:send("quad_info", { u_min, v_min, u_width, v_height })
+	elseif self.invisible then
+		love.graphics.setShader(invisibilityShader)
+		-- seria legal ter um jeito mais ergonômico de fazer isso:
+		if self.artifacts[1] and self.artifacts[1].name == INVISIBILITY_RING.name then
+			invisibilityShader:send("timer", self.artifacts[1].customData.timer.time)
+		elseif self.artifacts[2] and self.artifacts[2].name == INVISIBILITY_RING.name then
+			invisibilityShader:send("timer", self.artifacts[2].customData.timer.time)
+		end
 	end
 
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
 	-- desenhando o efeito de partículas da defesa em cima do player
 	love.graphics.draw(self.particles[DEFENDING], particles_offset.x, particles_offset.y)
-	if self:isInvulnerable() or self.healingTimer.active then
+	if love.graphics.getShader() then
 		love.graphics.setShader()
 	end
 end

@@ -23,6 +23,13 @@ Artifact = {}
 Artifact.__index = Artifact
 Artifact.type = ARTIFACT
 
+---@param name string
+---@param description string
+---@param cooldown number
+---@param onUse fun(...?: any)
+---@param customData table
+---@param customUpdate fun(dt: number)
+---@return Artifact
 -- cria uma nova instância de Artifact
 function Artifact.new(name, description, cooldown, onUse, customData, customUpdate)
 	---@type Artifact
@@ -42,16 +49,28 @@ end
 -- atualiza o artefato
 function Artifact:update(dt)
 	self.cooldown:update(dt)
+	if self.customUpdate then
+		self:customUpdate(dt)
+	end
+
+	-- DEBUG ---------------------------------------------------
+	if self.cooldown.label then
+		print(self.cooldown.label .. ": " .. self.cooldown.time)
+	end
+	------------------------------------------------------------
 end
 
 -- ativa o efeito do artefato e inicia o cooldown
 function Artifact:use()
-	self.cooldown:start()
-	self:onUse()
+	if not self.cooldown.active then
+		self.cooldown:start()
+		self:onUse()
+	end
 end
 
 ---@param owner Player
 -- define o jogador que possui o artefato
 function Artifact:setOwner(owner)
 	self.owner = owner
+	return self
 end

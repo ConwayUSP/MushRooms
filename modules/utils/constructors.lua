@@ -9,6 +9,7 @@ require("modules.constructors.npcs")
 require("modules.constructors.player")
 require("modules.constructors.obstacles")
 require("modules.constructors.resources")
+require("modules.constructors.artifacts")
 require("modules.utils.types")
 require("modules.utils.entities")
 
@@ -37,6 +38,10 @@ CONSTRUCTORS[ENEMY] = {
 
 CONSTRUCTORS[NPC] = {
 	[GLOB.name] = initGlob,
+}
+
+CONSTRUCTORS[ARTIFACT] = {
+	[INVISIBILITY_RING.name] = newInvisibilityRing,
 }
 
 CONSTRUCTORS[DESTRUCTIBLE] = {
