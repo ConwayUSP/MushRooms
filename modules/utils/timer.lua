@@ -86,6 +86,10 @@ function Timer:start()
 	end
 end
 
+function Timer:restart() 
+	self:start()
+end
+
 -- para de rodar o timer, mas não reseta o atributo time
 function Timer:stop()
 	self.active = false

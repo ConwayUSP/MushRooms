@@ -58,6 +58,7 @@ EVENT_ROOM = "event room"
 ---@field populate function
 ---@field visit function
 ---@field adjacentRooms Vec[]
+---@field linkManager LinkManager
 
 Room = {}
 Room.__index = Room
@@ -96,6 +97,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.npcs = {} -- lista de NPCs na sala
 	room.obstacles = {} -- lista de obstáculos na sala
 	room.playersInRoom = Set.new() -- lista de jogadores na sala
+	room.linkManager = LinkManager.new() -- gerenciador de links da sala
 
 	room:addWallsAndDoors()
 
@@ -129,6 +131,8 @@ function Room:update(dt)
 	for _, npc in pairs(self.npcs) do
 		npc:update(dt)
 	end
+	-- atualiza links
+	self.linkManager:update(dt)
 end
 
 ---@param player Player

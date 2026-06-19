@@ -111,6 +111,10 @@ function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFunc
 	return attack
 end
 
+function Attack:setOnHit(onHit)
+	self.onHit = onHit
+end
+
 function Attack:setWeapon(weapon)
 	self.weapon = weapon
 end

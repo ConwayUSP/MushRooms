@@ -25,9 +25,8 @@ function newFireBlessing()
       print("Desequipou " .. FIRE_BLESSING.name)
     end,
     [ON_ATTACK_ENEMY] = function(self, ctx)
-      print("Atacou um inimigo com " .. FIRE_BLESSING.name)
       local enemy = ctx.enemy
-      enemy:burn(3, 5)
+      enemy:burn(3, 1)
     end,
   }
   local blessing = Blessing.new(FIRE_BLESSING.name, "Projéteis incendiários causam queimadura por 3 segundos, causando 1 de dano a cada segundo.", COMBAT, applyFuncs)

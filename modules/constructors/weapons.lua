@@ -44,6 +44,7 @@ end
 function newSlingShot()
 	local cooldown = constCooldown(0.4)
 	local attack = newPebbleShotAttack(true, 5, cooldown, 1200, nil)
+	attack:setOnHit(onHitLinkTwoEnemies)
 	local slingshot = Weapon.new(SLING_SHOT.name, math.huge, attack)
 	local idleAnimSettings = newAnimSetting(2, { width = 64, height = 64 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(10, { width = 64, height = 64 }, 0.05, false, 1)
@@ -60,3 +61,21 @@ function newBoomerangue()
 	boomerangue:addAnimations(idleAnimSettings)
 	return boomerangue
 end
+
+-----------------------------
+--- onHitFunc
+------------------------------
+
+---@param atkEvent AtkEvent
+---@param enemy Enemy
+-- função de onHit para o ataque do estilingue, que cria um link entre o
+function onHitLinkTwoEnemies(atkEvent, enemy)
+	local target = enemy:nearestEnemy()
+	local room = enemy.room
+
+	if target and room then
+		room.linkManager:addLink(enemy, atkEvent.attacker, 200, 5)
+	end
+
+end
+

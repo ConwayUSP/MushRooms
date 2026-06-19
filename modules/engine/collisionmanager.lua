@@ -517,6 +517,7 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 	if attack.attacker.blessingManager then
 		attack.attacker.blessingManager:dispatch(ON_ATTACK_ENEMY, { enemy = enemy, attack = attack })
 	end
+	attack:onHit(enemy)
 end
 
 ---@param enemy Enemy

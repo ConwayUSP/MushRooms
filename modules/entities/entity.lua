@@ -179,6 +179,29 @@ function Entity:die()
 	---@diagnostic enable
 end
 
+function Entity:nearestEnemy(maxDistance)
+	maxDistance = maxDistance or math.huge
+	local pos = self.pos
+	local nearest = nil
+	local minDist = math.huge
+	local room = self.room
+
+	if room and #room.enemies > 0 then
+		for _, enemy in pairs(room.enemies) do
+			if enemy ~= self and enemy.hp > 0 then
+				---@diagnostic disable-next-line
+				local dist = lenVec(subVec(pos, enemy.pos))
+				if dist < minDist and dist <= maxDistance then
+					minDist = dist
+					nearest = enemy
+				end
+			end
+		end
+	end
+
+	return nearest
+end
+
 function Entity:getQuadInfo()
 	---@diagnostic disable
 	local animation = self.animations[self.state]

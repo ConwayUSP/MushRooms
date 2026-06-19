@@ -178,7 +178,6 @@ end
 -- inicia o processo de morte do inimigo
 function Enemy:die()
 	Entity.die(self)
-	print("INIMIGO " .. self.name .. " MORREU")
 end
 
 function Enemy:updateMotion(dt)

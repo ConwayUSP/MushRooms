@@ -2,6 +2,7 @@
 -- Importações de módulos
 ----------------------------------------
 require("modules.systems.collision")
+require("modules.systems.links")
 require("modules.entities.player")
 require("modules.entities.room")
 
