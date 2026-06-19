@@ -16,28 +16,23 @@ require("modules.systems.movement")
 -- movimento. Ou seja, estamos criando uma implementação do
 -- padrão estratégia baseada em closures
 
-function straightMovement()
-	return function(entity, dt)
-		local desiredVel = polarToVec(entity.direction or 0, entity.speed)
-		applySteering(entity, desiredVel, 20)
-	end
-end
-
----@param period? number
----@param ampDeg? rad
+---@param amplitude? integer
+---@param frequency? integer
 ---@return MovementFunc
-function zigZagMovement(ampDeg, period)
-	period = period or 1
-	ampDeg = ampDeg or math.rad(45)
+-- um movimento em linha reta, mas com uma oscilação brusca para os lados, criando um efeito de "zig zag"
+function zigZagMovement(amplitude, frequency)
+	frequency = frequency or 1
+	amplitude = amplitude or 50
 	local time = 0
 
 	return function(entity, dt)
 		time = time + dt
-		local s = sign(math.fmod(time - period / 2, period) - period / 2)
-		local targetAngle = (entity.direction or 0) + (ampDeg * s)
-		local desiredVel = polarToVec(targetAngle, entity.speed)
-		-- aplicando um steering pesado para forçar uma mudança abrupta de
-		-- direção, quase que ignorando a inércia
+
+		local forward = polarToVec(entity.direction or 0, entity.speed)
+		local tangent = normalize(tangentVec(forward))
+		local side = scaleVec(tangent, sign(math.cos(frequency * time)) * amplitude)
+		local desiredVel = addVec(forward, side)
+
 		applySteering(entity, desiredVel, 20)
 	end
 end
@@ -45,7 +40,10 @@ end
 ---@param amplitude? integer
 ---@param frequency? integer
 ---@return MovementFunc
+-- um movimento em linha reta, mas com uma oscilação suave para os lados, criando um "sine effect"
 function sineMovement(amplitude, frequency)
+	frequency = frequency or 1
+	amplitude = amplitude or 50
 	local time = 0
 
 	return function(entity, dt)
@@ -60,24 +58,27 @@ function sineMovement(amplitude, frequency)
 	end
 end
 
----@param amplitude? integer
----@param frequency? integer
+---@param frequency? number
 ---@return MovementFunc
-function sineMovement(amplitude, frequency)
+-- um movimento de "passo": a velocidade da entidade oscila entre 0 e a velocidade máxima, criando um efeito de "parar e ir"
+function stepMovement(frequency)
+	frequency = frequency or 1
 	local time = 0
-	
+
 	return function(entity, dt)
 		time = time + dt
 
-		local forward = polarToVec(entity.direction or 0, entity.speed)
-		local tangent = normalize(tangentVec(forward))
-		local side = scaleVec(tangent, math.sin(frequency * time) * amplitude)
-		local desiredVel = addVec(forward, side)
+		local step = 1 - math.cos(2*math.pi*frequency*time)
+		local desiredVel = polarToVec(entity.direction or 0, entity.speed * step)
 
 		applySteering(entity, desiredVel, 20)
 	end
 end
 
+---@param radius number
+---@param angularSpeed number
+---@param speed number
+---@return MovementFunc
 function orbitalMovement(radius, angularSpeed, speed)
 	local angle = 0
 
@@ -92,17 +93,14 @@ function orbitalMovement(radius, angularSpeed, speed)
 	end
 end
 
+---@param returnSpeed number
+---@param timing number
+---@return MovementFunc
+-- um movimento de boomerangue: a entidade se move na direção do ataque, e depois de um certo tempo retorna para o atacante
 function boomerangMovement(returnSpeed, timing)
-	-- local isFirst = true
 	timing = timing or 0.5
 
 	return function(entity, dt)
-		-- if isFirst then
-		-- 	isFirst = false
-		-- 	local forward = polarToVec(entity.direction, initSpeed)
-		-- 	applySteering(entity, forward, 20)
-		-- end
-
 		if entity.age < timing then
 			return
 		end
@@ -213,6 +211,12 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 	end
 end
 
+
+---@param duration number
+---@param baseCooldown number
+---@param bonusSpeed number
+---@param easingFunc easingFunc
+---@return MovementFunc
 function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
 	local changeInterval = 0.25
 	local time = 0

@@ -505,7 +505,7 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 		return
 	end
 
-	attack.targetsDamaged[enemy] = true
+	attack.targetsDamaged[enemy] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if enemy.invulnerableTimer > 0 then
@@ -513,8 +513,11 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 	end
 
 	applyImpulse(enemy, scaleVec(normalize(subVec(enemy.pos, attack.pos)), attack.mass * 1000))
-	enemy:setInvulnerable(0.5)
 	enemy:takeDamage(attack.dmg)
+	if attack.attacker.blessingManager then
+		attack.attacker.blessingManager:dispatch(ON_ATTACK_ENEMY, { enemy = enemy, attack = attack })
+	end
+	attack:onHit(enemy)
 end
 
 ---@param enemy Enemy
@@ -538,7 +541,7 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 		return
 	end
 
-	attack.targetsDamaged[player] = true
+	attack.targetsDamaged[player] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if not player:takeDamage(attack.dmg) then

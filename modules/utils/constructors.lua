@@ -1,8 +1,9 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.destructibles")
+require("modules.constructors.blessings")
 require("modules.constructors.buildings")
+require("modules.constructors.destructibles")
 require("modules.constructors.interactives")
 require("modules.constructors.enemies")
 require("modules.constructors.npcs")
@@ -100,4 +101,9 @@ CONSTRUCTORS[RESOURCE] = {
 CONSTRUCTORS[PRODUCT] = {
 	[CHEST.name] = newChest,
 	[FIRECAMP.name] = newFirecamp,
+}
+
+CONSTRUCTORS[BLESSING] = {
+	[ARCHER_BLESSING.name] = newArcherBlessing,
+	[FIRE_BLESSING.name] = newFireBlessing,
 }

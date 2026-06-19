@@ -14,6 +14,7 @@ require("table")
 
 ---@class Enemy : Entity
 ---@field hp number
+---@field maxHp number
 ---@field move function
 ---@field state string
 ---@field spriteSheets table<string, table>
@@ -50,10 +51,9 @@ Enemy.type = ENEMY
 function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, atkFrames, movements)
 	---@type Enemy
 	local enemy = setmetatable({}, Enemy) ---@diagnostic disable-line
-	enemy:init(name, spawnPos, hitboxes, room, physics)
+	enemy:init(name, spawnPos, hitboxes, room, physics, hp)
 
 	-- atributos que variam
-	enemy.hp = hp                         -- pontos de vida do inimigo
 	enemy.move = move                     -- função de movimento do inimigo
 	enemy.atk = attacks                   -- objetos Attack associados ao inimigo (caso possua)
 	enemy.atkFrame = atkFrames            -- frames para
@@ -175,34 +175,9 @@ function Enemy:synchronizeAttackAnimations()
 	end
 end
 
----@param damage number
--- reduz a vida do `Enemy` em `damage` pontos. Caso a vida
--- chegue abaixo de 0, mata o inimigo
-function Enemy:takeDamage(damage)
-	if self.state == DYING then
-		return
-	end
-
-	self.hp = self.hp - damage
-	if self.hp <= 0 then
-		self:die()
-	end
-end
-
 -- inicia o processo de morte do inimigo
 function Enemy:die()
-	if self.state == DYING then
-		return
-	end
-
-	self.state = DYING
-	self.deathTimer = 0
-
-	collisionManager:unregister(self)
-	for _, atk in pairs(self.atk[self.selectedAtk].events) do
-		collisionManager:unregister(atk)
-		atk:destroy()
-	end
+	Entity.die(self)
 end
 
 function Enemy:updateMotion(dt)
@@ -226,7 +201,7 @@ function Enemy:updateAttackState(dt)
 		atk:update(dt)
 	end
 
-	self:updateInvulnerability(dt)
+	Entity.update(self, dt)
 	self:attack()
 	self:updateState()
 	if self.isAttacking and self.attackJustStarted then
@@ -341,13 +316,7 @@ end
 ---@param camera Camera
 -- função de renderização de `Enemy`
 function Enemy:draw(camera)
-	if self:isInvulnerable() and self.state ~= DYING then
-		love.graphics.setShader(whiteShader)
-		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
-	elseif self.state == DYING then
-		deadBodyShader:send("death_timer", self.deathTimer)
-		love.graphics.setShader(deadBodyShader)
-	end
+	Entity.drawShaders(self)
 
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]

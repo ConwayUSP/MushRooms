@@ -16,6 +16,7 @@ require("modules.entities.room")
 require("modules.entities.weapon")
 require("modules.systems.dialogue")
 require("modules.tooling.roomcontrol")
+require("modules.tooling.spawnBlessing")
 require("modules.tooling.spawnDrop")
 require("modules.tooling.turtledebug")
 require("modules.tooling.fpsvisor")
@@ -75,6 +76,8 @@ function love.keypressed(key, scancode, isrepeat)
 		_roomDebugHandler(key)
 	elseif _spawnDropCondition() then
 		_spawnDropDebugHandler(key)
+	elseif _spawnBlessingCondition() then
+		_spawnBlessingDebugHandler(key)
 	else
 		_turtleDebugHandler(key)
 		if key == "0" then

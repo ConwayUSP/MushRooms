@@ -32,6 +32,14 @@ end
 ----------------------------------------
 
 ---@param camera Camera
+-- renderiza os links de todas as salas na perspectiva da `camera`
+function renderLinks(camera)
+	for _, r in activeRooms:iter() do
+		r.linkManager:draw(camera)
+	end
+end
+
+---@param camera Camera
 -- renderiza as demais entidades (além das salas) na perspecitiva da `camera`
 function renderEntities(camera)
 	local drawList = {}

@@ -4,8 +4,8 @@ rescaleShader = love.graphics.newShader("shaders/rescale.glsl")
 whiteShader = love.graphics.newShader("shaders/white.glsl")
 ditherShadowShader = love.graphics.newShader("shaders/dithershadow.glsl")
 deadBodyShader = love.graphics.newShader("shaders/deadbody.glsl")
-healingShader = love.graphics.newShader("shaders/healing.glsl")
 invisibilityShader = love.graphics.newShader("shaders/invisibility.glsl")
+particleShader = love.graphics.newShader("shaders/particle.glsl")
 
 rescaleShader:send("new_res", { 20, 20 })
 

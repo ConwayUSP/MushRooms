@@ -43,6 +43,13 @@ PRODUCT = "product"
 BUILDING = "building"
 FOOD = "food"
 
+--------- BLESSINGS ----------
+BLESSING_MANAGER = "blessing manager"
+BLESSING = "blessing"
+COMBAT = "combat"
+UTILITY = "utility"
+ELEMENTAL = "elemental"
+
 ---------- UI ----------
 UI_MANAGER = "UI manager"
 UI_SCENE = "UI scene"
