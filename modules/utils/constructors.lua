@@ -105,4 +105,5 @@ CONSTRUCTORS[PRODUCT] = {
 
 CONSTRUCTORS[BLESSING] = {
 	[ARCHER_BLESSING.name] = newArcherBlessing,
+	[FIRE_BLESSING.name] = newFireBlessing,
 }

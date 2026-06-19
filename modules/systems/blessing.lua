@@ -77,9 +77,6 @@ end
 function Blessing:newApplyFuncs(applyFuncs)
   self.onEquip = applyFuncs.onEquip or function() end
   self.onUnequip = applyFuncs.onUnequip or function() end
-  self.onAttackHitEnemy = applyFuncs.onAttackHitEnemy or function() end
-  self.onDamagedByEnemy = applyFuncs.onDamagedByEnemy or function() end
-  self.onPlayerHeal = applyFuncs.onPlayerHeal or function() end
-  self.onKillEnemy = applyFuncs.onKillEnemy or function() end
+  self[ON_ATTACK_ENEMY] = applyFuncs[ON_ATTACK_ENEMY] or function() end
 end
 

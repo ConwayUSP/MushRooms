@@ -104,3 +104,4 @@ TURTLE = registerEntity(INTERACTIVE, "turtle")
 
 ------------ BLESSINGS ---------------
 ARCHER_BLESSING = registerEntity(BLESSING, "archer blessing")
+FIRE_BLESSING = registerEntity(BLESSING, "fire blessing")

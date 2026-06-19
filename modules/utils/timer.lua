@@ -14,10 +14,11 @@ require("modules.utils.types")
 ---@field limit number
 ---@field goingOff boolean
 ---@field callback fun(...?: any)
----@field update fun(dt: number)
----@field start fun()
----@field stop fun()
----@field setLabel fun(label: string)
+---@field update fun(self, dt: number)
+---@field isActive fun(self): boolean
+---@field start fun(self)
+---@field stop fun(self)
+---@field setLabel fun(self, label: string)
 
 Timer = {}
 Timer.__index = Timer
@@ -95,4 +96,8 @@ end
 -- para debugar um timer específico
 function Timer:setLabel(label)
 	self.label = label
+end
+
+function Timer:isActive()
+    return self.active
 end

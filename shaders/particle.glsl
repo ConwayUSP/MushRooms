@@ -1,6 +1,7 @@
 extern float time;
 // x = u_min, y = v_min, z = u_width, w = v_height
 extern vec4 quad_info;
+extern vec3 heal_color;
 
 float hash(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
@@ -49,7 +50,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
     float particle_effect = is_particle * square_mask;
     particle_effect *= smoothstep(0.35, 0.7, local_uv.y);
 
-    vec3 heal_color = vec3(0.2, 0.8, 0.35);
+    // vec3 heal_color = vec3(0.2, 0.8, 0.35);
     float total_effect = clamp(gradient + particle_effect, 0.0, 1.0);
     vec3 final_rgb = mix(texcolor.rgb, heal_color, total_effect * 0.67);
 

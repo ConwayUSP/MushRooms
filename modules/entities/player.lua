@@ -34,6 +34,7 @@ local MAX_HP = 100
 ---@class Player : Entity
 ---@field id number
 ---@field hp number
+---@field maxHp number
 ---@field controls table<string, string>
 ---@field colors Color[]
 ---@field speed number
@@ -61,7 +62,6 @@ local MAX_HP = 100
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
 ---@field inputBuffer InputBuffer
----@field healingTimer Timer
 
 Player = setmetatable({}, { __index = Entity })
 Player.__index = Player
@@ -80,11 +80,10 @@ function Player.new(name, spawnPos, controls, colors, room)
 
 	local hb = hitbox(Circle.new(20))
 	local hbs = hitboxes({ hb })
-	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
+	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12), MAX_HP)
 
 	-- atributos que variam
 	player.id = #players + 1 -- número do jogador
-	player.hp = MAX_HP -- pontos de vida
 	player.controls = controls -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
 	player.colors = colors -- paleta de cores do jogador
 	-- atributos fixos na instanciação
@@ -110,7 +109,6 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
 	player.inputBuffer = InputBuffer.new(player)
-	player.healingTimer = Timer.new(math.huge, true)
 
 	collisionManager:register(player)
 	return player
@@ -166,16 +164,16 @@ function Player:update(dt)
 		self.interactiveObj = nil
 	else
 		self:move(dt)
-		self.healingTimer:update(dt)
 		self.inputBuffer:update(dt)
 		self:updateBuildingMode(dt)
 		self:updateState()
 		self:resolveInteractive()
 	end
 
+	Entity.update(self, dt)
 	self.animations[self.state]:update(dt)
 	self:updateParticles(dt)
-	self:updateInvulnerability(dt)
+
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
 		if w == self.weapon and self.weapon.animations[self.weapon.state] then
@@ -626,36 +624,13 @@ function Player:chooseBestInteractive(list)
 	return best
 end
 
-function Player:heal(amount)
-	self.hp = math.min(self.hp + amount, MAX_HP)
+function Player:die()
+	Entity.die(self)
 end
 
 function Player:takeDamage(damage)
-	if self.state == DYING or self:isInvulnerable() then
-		return false
-	end
-
-	self:setInvulnerable()
-	self.hp = math.max(self.hp - damage, 0)
-
-	print(self.name .. " took " .. damage .. " damage" .. "(hp: " .. self.hp .. ")")
-
-	if self.hp <= 0 then
-		self:die()
-	end
-	return true
-end
-
-function Player:die()
-	if self.state == DYING then
-		return
-	end
-
-	print(self.name .. " died")
-
-	self.state = DYING
-	self:unequipWeapon()
-	stopMovement(self)
+	Entity.takeDamage(self, damage)
+	cameras[self.id]:shake(damage/5, 0.5)
 end
 
 ---@param camera Camera
@@ -685,37 +660,13 @@ function Player:draw(camera)
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 
-	-- SHADERS (para situações específicas)
-	if self:isInvulnerable() then
-		love.graphics.setShader(whiteShader)
-		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
-	elseif self.healingTimer.active then
-		local qx, qy, qw, qh = quad:getViewport()
-		local imgW, imgH = self.spriteSheets[self.state]:getDimensions()
-		local u_min = qx / imgW
-		local v_min = qy / imgH
-		local u_width = qw / imgW
-		local v_height = qh / imgH
-		love.graphics.setShader(healingShader)
-		healingShader:send("time", self.healingTimer.time)
-		healingShader:send("quad_info", { u_min, v_min, u_width, v_height })
-	elseif self.invisible then
-		love.graphics.setShader(invisibilityShader)
-		-- seria legal ter um jeito mais ergonômico de fazer isso:
-		if self.artifacts[1] and self.artifacts[1].name == INVISIBILITY_RING.name then
-			invisibilityShader:send("timer", self.artifacts[1].customData.timer.time)
-		elseif self.artifacts[2] and self.artifacts[2].name == INVISIBILITY_RING.name then
-			invisibilityShader:send("timer", self.artifacts[2].customData.timer.time)
-		end
-	end
+	Entity.drawShaders(self)
 
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
 	-- desenhando o efeito de partículas da defesa em cima do player
 	love.graphics.draw(self.particles[DEFENDING], particles_offset.x, particles_offset.y)
-	if love.graphics.getShader() then
-		love.graphics.setShader()
-	end
+	love.graphics.setShader()
 end
 
 ----------------------------------------

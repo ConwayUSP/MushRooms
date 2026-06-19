@@ -28,6 +28,7 @@ function startGame()
 	players[1]:equipWeapon(BOOMERANGUE.name)
 	players[1]:collectArtifact(newInvisibilityRing():setOwner(players[1]))
 	players[1]:equipArtifact(INVISIBILITY_RING.name)
+	players[1].blessingManager:equip(newFireBlessing())
 	gameCtx = GAMEPLAY_CTX
 	globalUIManager:deactivateAllScenes()
 end
