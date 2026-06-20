@@ -118,7 +118,7 @@ function Weapon:draw(camera)
 
 	love.graphics.setColor(1, 1, 1, 1)
 
-	if self.owner:isInvulnerable() then
+	if self.owner.invulnerableTimer > 0 then
 		love.graphics.setShader(whiteShader)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
 	end
@@ -153,7 +153,7 @@ function Weapon:draw(camera)
 		offset.y
 	)
 
-	if self.owner:isInvulnerable() then
+	if self.owner.invulnerableTimer > 0 then
 		love.graphics.setShader()
 	end
 end

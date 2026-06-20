@@ -51,7 +51,8 @@ Enemy.type = ENEMY
 function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, atkFrames, movements)
 	---@type Enemy
 	local enemy = setmetatable({}, Enemy) ---@diagnostic disable-line
-	enemy:init(name, spawnPos, hitboxes, room, physics, hp)
+	enemy:init(name, spawnPos, hitboxes, room, physics)
+	enemy:becomeMortal(hp)
 
 	-- atributos que variam
 	enemy.move = move                     -- função de movimento do inimigo
@@ -316,7 +317,7 @@ end
 ---@param camera Camera
 -- função de renderização de `Enemy`
 function Enemy:draw(camera)
-	Entity.drawShaders(self)
+	self.mortal:drawShaders()
 
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]

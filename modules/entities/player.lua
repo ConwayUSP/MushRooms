@@ -80,7 +80,8 @@ function Player.new(name, spawnPos, controls, colors, room)
 
 	local hb = hitbox(Circle.new(20))
 	local hbs = hitboxes({ hb })
-	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12), MAX_HP)
+	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
+	player:becomeMortal(MAX_HP)
 
 	-- atributos que variam
 	player.id = #players + 1 -- número do jogador
@@ -629,7 +630,7 @@ function Player:die()
 end
 
 function Player:takeDamage(damage)
-	Entity.takeDamage(self, damage)
+	self.mortal:takeDamage(damage)
 	cameras[self.id]:shake(damage/5, 0.5)
 end
 
@@ -660,7 +661,7 @@ function Player:draw(camera)
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 
-	Entity.drawShaders(self)
+	self.mortal:drawShaders()
 
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
