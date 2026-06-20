@@ -111,7 +111,7 @@ end
 ---@return Attack
 -- um tiro nuclear
 function newBoomerangueAttack(ally, speed)
-	local cooldown = constCooldown(0.1)
+	local cooldown = constCooldown(0.4)
 	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, 0.2) end
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
@@ -242,6 +242,39 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 20
+
+	return attack
+end
+
+function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local hb = hitbox(Circle.new(8))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 2,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		friction = 0,
+		initialSpeed = speed,
+		initialMass = 0.1,
+		restitution = 0,
+		bounces = 0,
+		pierces = 1,
+	})
+
+	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1, 0)
+	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.1, false, 1, 0)
+	local updateFunc = AttackEvent.baseUpdate
+	local onHitFunc = function(e, t)
+		print(SEED_SHOT.name .. " acertou um alvo")
+	end
+
+	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, nil)
+	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 8
 
 	return attack
 end

@@ -338,6 +338,7 @@ function AttackEvent:reduceBounces()
 end
 
 function AttackEvent:destroy()
+	self.active = false
 	self.piercesLeft = 0
 	self.bouncesLeft = -1
 end

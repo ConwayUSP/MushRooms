@@ -107,7 +107,7 @@ function boomerangMovement(returnSpeed, timing)
 
 		local dir = subVec(entity.attacker.pos, entity.pos)
 
-		if lenVec(dir) < 50 then
+		if lenVec(dir) < 50 and entity.active then
 			entity.atk.weapon.ammo = 1
 			entity.atk.weapon.visible = true
 			entity:destroy()

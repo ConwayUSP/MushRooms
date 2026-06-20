@@ -30,6 +30,7 @@ SLING_SHOT = registerEntity(WEAPON, "Sling Shot")
 BOOMERANGUE = registerEntity(WEAPON, "Boomerangue")
 SKULL_SHOOTER = registerEntity(WEAPON, "Skull Shooter")
 BLACKHOLER = registerEntity(WEAPON, "Blackholer")
+FLOWERGUN = registerEntity(WEAPON, "Flowergun")
 
 --------------- ATAQUES ---------------
 PEBBLE_SHOT = registerEntity(ATTACK, "Pebble Shot")
@@ -38,6 +39,7 @@ SKULL_SHOT = registerEntity(ATTACK, "Skull Shot")
 BOOMERANGUE_SHOT = registerEntity(ATTACK, "Boomerangue Shot")
 ROTATORY = registerEntity(ATTACK, "Rotatory Attack")
 BLACKHOLE_SHOT = registerEntity(ATTACK, "Blackhole Shot")
+SEED_SHOT = registerEntity(ATTACK, "Seed Shot")
 
 -------------- ARTEFATOS ---------------
 INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")

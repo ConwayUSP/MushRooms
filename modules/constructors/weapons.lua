@@ -88,6 +88,19 @@ function newBlackholer()
 	return blackhole
 end
 
+---@return Weapon
+-- cria uma arma do tipo Flowergun
+function newFlowergun()
+	local cooldown = constCooldown(0.05)
+	local attack = newSeedAttack(true, 0.3, cooldown, 1800, nil)
+	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
+	local flowergun = Weapon.new(FLOWERGUN.name, math.huge, attack)
+	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
+	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	flowergun:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
+	return flowergun
+end
+
 -----------------------------
 --- onHitFunc
 ------------------------------

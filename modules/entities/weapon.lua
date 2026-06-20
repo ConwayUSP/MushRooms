@@ -77,11 +77,11 @@ end
 ---@return boolean
 -- tenta realizar um ataque, caso bem sucedido, atualiza o estado/animação da arma
 function Weapon:attack()
-	if self.ammo > 0 and self.atk.canAttack then
+	if self.ammo > 0 and self.atk.canAttack and self.visible then
 		self.ammo = self.ammo - 1
 		self.atk:attack(self.owner, self.owner.pos, self.rotation)
-		self.state = ATTACKING
 		if self.animations[ATTACKING] then
+			self.state = ATTACKING
 			self.animations[ATTACKING]:reset()
 		end
 		return true

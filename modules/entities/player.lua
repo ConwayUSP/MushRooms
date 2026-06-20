@@ -389,7 +389,7 @@ function Player:checkAction1(key, isBuffered)
 	if self.weapon then
 		if not isBuffered then
 			shouldBuffer = not self.weapon:attack()
-		elseif isBuffered then
+		else
 			if self.weapon:attack() then
 				self.inputBuffer:pop(self.controls.act1)
 			end
