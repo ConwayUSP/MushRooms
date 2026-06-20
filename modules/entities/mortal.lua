@@ -159,7 +159,7 @@ function Mortal:drawShaders()
 		if entity.invulnerableTimer > 0 then
 			love.graphics.setShader(whiteShader)
 			whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
-		elseif entity.healingTimer:isActive() then
+		elseif entity.healingTimer.active then
 			local u_min, v_min, u_width, v_height = self:getQuadInfo()
 			love.graphics.setShader(particleShader)
 			particleShader:send("time", entity.healingTimer.time)
@@ -173,7 +173,7 @@ function Mortal:drawShaders()
 			elseif entity.artifacts and entity.artifacts[2] and entity.artifacts[2].name == INVISIBILITY_RING.name then
 				invisibilityShader:send("timer", entity.artifacts[2].customData.timer.time)
 			end
-		elseif entity.burningTimer:isActive() then
+		elseif entity.burningTimer.active then
 			local u_min, v_min, u_width, v_height = self:getQuadInfo()
 			love.graphics.setShader(particleShader)
 			particleShader:send("time", entity.burningTimer.time)

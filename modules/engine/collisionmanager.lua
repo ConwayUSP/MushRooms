@@ -514,9 +514,7 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 
 	applyImpulse(enemy, scaleVec(normalize(subVec(enemy.pos, attack.pos)), attack.mass * 1000))
 	enemy:takeDamage(attack.dmg)
-	if attack.attacker.blessingManager then
-		attack.attacker.blessingManager:dispatch(ON_ATTACK_ENEMY, { enemy = enemy, attack = attack })
-	end
+	attack.attacker.blessingManager:dispatch(TP_ON_ATTACK_ENEMY, { enemy = enemy, attack = attack })
 	attack:onHit(enemy)
 end
 

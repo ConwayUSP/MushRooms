@@ -25,7 +25,7 @@ function LinkManager:addLink(entityA, entityB, maxDistance, duration)
 
   if link then
     link.maxDistance = maxDistance
-    link.duration:restart()
+    link.timer:restart()
     return link
   end
 
@@ -41,7 +41,7 @@ end
 function LinkManager:update(dt)
   for i = #self.links, 1, -1 do
     local link = self.links[i]
-    if not link.duration:isActive() then
+    if not link.timer.active then
       local a = link.entityA
       local b = link.entityB
       self.linksMap[a][b] = nil
@@ -68,8 +68,7 @@ end
 ---@field entityA Entity
 ---@field entityB Entity
 ---@field maxDistance number
----@field duration Timer
----@field damage number
+---@field timer Timer
 
 Link = {}
 Link.__index = Link
@@ -79,23 +78,23 @@ function Link.new(entityA, entityB, maxDistance, duration)
   self.entityA = entityA
   self.entityB = entityB
   self.maxDistance = maxDistance
-  self.duration = Timer.new(duration, true)
-  self.duration:start()
+  self.timer = Timer.new(duration, true)
+  self.timer:start()
 
   return self
 end
 
 function Link:update(dt)
-  if not self.duration:isActive() then
+  if not self.timer.active then
     return
   end
 
   if self.entityA.hp <= 0 or self.entityB.hp <= 0 then
-    self.duration:stop()
+    self.timer:stop()
     return
   end
 
-  self.duration:update(dt)
+  self.timer:update(dt)
 
   local dir = subVec(self.entityB.pos, self.entityA.pos)
   local d = lenVec(dir)

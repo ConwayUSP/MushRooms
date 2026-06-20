@@ -15,7 +15,6 @@ require("modules.utils.types")
 ---@field goingOff boolean
 ---@field callback fun(...?: any)
 ---@field update fun(self, dt: number)
----@field isActive fun(self): boolean
 ---@field start fun(self)
 ---@field stop fun(self)
 ---@field setLabel fun(self, label: string)
@@ -100,8 +99,4 @@ end
 -- para debugar um timer específico
 function Timer:setLabel(label)
 	self.label = label
-end
-
-function Timer:isActive()
-    return self.active
 end

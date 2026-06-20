@@ -176,11 +176,6 @@ function Enemy:synchronizeAttackAnimations()
 	end
 end
 
--- inicia o processo de morte do inimigo
-function Enemy:die()
-	Entity.die(self)
-end
-
 function Enemy:updateMotion(dt)
 	if self.state ~= DYING then
 		if self.isAttacking then

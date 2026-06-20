@@ -67,3 +67,13 @@ UI_CRAFTING_SCENE = "UI player crafting scene"
 ---------- OUTROS ----------
 COLOR = "color"
 LOOT = "loot"
+
+--------------------------------
+--- Blessing Trigger Points
+--------------------------------
+
+---@alias TriggerPoint string
+
+TP_ON_EQUIP = "onEquip"
+TP_ON_UNEQUIP = "onUnequip"
+TP_ON_ATTACK_ENEMY = "onAttackEnemy"

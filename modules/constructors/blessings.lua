@@ -4,10 +4,10 @@
 
 function newArcherBlessing()
   local applyFuncs = {
-    onEquip = function(self)
+    [TP_ON_EQUIP] = function(self)
       print("Equipou " .. ARCHER_BLESSING.name)
     end,
-    onUnequip = function(self)
+    [TP_ON_UNEQUIP] = function(self)
       print("Desequipou " .. ARCHER_BLESSING.name)
     end,
   }
@@ -18,13 +18,13 @@ end
 
 function newFireBlessing()
   local applyFuncs = {
-    onEquip = function(self)
+    [TP_ON_EQUIP] = function(self)
       print("Equipou " .. FIRE_BLESSING.name)
     end,
-    onUnequip = function(self)
+    [TP_ON_UNEQUIP] = function(self)
       print("Desequipou " .. FIRE_BLESSING.name)
     end,
-    [ON_ATTACK_ENEMY] = function(self, ctx)
+    [TP_ON_ATTACK_ENEMY] = function(self, ctx)
       local enemy = ctx.enemy
       enemy:burn(3, 1)
     end,
@@ -33,9 +33,3 @@ function newFireBlessing()
   
   return blessing
 end
-
-----------------------------------------
--- Bençãos Enum
-----------------------------------------
-
-ON_ATTACK_ENEMY = "onAttackEnemy"

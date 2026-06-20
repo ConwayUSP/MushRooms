@@ -43,7 +43,7 @@ end
 -- Classe Entity
 ----------------------------------------
 
----@class Entity
+---@class Entity : Mortal
 ---@field name string
 ---@field pos? Vec
 ---@field hb? Hitboxes

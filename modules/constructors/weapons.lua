@@ -88,7 +88,7 @@ function onHitLinkTwoEnemies(atkEvent, enemy)
 	local room = enemy.room
 
 	if target and room then
-		room.linkManager:addLink(enemy, atkEvent.attacker, 200, 5)
+		room.linkManager:addLink(enemy, target, 200, 5)
 	end
 
 end
