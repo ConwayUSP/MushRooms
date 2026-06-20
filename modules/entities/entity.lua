@@ -53,6 +53,7 @@ end
 ---@field defaultInvulnerableTime number
 ---@field burningTimer Timer
 ---@field healingTimer Timer
+---@field fearTimer Timer
 ---@field invulnerableTimer number	
 ---@field blinkTimer number
 ---@field hasShadow? boolean
@@ -100,6 +101,7 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics, hp)
 		end
 	end)
 	self.healingTimer = Timer.new(math.huge, true)
+	self.fearTimer = Timer.new(math.huge, true)
 end
 
 function Entity:update(dt)
@@ -110,6 +112,7 @@ function Entity:update(dt)
 	self:updateInvulnerability(dt)
 	self.burningTimer:update(dt)
 	self.healingTimer:update(dt)
+	self.fearTimer:update(dt)
 end
 
 function Entity:updateInvulnerability(dt)
@@ -153,6 +156,11 @@ end
 
 function Entity:heal(amount)
 	self.hp = math.min(self.hp + amount, self.maxHp)
+end
+
+function Entity:applyFear(attacker, duration)
+	print(self.name .. " tomou sustinho de " .. attacker.name .. " por " .. duration .. " segundos!")
+	self.fearTimer:start()
 end
 
 -- inicia o processo de morte do inimigo

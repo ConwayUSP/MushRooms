@@ -245,3 +245,22 @@ function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
 		applySteering(entity, desiredVel, 10)
 	end
 end
+
+
+---@param force? number
+---@return MovementFunc
+function followTargetMovement(force)
+	force = force or 10
+	return function(entity, dt)
+		entity.target = entity.target or entity:nearestEnemy() -- TEMPORALY
+
+		if not entity.target or entity.target.hp <= 0 then
+			return
+		end
+
+		local dir = subVec(entity.target.pos, entity.pos)
+		local desiredVel = scaleVec(normalize(dir), entity.speed)
+
+		applySteering(entity, desiredVel, force)
+	end
+end

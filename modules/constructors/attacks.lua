@@ -56,7 +56,7 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		print("Pebble Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -98,7 +98,7 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 		print("Nuclear Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -137,14 +137,50 @@ function newBoomerangueAttack(ally, speed)
 		return e.age * 12
 	end
 	local onHitFunc = function(e, t)
-		print("Boomerangue acertou um alvo")
+		print(BOOMERANGUE_SHOT.name .. " acertou um alvo")
 	end
 	local onShotFunc = function (e)
 		e.weapon.visible = false
 	end
 
-	local attack = Attack.new("Boomerangue", settings, updateFunc, onHitFunc, onShotFunc, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(BOOMERANGUE_SHOT.name, settings, updateFunc, onHitFunc, onShotFunc, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(anim)
+	attack.hasShadow = true
+	attack.shadowWidth = 10
+
+	return attack
+end
+
+function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local hb = hitbox(Circle.new(15))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 15,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		initialSpeed = speed,
+		restitution = 0,
+		friction = 0,
+		bounces = 0,
+		pierces = 1,
+		-- tick = 0.5
+	})
+
+	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1)
+	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	local updateFunc = AttackEvent.baseUpdate
+	local rotationFunc = function (e)
+		return math.atan2(e.vel.y, e.vel.x)
+	end
+	local onHitFunc = function(e, t)
+		print(SKULL_SHOT.name .. " acertou um alvo")
+	end
+
+	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
 
@@ -176,7 +212,7 @@ function newRotatoryAttack(ally, duration, cooldown)
 		print("Rotatory Attack acertou um alvo")
 	end
 
-	local attack = Attack.new("Rotatory Attack", settings, updateFunc, onHitFunc, nil)
+	local attack = Attack.new(ROTATORY.name, settings, updateFunc, onHitFunc, nil)
 	attack.hasShadow = false
 
 	return attack

@@ -62,6 +62,20 @@ function newBoomerangue()
 	return boomerangue
 end
 
+---@return Weapon
+-- cria uma arma do tipo Skull Shooter
+function newSkullShooter()
+	local cooldown = constCooldown(0.2)
+	local trajectoryFuncBuilder = function() return followTargetMovement() end
+	local attack = newSkullAttack(true, 10, cooldown, 400, trajectoryFuncBuilder)
+	attack:setOnHit(onHitApplyFear)
+	local skullshooter = Weapon.new(SKULL_SHOOTER.name, math.huge, attack)
+	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
+	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
+	return skullshooter
+end
+
 -----------------------------
 --- onHitFunc
 ------------------------------
@@ -79,3 +93,6 @@ function onHitLinkTwoEnemies(atkEvent, enemy)
 
 end
 
+function onHitApplyFear(atkEvent, enemy)
+	enemy:applyFear(atkEvent.attacker, 3)
+end

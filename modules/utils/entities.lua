@@ -28,6 +28,14 @@ GLOB = registerEntity(NPC, "Glob")
 KATANA = registerEntity(WEAPON, "Katana")
 SLING_SHOT = registerEntity(WEAPON, "Sling Shot")
 BOOMERANGUE = registerEntity(WEAPON, "Boomerangue")
+SKULL_SHOOTER = registerEntity(WEAPON, "Skull Shooter")
+
+--------------- ATAQUES ---------------
+PEBBLE_SHOT = registerEntity(ATTACK, "Pebble Shot")
+NUCLEAR_SHOT = registerEntity(ATTACK, "Nuclear Shot")
+SKULL_SHOT = registerEntity(ATTACK, "Skull Shot")
+BOOMERANGUE_SHOT = registerEntity(ATTACK, "Boomerangue Shot")
+ROTATORY = registerEntity(ATTACK, "Rotatory Attack")
 
 -------------- ARTEFATOS ---------------
 INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")

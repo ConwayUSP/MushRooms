@@ -261,7 +261,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 		initialAcc,
 		attackState.restitution
 	)
-	atkEvent:init(attackState.name, origin, hitboxes, nil, physics)
+	atkEvent:init(attackState.name, origin, hitboxes, attacker.room, physics)
 
 	atkEvent.atk = attackState
 	atkEvent.name = attackState.name                         -- para descobrirmos o caminho até os assets
