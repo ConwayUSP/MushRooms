@@ -373,8 +373,6 @@ function AttackEvent:draw(camera)
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	local flipY = (self.direction / math.pi < -0.5 and self.direction / math.pi >= -1.5 and not self.animDir) and -1
-		or 1
 	
 	local rotation
 	if self.rotationFunc then
@@ -390,7 +388,7 @@ function AttackEvent:draw(camera)
 		viewPos.y,
 		rotation,
 		3,
-		3 * flipY,
+		3,
 		animation.frameDim.width / 2,
 		animation.frameDim.height / 2
 	)

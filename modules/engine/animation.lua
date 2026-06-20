@@ -87,9 +87,9 @@ end
 function newAnimation(path, settings)
 	local sheetImg = assetManager:getImage(path)
 	local frames = {}
-	local gap = 4
 	local sWidth = sheetImg:getWidth()
 	local sHeight = sheetImg:getHeight()
+	local gap = settings.gap ~= nil and settings.gap or 4
 	local qWidth = settings.quadSize.width
 	local qHeight = settings.quadSize.height
 	local i = 0
@@ -115,21 +115,24 @@ end
 ---@field frameDur number
 ---@field looping boolean
 ---@field loopFrame number
+---@field gap number
 
 ---@param numFrames number
 ---@param quadSize Size
 ---@param frameDur number
 ---@param looping boolean
 ---@param loopFrame number?
+---@param gap number?
 ---@return AnimSettings
 -- cria uma cofiguração de animação, usada para criar novas animações
-function newAnimSetting(numFrames, quadSize, frameDur, looping, loopFrame)
+function newAnimSetting(numFrames, quadSize, frameDur, looping, loopFrame, gap)
 	return {
 		numFrames = numFrames,
 		quadSize = quadSize,
 		frameDur = frameDur,
 		looping = looping,
 		loopFrame = loopFrame,
+		gap = gap
 	}
 end
 

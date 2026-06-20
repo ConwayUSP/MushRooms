@@ -66,7 +66,7 @@ end
 -- cria uma arma do tipo Skull Shooter
 function newSkullShooter()
 	local cooldown = constCooldown(0.2)
-	local trajectoryFuncBuilder = function() return followTargetMovement() end
+	local trajectoryFuncBuilder = function() return followTargetMovement(5) end
 	local attack = newSkullAttack(true, 10, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
 	local skullshooter = Weapon.new(SKULL_SHOOTER.name, math.huge, attack)
@@ -74,6 +74,18 @@ function newSkullShooter()
 	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
 	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return skullshooter
+end
+
+---@return Weapon
+-- cria uma arma do tipo Blackhole
+function newBlackholer()
+	local cooldown = constCooldown(1)
+	local attack = newBlackholeAttack(true, 10, cooldown, 1200, nil)
+	local blackhole = Weapon.new(BLACKHOLER.name, math.huge, attack)
+	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
+	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	blackhole:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
+	return blackhole
 end
 
 -----------------------------

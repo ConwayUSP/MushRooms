@@ -152,12 +152,12 @@ function newBoomerangueAttack(ally, speed)
 end
 
 function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
-	local hb = hitbox(Circle.new(15))
+	local hb = hitbox(Circle.new(10))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 15,
+		dmg = 5,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -173,7 +173,9 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
 	local rotationFunc = function (e)
-		return math.atan2(e.vel.y, e.vel.x)
+		local angle = math.atan2(e.vel.y, e.vel.x)
+		local flip = sign(angle)*(math.pi/2 - math.abs( math.abs(angle) - math.pi/2 ))
+		return flip
 	end
 	local onHitFunc = function(e, t)
 		print(SKULL_SHOT.name .. " acertou um alvo")
@@ -183,6 +185,63 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
+
+	return attack
+end
+
+function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local hb = hitbox(Circle.new(50))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 8,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		initialSpeed = speed,
+		initialMass = 0.1,
+		restitution = 0,
+		friction = 0.8,
+		bounces = 0,
+		pierces = math.huge,
+		tick = 0.5
+	})
+
+	local animIntact = newAnimSetting(16, { width = 32, height = 32 }, 0.1, true, 1, 0)
+	local animBreaking = newAnimSetting(16, { width = 32, height = 32 }, 0.1, false, 1, 0)
+	local updateFunc = function (e, dt)
+		e:baseUpdate(dt)
+		local room = e.attacker.room
+		for _, enemy in pairs(room.enemies) do
+			-- valores puramente experimentais, ainda podem (e devem) ser ajustados :D
+			local radius = 500
+			local mass = 20000000
+
+			local dir = subVec(e.pos, enemy.pos)
+			local d = lenVec(dir)
+
+			if d < radius and d > 30 then
+				-- usamos uma "pseudomassa" pois, se a massa do buraco negro fosse muito grande, o inimigo seria arremessado muito longe
+				-- assim, a massa real é pequena e aqui "simulamos" a real massa que queremos para o efeito
+				local force = (enemy.mass * mass) / (d * d)
+				local forceVec = scaleVec(normalize(dir), force)
+				applyForce(enemy, forceVec)
+			end
+			
+		end
+	end
+	local rotationFunc = function (e)
+		return 0
+	end
+	local onHitFunc = function(e, t)
+		print(BLACKHOLE_SHOT.name .. " acertou um alvo")
+	end
+
+	local attack = Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 20
 
 	return attack
 end
