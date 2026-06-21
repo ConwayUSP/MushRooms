@@ -146,7 +146,7 @@ function renderEntities(camera)
 
 		if p.weapon then
 			local w = p.weapon
-			local offsetY = (w.rotation / math.pi < -1 or w.rotation / math.pi > 0) and 2 or -2
+			local offsetY = (w.rotation >= 0) and 4 or -4
 			table.insert(drawList, {
 				it = w,
 				y = p.pos.y + getAnchor(p, FLOOR) + offsetY, -- mesma altura do jogador, mas deslocado para frente ou para trás

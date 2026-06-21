@@ -18,6 +18,9 @@ require("modules.utils.types")
 ---@field visible boolean
 ---@field target any
 ---@field rotation rad
+---@field gunOffset Vec
+---@field shotOffset Vec
+---@field rotateOffset Vec
 ---@field state string
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
@@ -32,7 +35,7 @@ Weapon.type = WEAPON
 ---@param attack Attack
 ---@return Weapon
 -- cria uma instância de `Weapon`
-function Weapon.new(name, ammo, attack)
+function Weapon.new(name, ammo, attack, gunOffset, shotOffset)
 	---@type Weapon
 	local weapon = setmetatable({}, Weapon) ---@diagnostic disable-line
 
@@ -41,8 +44,11 @@ function Weapon.new(name, ammo, attack)
 	-- atributos que variam
 	weapon.ammo = ammo -- número de munições
 	weapon.atk = attack -- instância de Attack associada à arma
+	weapon.gunOffset = gunOffset or vec(0, 0) -- deslocamento da arma em relação ao centro do jogador
+	weapon.shotOffset = shotOffset or vec(0, 0) -- deslocamento do ponto de origem do ataque em relação ao centro da arma
 	weapon.atk:setWeapon(weapon) -- associa a arma ao ataque
 	-- atributos fixos na instanciação
+	weapon.rotateOffset = vec(-10, 0)
 	weapon.canShoot = false
 	weapon.visible = true
 	weapon.target = nil -- inimigo para o qual a arma está mirando
@@ -69,6 +75,8 @@ function Weapon:update(dt)
 	self.atk:updateTimer(dt)
 	self.atk:update(dt)
 
+	-- self.rotation = math.atan2(love.mouse.getX() - viewPos.x, -(love.mouse.getY() - viewPos.y)) - math.pi * 0.5
+
 	if self.atk.canAttack then
 		self.state = IDLE
 	end
@@ -79,7 +87,15 @@ end
 function Weapon:attack()
 	if self.ammo > 0 and self.atk.canAttack and self.visible then
 		self.ammo = self.ammo - 1
-		self.atk:attack(self.owner, self.owner.pos, self.rotation)
+
+		local flip = invertSecondAndThirdQuadrants(self.rotation)
+		local gunCenter = addVec(self.owner.pos, vec(self.gunOffset.x * flip, self.gunOffset.y))
+		local rotateOffset = rotateVec(vec(-self.rotateOffset.x + self.shotOffset.x, -self.rotateOffset.y + self.shotOffset.y*flip), self.rotation)
+		local origin = addVec(gunCenter, rotateOffset)
+
+		self.atk:attack(self.owner, origin, self.rotation)
+
+
 		if self.animations[ATTACKING] then
 			self.state = ATTACKING
 			self.animations[ATTACKING]:reset()
@@ -126,29 +142,29 @@ function Weapon:draw(camera)
 	local viewPos = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-
-	-- inverte arma no segundo e terceiro quadrantes
-	local flipY = (self.rotation / math.pi < -0.5 and self.rotation / math.pi >= -1.5) and -1 or 1
-
+	
 	local p = self.owner.invulnerableTimer > 0
-		and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+	and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
 		or 0
-	local defaultScale = 3
-	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
-	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
-	local offset = {
-		x = animation.frameDim.width / 2 - 8,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY - 8,
+		local defaultScale = 3
+		local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
+		local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
+		local offset = {
+			-- x = animation.frameDim.width / 2 - 8,
+			x = animation.frameDim.width / 2 + self.rotateOffset.x,
+		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
+		-- y = animation.frameDim.height / 2
 	}
-
+	local flip = invertSecondAndThirdQuadrants(self.rotation)
+	
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
-		viewPos.x,
-		viewPos.y,
+		viewPos.x + self.gunOffset.x * flip,
+		viewPos.y + self.gunOffset.y,
 		self.rotation,
 		scaleX,
-		scaleY * flipY,
+		scaleY * flip,
 		offset.x,
 		offset.y
 	)

@@ -174,7 +174,7 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local updateFunc = AttackEvent.baseUpdate
 	local rotationFunc = function (e)
 		local angle = math.atan2(e.vel.y, e.vel.x)
-		local flip = sign(angle)*(math.pi/2 - math.abs( math.abs(angle) - math.pi/2 ))
+		local flip = flipSecondAndThirdQuadrants(angle)
 		return flip
 	end
 	local onHitFunc = function(e, t)
