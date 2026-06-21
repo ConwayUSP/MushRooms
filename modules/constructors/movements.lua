@@ -95,9 +95,10 @@ end
 
 ---@param returnSpeed number
 ---@param timing number
+---@param force? number
 ---@return MovementFunc
 -- um movimento de boomerangue: a entidade se move na direção do ataque, e depois de um certo tempo retorna para o atacante
-function boomerangMovement(returnSpeed, timing)
+function boomerangMovement(returnSpeed, timing, force)
 	timing = timing or 0.5
 
 	return function(entity, dt)
@@ -115,7 +116,7 @@ function boomerangMovement(returnSpeed, timing)
 		end
 
 		local desiredVel = scaleVec(normalize(dir), returnSpeed)
-		applySteering(entity, desiredVel, 1)
+		applySteering(entity, desiredVel, force or 1)
 		
 	end
 end

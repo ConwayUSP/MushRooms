@@ -108,11 +108,13 @@ end
 
 ---@param ally boolean
 ---@param speed number
+---@param timing number
+---@param force number
 ---@return Attack
 -- um tiro nuclear
-function newBoomerangueAttack(ally, speed)
+function newBoomerangueAttack(ally, speed, timing, force)
 	local cooldown = constCooldown(0.4)
-	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, 0.2) end
+	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, timing, force) end
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({

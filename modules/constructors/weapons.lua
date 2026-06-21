@@ -9,8 +9,10 @@ function newKatana()
 	-- configurações do ataque
 	local updateFunc = function(atkEvent, dt)
 		atkEvent:baseUpdate(dt)
-		-- seguindo o jogador
-		atkEvent.pos = atkEvent.attacker.pos
+		local weapon = atkEvent.atk.weapon
+		local origin = weapon:atkOriginPoint()
+
+		atkEvent.pos = origin
 	end
 	local onHitFunc = function(atkEvent, target)
 		print("Katana acertou um " .. target.type .. " por " .. atkEvent.dmg .. " de dano!")
@@ -23,7 +25,7 @@ function newKatana()
 		subtype = MELEE_ATTACK,
 		ally = true,
 		dmg = 15,
-		dur = 0.5,
+		dur = 0.4,
 		hb = hbs,
 		cooldown = cooldown
 	})
@@ -32,7 +34,7 @@ function newKatana()
 	attack:addAnimations(atkAnimSettings, atkAnimSettings)
 
 	-- Inicialicação da arma em si
-	local katana = Weapon.new(KATANA.name, math.huge, attack, vec(2, 30))
+	local katana = Weapon.new(KATANA.name, math.huge, attack, vec(2, 30), vec(34, -30))
 	local idleAnimSettings = newAnimSetting(4, { width = 64, height = 64 }, 0.3, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 64, height = 64 }, 0.03, false, 1)
 	katana:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -55,7 +57,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Boomerangue
 function newBoomerangue()
-	local attack = newBoomerangueAttack(true, 1600)
+	local attack = newBoomerangueAttack(true, 1600, 0.35, 4)
 	local boomerangue = Weapon.new(BOOMERANGUE.name, 1, attack, vec(20, 30))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
 	boomerangue:addAnimations(idleAnimSettings)

@@ -88,11 +88,7 @@ function Weapon:attack()
 	if self.ammo > 0 and self.atk.canAttack and self.visible then
 		self.ammo = self.ammo - 1
 
-		local flip = invertSecondAndThirdQuadrants(self.rotation)
-		local gunCenter = addVec(self.owner.pos, vec(self.gunOffset.x * flip, self.gunOffset.y))
-		local rotateOffset = rotateVec(vec(-self.rotateOffset.x + self.shotOffset.x, -self.rotateOffset.y + self.shotOffset.y*flip), self.rotation)
-		local origin = addVec(gunCenter, rotateOffset)
-
+		local origin = self:atkOriginPoint()
 		self.atk:attack(self.owner, origin, self.rotation)
 
 		if self.animations[ATTACKING] then
@@ -102,6 +98,15 @@ function Weapon:attack()
 		return true
 	end
 	return false
+end
+
+function Weapon:atkOriginPoint()
+	local flip = invertSecondAndThirdQuadrants(self.rotation)
+	local gunCenter = addVec(self.owner.pos, vec(self.gunOffset.x * flip, self.gunOffset.y))
+	local rotateOffset = rotateVec(vec(-self.rotateOffset.x + self.shotOffset.x, -self.rotateOffset.y + self.shotOffset.y*flip), self.rotation)
+	local origin = addVec(gunCenter, rotateOffset)
+
+	return origin
 end
 
 ---@param idleSettings AnimSettings
