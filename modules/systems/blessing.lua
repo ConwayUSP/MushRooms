@@ -1,4 +1,37 @@
 ----------------------------------------
+-- Classe Blessing
+----------------------------------------
+
+---@class Blessing
+---@field name string
+---@field description string
+---@field tag string
+---@field image any
+---@field applyFuncs table<string, function>
+Blessing = {}
+Blessing.__index = Blessing
+Blessing.type = BLESSING
+
+function Blessing.new(name, description, tag, applyFuncs)
+  local blessing = setmetatable({}, Blessing)
+  blessing.name = name
+  blessing.description = description
+  blessing.tag = tag
+  blessing:newApplyFuncs(applyFuncs)
+
+  local sprite_path = pngPathFormat({ "assets", "sprites", "blessings", name })
+  blessing.image = love.graphics.newImage(sprite_path)
+  blessing.image:setFilter("nearest", "nearest")
+  return blessing
+end
+
+function Blessing:newApplyFuncs(applyFuncs)
+  self.onEquip = applyFuncs.onEquip or function() end
+  self.onUnequip = applyFuncs.onUnequip or function() end
+  self[ON_ATTACK_ENEMY] = applyFuncs[ON_ATTACK_ENEMY] or function() end
+end
+
+----------------------------------------
 -- Classe BlessingManager
 ----------------------------------------
 
@@ -9,10 +42,10 @@ BlessingManager.__index = BlessingManager
 BlessingManager.type = BLESSING_MANAGER
 
 function BlessingManager.new()
-	local manager = setmetatable({}, BlessingManager)
+  local manager = setmetatable({}, BlessingManager)
   manager.equipped = {}
 
-	return manager
+  return manager
 end
 
 function BlessingManager:dispatch(event, ctx)
@@ -22,9 +55,7 @@ function BlessingManager:dispatch(event, ctx)
     if fn then
       fn(blessing, ctx)
     end
-
   end
-
 end
 
 function BlessingManager:equip(blessing)
@@ -46,37 +77,3 @@ function BlessingManager:unequip(blessing)
 
   return false
 end
-
-----------------------------------------
--- Classe Blessing
-----------------------------------------
-
----@class Blessing
----@field name string
----@field description string
----@field tag string
----@field image any
----@field applyFuncs table<string, function>
-Blessing = {}
-Blessing.__index = Blessing
-Blessing.type = BLESSING
-
-function Blessing.new(name, description, tag, applyFuncs)
-	local blessing = setmetatable({}, Blessing)
-	blessing.name = name
-	blessing.description = description
-	blessing.tag = tag
-	blessing:newApplyFuncs(applyFuncs)
-
-  local sprite_path = pngPathFormat({ "assets", "sprites", "blessings", name })
-  blessing.image = love.graphics.newImage(sprite_path)
-  blessing.image:setFilter("nearest", "nearest")
-	return blessing
-end
-
-function Blessing:newApplyFuncs(applyFuncs)
-  self.onEquip = applyFuncs.onEquip or function() end
-  self.onUnequip = applyFuncs.onUnequip or function() end
-  self[ON_ATTACK_ENEMY] = applyFuncs[ON_ATTACK_ENEMY] or function() end
-end
-
