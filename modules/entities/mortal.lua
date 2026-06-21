@@ -1,8 +1,14 @@
 ----------------------------------------
+--- Importações de Módulos
+----------------------------------------
+
+require("modules.entities.entity")
+
+----------------------------------------
 -- Classe Mortal
 ----------------------------------------
 
----@class Mortal
+---@class Mortal : Entity
 ---@field entity Entity
 ---@field maxHp number
 ---@field hp number
@@ -14,134 +20,123 @@
 ---@field fearTimer Timer
 ---@field invulnerableTimer number	
 ---@field blinkTimer number
-Mortal = {}
+Mortal = setmetatable({}, { __index = Entity })
 Mortal.__index = Mortal
 
-function Mortal.init(entity, hp)
-  local self = setmetatable({}, Mortal)
-  self.entity = entity
+---@param name string
+---@param pos? Vec
+---@param hitboxes? Hitboxes
+---@param room? Room
+---@param entityPhysics? PhysicsSettings
+---@param hp number
+function Mortal:init(name, pos, hitboxes, room, entityPhysics, hp)
+	Entity.init(self, name, pos, hitboxes, room, entityPhysics)
 
-  entity.maxHp = hp
-  entity.hp = hp
+  self.maxHp = hp
+  self.hp = hp
 
-  entity.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
-  entity.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
+  self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
+  self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 
-  entity.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
-  entity.burningTicks = 0 -- número de ticks restantes para o efeito de queimadura
-  entity.burningDamage = 1 -- dano causado por cada tick de queimadura
-  entity.burningTimer = Timer.new(1.5, true, function() 
-    entity:takeDamage(entity.burningDamage)
-    if entity.burningTicks > 0 then
-      entity.burningTicks = entity.burningTicks - 1
-      entity.burningTimer:start()
+  self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
+  self.burningTicks = 0 -- número de ticks restantes para o efeito de queimadura
+  self.burningDamage = 1 -- dano causado por cada tick de queimadura
+  self.burningTimer = Timer.new(1.5, true, function() 
+    self:takeDamage(self.burningDamage)
+    if self.burningTicks > 0 then
+      self.burningTicks = self.burningTicks - 1
+      self.burningTimer:start()
     else
-      entity.burningTimer:stop()
+      self.burningTimer:stop()
     end
   end)
-  entity.healingTimer = Timer.new(math.huge, true) -- timer para cura ao longo do tempo
-  entity.fearTimer = Timer.new(math.huge, true) -- timer para efeito de medo
-
-  return self
+  self.healingTimer = Timer.new(math.huge, true) -- timer para cura ao longo do tempo
+  self.fearTimer = Timer.new(math.huge, true) -- timer para efeito de medo
 end
 
 function Mortal:update(dt)
-  local entity = self.entity
-
-	if entity.state == DYING then
+		if self.state == DYING then
 		return
 	end
 
 	self:updateInvulnerability(dt)
-	entity.burningTimer:update(dt)
-	entity.healingTimer:update(dt)
-	entity.fearTimer:update(dt)
+	self.burningTimer:update(dt)
+	self.healingTimer:update(dt)
+	self.fearTimer:update(dt)
 end
 
 function Mortal:updateInvulnerability(dt)
-  local entity = self.entity
-	if entity.invulnerableTimer > 0 then
-		entity.invulnerableTimer = entity.invulnerableTimer - dt
+	if self.invulnerableTimer > 0 then
+		self.invulnerableTimer = self.invulnerableTimer - dt
 	end
 end
 
 function Mortal:setInvulnerable(duration)
-  local entity = self.entity
-	entity.defaultInvulnerableTime = duration or entity.defaultInvulnerableTime
-	entity.invulnerableTimer = entity.defaultInvulnerableTime
+	self.defaultInvulnerableTime = duration or self.defaultInvulnerableTime
+	self.invulnerableTimer = self.defaultInvulnerableTime
 end
 
 
 ---@param damage number
 -- função para aplicar dano à entidade, levando em conta invulnerabilidade e estado de morte
 function Mortal:takeDamage(damage)
-  local entity = self.entity
-	if entity.state == DYING or entity.invulnerableTimer > 0 then
+	if self.state == DYING or self.invulnerableTimer > 0 then
 		return false
 	end
 
 	self:setInvulnerable()
-	entity.hp = math.max(entity.hp - damage, 0)
+	self.hp = math.max(self.hp - damage, 0)
 
-	if entity.hp <= 0 then
+	if self.hp <= 0 then
 		self:die()
 	end
 	return true
 end
 
 function Mortal:burn(ticks, dmg)
-	local entity = self.entity
-
-	entity.burningTicks = ticks - 1
-	entity.burningDamage = dmg
-	entity.burningTimer:start()
+	self.burningTicks = ticks - 1
+	self.burningDamage = dmg
+	self.burningTimer:start()
 end
 
 function Mortal:heal(amount)
-	local entity = self.entity
-
-	entity.hp = math.min(entity.hp + amount, entity.maxHp)
+	self.hp = math.min(self.hp + amount, self.maxHp)
 end
 
 function Mortal:applyFear(attacker, duration)
   print("Tomou sustinho!")
-	self.entity.fearTimer:start()
+	self.fearTimer:start()
 end
 
 -- inicia o processo de morte do inimigo
 function Mortal:die()
-  local entity = self.entity
-
-	---@diagnostic disable
-	if entity.state == DYING then
+	if self.state == DYING then
 		return
 	end
 
-	entity.state = DYING
-	entity.deathTimer = 0
-	stopMovement(entity)
+	self.state = DYING
+	self.deathTimer = 0
+	stopMovement(self)
 
-	collisionManager:unregister(entity)
-	local atks = (entity.atk and entity.atk[entity.selectedAtk].events) or (entity.weapon and entity.weapon.atk.events)
+	collisionManager:unregister(self)
+	local atks = (self.atk and self.atk[self.selectedAtk].events) or (self.weapon and self.weapon.atk.events)
 	for _, atk in pairs(atks) do
 		collisionManager:unregister(atk)
 		atk:destroy()
 	end
 
-	if entity.weapon then
-		entity:unequipWeapon()
+	if self.weapon then
+		self:unequipWeapon()
 	end
 	---@diagnostic enable
 end
 
 function Mortal:getQuadInfo()
-  local entity = self.entity
-
 	---@diagnostic disable
-	local animation = entity.animations[entity.state]
+	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local qx, qy, qw, qh = quad:getViewport()
-	local imgW, imgH = entity.spriteSheets[entity.state]:getDimensions()
+	local imgW, imgH = self.spriteSheets[self.state]:getDimensions()
 	local u_min = qx / imgW
 	local v_min = qy / imgH
 	local u_width = qw / imgW
@@ -152,36 +147,34 @@ function Mortal:getQuadInfo()
 end
 
 function Mortal:drawShaders()
-  local entity = self.entity
-
   ---@diagnostic disable
-	if entity.state ~= DYING then
-		if entity.invulnerableTimer > 0 then
+	if self.state ~= DYING then
+		if self.invulnerableTimer > 0 then
 			love.graphics.setShader(whiteShader)
 			whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
-		elseif entity.healingTimer.active then
+		elseif self.healingTimer.active then
 			local u_min, v_min, u_width, v_height = self:getQuadInfo()
 			love.graphics.setShader(particleShader)
-			particleShader:send("time", entity.healingTimer.time)
+			particleShader:send("time", self.healingTimer.time)
 			particleShader:send("quad_info", { u_min, v_min, u_width, v_height })
 			particleShader:send("heal_color", { 0.2, 0.8, 0.35 })
-		elseif entity.invisible then
+		elseif self.invisible then
 			love.graphics.setShader(invisibilityShader)
 			-- seria legal ter um jeito mais ergonômico de fazer isso:
-			if entity.artifacts and entity.artifacts[1] and entity.artifacts[1].name == INVISIBILITY_RING.name then
-				invisibilityShader:send("timer", entity.artifacts[1].customData.timer.time)
-			elseif entity.artifacts and entity.artifacts[2] and entity.artifacts[2].name == INVISIBILITY_RING.name then
-				invisibilityShader:send("timer", entity.artifacts[2].customData.timer.time)
+			if self.artifacts and self.artifacts[1] and self.artifacts[1].name == INVISIBILITY_RING.name then
+				invisibilityShader:send("timer", self.artifacts[1].customData.timer.time)
+			elseif self.artifacts and self.artifacts[2] and self.artifacts[2].name == INVISIBILITY_RING.name then
+				invisibilityShader:send("timer", self.artifacts[2].customData.timer.time)
 			end
-		elseif entity.burningTimer.active then
+		elseif self.burningTimer.active then
 			local u_min, v_min, u_width, v_height = self:getQuadInfo()
 			love.graphics.setShader(particleShader)
-			particleShader:send("time", entity.burningTimer.time)
+			particleShader:send("time", self.burningTimer.time)
 			particleShader:send("quad_info", { u_min, v_min, u_width, v_height })
 			particleShader:send("heal_color", { 0.9, 0.25, 0.2 })
 		end
 	else
-		deadBodyShader:send("death_timer", entity.deathTimer)
+		deadBodyShader:send("death_timer", self.deathTimer)
 		love.graphics.setShader(deadBodyShader)
 	end
   ---@diagnostic enable

@@ -95,7 +95,6 @@ function Weapon:attack()
 
 		self.atk:attack(self.owner, origin, self.rotation)
 
-
 		if self.animations[ATTACKING] then
 			self.state = ATTACKING
 			self.animations[ATTACKING]:reset()

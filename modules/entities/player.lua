@@ -4,7 +4,7 @@
 require("modules.constructors.particles")
 require("modules.constructors.craftings")
 require("modules.engine.animation")
-require("modules.entities.entity")
+require("modules.entities.mortal")
 require("modules.entities.artifact")
 require("modules.systems.blessing")
 require("modules.systems.collision")
@@ -31,7 +31,7 @@ local MAX_HP = 100
 -- Classe Player
 ----------------------------------------
 
----@class Player : Entity
+---@class Player : Mortal
 ---@field id number
 ---@field hp number
 ---@field maxHp number
@@ -63,7 +63,7 @@ local MAX_HP = 100
 ---@field startBuildingMode function
 ---@field inputBuffer InputBuffer
 
-Player = setmetatable({}, { __index = Entity })
+Player = setmetatable({}, { __index = Mortal })
 Player.__index = Player
 Player.type = PLAYER
 
@@ -80,8 +80,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 
 	local hb = hitbox(Circle.new(20))
 	local hbs = hitboxes({ hb })
-	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12))
-	player:becomeMortal(MAX_HP)
+	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12), MAX_HP)
 
 	-- atributos que variam
 	player.id = #players + 1 -- número do jogador
@@ -171,7 +170,7 @@ function Player:update(dt)
 		self:resolveInteractive()
 	end
 
-	Entity.update(self, dt)
+	Mortal.update(self, dt)
 	self.animations[self.state]:update(dt)
 	self:updateParticles(dt)
 
@@ -625,12 +624,8 @@ function Player:chooseBestInteractive(list)
 	return best
 end
 
-function Player:die()
-	Entity.die(self)
-end
-
 function Player:takeDamage(damage)
-	self.mortal:takeDamage(damage)
+	Mortal.takeDamage(self, damage)
 	cameras[self.id]:shake(damage/5, 0.5)
 end
 
@@ -661,7 +656,7 @@ function Player:draw(camera)
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 
-	self.mortal:drawShaders()
+	self:drawShaders()
 
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 

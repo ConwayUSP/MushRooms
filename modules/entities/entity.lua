@@ -1,9 +1,3 @@
------------------------------------------
---- Importação de Módulos
---------------------------------------------
-
-require("modules.entities.mortal")
-
 ----------------------------------------
 -- Classe PhysicsSettings
 ----------------------------------------
@@ -43,7 +37,7 @@ end
 -- Classe Entity
 ----------------------------------------
 
----@class Entity : Mortal
+---@class Entity
 ---@field name string
 ---@field pos? Vec
 ---@field hb? Hitboxes
@@ -82,47 +76,6 @@ function Entity:init(name, pos, hitboxes, room, entityPhysics)
 	self.acc = physics.initialAcc
 	self.speedRange = physics.speedRange
 	self.restitution = physics.restitution or 0
-end
-
-function Entity:becomeMortal(hp)
-	self.mortal = Mortal.init(self, hp)
-end
-
-function Entity:update(dt)
-	if self.mortal then
-		self.mortal:update(dt)
-	end
-end
-
-function Entity:takeDamage(amount)
-	if self.mortal then
-		self.mortal:takeDamage(amount)
-	end
-end
-
-function Entity:burn(ticks, dmg)
-	if self.mortal then
-		self.mortal:burn(ticks, dmg)
-	end
-end
-
-function Entity:heal(amount)
-	if self.mortal then
-		self.mortal:heal(amount)
-	end
-end
-
-function Entity:applyFear(attacker, duration)
-	if self.mortal then
-		self.mortal:applyFear(attacker, duration)
-	end
-end
-
--- inicia o processo de morte do inimigo
-function Entity:die()
-	if self.mortal then
-		self.mortal:die()
-	end
 end
 
 function Entity:nearestEnemy(maxDistance)
