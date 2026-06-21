@@ -56,7 +56,7 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		print("Pebble Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Pebble Shot", settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -98,7 +98,7 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 		print("Nuclear Shot acertou um alvo")
 	end
 
-	local attack = Attack.new("Nuclear Shot", settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -108,11 +108,13 @@ end
 
 ---@param ally boolean
 ---@param speed number
+---@param timing number
+---@param force number
 ---@return Attack
 -- um tiro nuclear
-function newBoomerangueAttack(ally, speed)
-	local cooldown = constCooldown(0.1)
-	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, 0.2) end
+function newBoomerangueAttack(ally, speed, timing, force)
+	local cooldown = constCooldown(0.4)
+	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, timing, force) end
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
@@ -137,16 +139,144 @@ function newBoomerangueAttack(ally, speed)
 		return e.age * 12
 	end
 	local onHitFunc = function(e, t)
-		print("Boomerangue acertou um alvo")
+		print(BOOMERANGUE_SHOT.name .. " acertou um alvo")
 	end
 	local onShotFunc = function (e)
 		e.weapon.visible = false
 	end
 
-	local attack = Attack.new("Boomerangue", settings, updateFunc, onHitFunc, onShotFunc, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(BOOMERANGUE_SHOT.name, settings, updateFunc, onHitFunc, onShotFunc, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(anim)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
+
+	return attack
+end
+
+function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local hb = hitbox(Circle.new(10))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 5,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		initialSpeed = speed,
+		restitution = 0,
+		friction = 0,
+		bounces = 0,
+		pierces = 1,
+		-- tick = 0.5
+	})
+
+	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1)
+	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	local updateFunc = AttackEvent.baseUpdate
+	local rotationFunc = function (e)
+		local angle = math.atan2(e.vel.y, e.vel.x)
+		local flip = flipSecondAndThirdQuadrants(angle)
+		return flip
+	end
+	local onHitFunc = function(e, t)
+		print(SKULL_SHOT.name .. " acertou um alvo")
+	end
+
+	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 10
+
+	return attack
+end
+
+function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local hb = hitbox(Circle.new(50))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 8,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		initialSpeed = speed,
+		initialMass = 0.1,
+		restitution = 0,
+		friction = 0.8,
+		bounces = 0,
+		pierces = math.huge,
+		tick = 0.5
+	})
+
+	local animIntact = newAnimSetting(16, { width = 32, height = 32 }, 0.1, true, 1, 0)
+	local animBreaking = newAnimSetting(16, { width = 32, height = 32 }, 0.1, false, 1, 0)
+	local updateFunc = function (e, dt)
+		e:baseUpdate(dt)
+		local room = e.attacker.room
+		for _, enemy in pairs(room.enemies) do
+			-- valores puramente experimentais, ainda podem (e devem) ser ajustados :D
+			local radius = 500
+			local mass = 20000000
+
+			local dir = subVec(e.pos, enemy.pos)
+			local d = lenVec(dir)
+
+			if d < radius and d > 30 then
+				-- usamos uma "pseudomassa" pois, se a massa do buraco negro fosse muito grande, o inimigo seria arremessado muito longe
+				-- assim, a massa real é pequena e aqui "simulamos" a real massa que queremos para o efeito
+				local force = (enemy.mass * mass) / (d * d)
+				local forceVec = scaleVec(normalize(dir), force)
+				applyForce(enemy, forceVec)
+			end
+			
+		end
+	end
+	local rotationFunc = function (e)
+		return 0
+	end
+	local onHitFunc = function(e, t)
+		print(BLACKHOLE_SHOT.name .. " acertou um alvo")
+	end
+
+	local attack = Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 20
+
+	return attack
+end
+
+function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local hb = hitbox(Circle.new(8))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = RANGED_ATTACK,
+		ally = ally,
+		dmg = 2,
+		dur = dur,
+		hb = hbs,
+		cooldown = cooldown,
+		friction = 0,
+		initialSpeed = speed,
+		initialMass = 0.1,
+		restitution = 0,
+		bounces = 0,
+		pierces = 1,
+	})
+
+	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1, 0)
+	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.1, false, 1, 0)
+	local updateFunc = AttackEvent.baseUpdate
+	local onHitFunc = function(e, t)
+		print(SEED_SHOT.name .. " acertou um alvo")
+	end
+
+	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, nil)
+	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = true
+	attack.shadowWidth = 8
 
 	return attack
 end
@@ -176,7 +306,7 @@ function newRotatoryAttack(ally, duration, cooldown)
 		print("Rotatory Attack acertou um alvo")
 	end
 
-	local attack = Attack.new("Rotatory Attack", settings, updateFunc, onHitFunc, nil)
+	local attack = Attack.new(ROTATORY.name, settings, updateFunc, onHitFunc, nil)
 	attack.hasShadow = false
 
 	return attack

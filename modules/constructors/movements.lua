@@ -95,9 +95,10 @@ end
 
 ---@param returnSpeed number
 ---@param timing number
+---@param force? number
 ---@return MovementFunc
 -- um movimento de boomerangue: a entidade se move na direção do ataque, e depois de um certo tempo retorna para o atacante
-function boomerangMovement(returnSpeed, timing)
+function boomerangMovement(returnSpeed, timing, force)
 	timing = timing or 0.5
 
 	return function(entity, dt)
@@ -107,7 +108,7 @@ function boomerangMovement(returnSpeed, timing)
 
 		local dir = subVec(entity.attacker.pos, entity.pos)
 
-		if lenVec(dir) < 50 then
+		if lenVec(dir) < 50 and entity.active then
 			entity.atk.weapon.ammo = 1
 			entity.atk.weapon.visible = true
 			entity:destroy()
@@ -115,7 +116,7 @@ function boomerangMovement(returnSpeed, timing)
 		end
 
 		local desiredVel = scaleVec(normalize(dir), returnSpeed)
-		applySteering(entity, desiredVel, 1)
+		applySteering(entity, desiredVel, force or 1)
 		
 	end
 end
@@ -243,5 +244,24 @@ function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
 
 		local desiredVel = polarToVec(randomAngle, entity.speed * bonusSpeed * intensity)
 		applySteering(entity, desiredVel, 10)
+	end
+end
+
+
+---@param force? number
+---@return MovementFunc
+function followTargetMovement(force)
+	force = force or 10
+	return function(entity, dt)
+		entity.target = entity.target or entity:nearestEnemy() -- TEMPORALY
+
+		if not entity.target or entity.target.hp <= 0 then
+			return
+		end
+
+		local dir = subVec(entity.target.pos, entity.pos)
+		local desiredVel = scaleVec(normalize(dir), entity.speed)
+
+		applySteering(entity, desiredVel, force)
 	end
 end

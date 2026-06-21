@@ -2,7 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.systems.collision")
-require("modules.entities.entity")
+require("modules.entities.mortal")
 require("modules.utils.states")
 require("modules.utils.types")
 require("modules.systems.shaders")
@@ -12,7 +12,7 @@ require("table")
 -- Classe Enemy
 ----------------------------------------
 
----@class Enemy : Entity
+---@class Enemy : Mortal
 ---@field hp number
 ---@field maxHp number
 ---@field move function
@@ -32,7 +32,7 @@ require("table")
 ---@field leavesBody boolean
 ---@field movements? table<string, MovementFunc>
 
-Enemy = setmetatable({}, { __index = Entity })
+Enemy = setmetatable({}, { __index = Mortal })
 Enemy.__index = Enemy
 Enemy.type = ENEMY
 
@@ -175,11 +175,6 @@ function Enemy:synchronizeAttackAnimations()
 	end
 end
 
--- inicia o processo de morte do inimigo
-function Enemy:die()
-	Entity.die(self)
-end
-
 function Enemy:updateMotion(dt)
 	if self.state ~= DYING then
 		if self.isAttacking then
@@ -201,7 +196,7 @@ function Enemy:updateAttackState(dt)
 		atk:update(dt)
 	end
 
-	Entity.update(self, dt)
+	Mortal.update(self, dt)
 	self:attack()
 	self:updateState()
 	if self.isAttacking and self.attackJustStarted then
@@ -316,7 +311,7 @@ end
 ---@param camera Camera
 -- função de renderização de `Enemy`
 function Enemy:draw(camera)
-	Entity.drawShaders(self)
+	self:drawShaders()
 
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]

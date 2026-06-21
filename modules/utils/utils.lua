@@ -300,3 +300,16 @@ function debugTable(tableName, table)
 	end
 	print("----------------------------------")
 end
+
+--------------------------------------
+--- Angles
+-------------------------------------
+
+
+function invertSecondAndThirdQuadrants(angle)
+	return (angle <= -math.pi/2 or angle >= math.pi/2) and -1 or 1
+end
+
+function flipSecondAndThirdQuadrants(angle)
+	return sign(angle)*(math.pi/2 - math.abs( math.abs(angle) - math.pi/2 ))
+end

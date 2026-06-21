@@ -26,9 +26,9 @@ function Blessing.new(name, description, tag, applyFuncs)
 end
 
 function Blessing:newApplyFuncs(applyFuncs)
-  self.onEquip = applyFuncs.onEquip or function() end
-  self.onUnequip = applyFuncs.onUnequip or function() end
-  self[ON_ATTACK_ENEMY] = applyFuncs[ON_ATTACK_ENEMY] or function() end
+  self[TP_ON_EQUIP] = applyFuncs[TP_ON_EQUIP] or function() end
+  self[TP_ON_UNEQUIP] = applyFuncs[TP_ON_UNEQUIP] or function() end
+  self[TP_ON_ATTACK_ENEMY] = applyFuncs[TP_ON_ATTACK_ENEMY] or function() end
 end
 
 ----------------------------------------
@@ -60,7 +60,7 @@ end
 
 function BlessingManager:equip(blessing)
   table.insert(self.equipped, blessing)
-  blessing.onEquip()
+  blessing[TP_ON_EQUIP]()
 
   return true
 end
@@ -69,7 +69,7 @@ function BlessingManager:unequip(blessing)
   for i, b in ipairs(self.equipped) do
     if b == blessing then
       table.remove(self.equipped, i)
-      blessing.onUnequip()
+      blessing[TP_ON_UNEQUIP]()
 
       return true
     end
