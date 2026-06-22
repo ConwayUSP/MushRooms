@@ -117,3 +117,5 @@ TURTLE = registerEntity(INTERACTIVE, "turtle")
 ------------ BLESSINGS ---------------
 ARCHER_BLESSING = registerEntity(BLESSING, "archer blessing")
 FIRE_BLESSING = registerEntity(BLESSING, "fire blessing")
+PIGMEU_BLESSING = registerEntity(BLESSING, "pigmeu blessing")
+GOMUGOMU_BLESSING = registerEntity(BLESSING, "gomu gomu blessing")

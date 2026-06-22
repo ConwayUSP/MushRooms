@@ -321,6 +321,20 @@ function AttackEvent:baseUpdate(dt)
 	end
 end
 
+function AttackEvent:reflect(newOwner)
+	if not self.active then
+		return
+	end
+
+	collisionManager:unregister(self)
+	self.attacker = newOwner
+	self.ally = newOwner.type == PLAYER
+	self.direction = (self.direction + math.pi) % (2 * math.pi)
+	self.vel = scaleVec(polarToVec(self.direction, 1), self.atk.initialSpeed)
+	self.acc = scaleVec(polarToVec(self.direction, 1), self.atk.accFactor)
+	collisionManager:register(self)
+end
+
 function AttackEvent:reducePierces()
 	if not self.active then
 		return

@@ -26,9 +26,9 @@ function Blessing.new(name, description, tag, applyFuncs)
 end
 
 function Blessing:newApplyFuncs(applyFuncs)
-  self[TP_ON_EQUIP] = applyFuncs[TP_ON_EQUIP] or function() end
-  self[TP_ON_UNEQUIP] = applyFuncs[TP_ON_UNEQUIP] or function() end
-  self[TP_ON_ATTACK_ENEMY] = applyFuncs[TP_ON_ATTACK_ENEMY] or function() end
+  for _, trigger in ipairs(TRIGGER_POINTS) do
+    self[trigger] = applyFuncs[trigger] or function() end
+  end
 end
 
 ----------------------------------------
@@ -41,9 +41,10 @@ BlessingManager = {}
 BlessingManager.__index = BlessingManager
 BlessingManager.type = BLESSING_MANAGER
 
-function BlessingManager.new()
+function BlessingManager.new(owner)
   local manager = setmetatable({}, BlessingManager)
   manager.equipped = {}
+  manager.owner = owner
 
   return manager
 end
@@ -60,7 +61,7 @@ end
 
 function BlessingManager:equip(blessing)
   table.insert(self.equipped, blessing)
-  blessing[TP_ON_EQUIP]()
+  blessing[TP_ON_EQUIP](self.owner)
 
   return true
 end
@@ -69,7 +70,7 @@ function BlessingManager:unequip(blessing)
   for i, b in ipairs(self.equipped) do
     if b == blessing then
       table.remove(self.equipped, i)
-      blessing[TP_ON_UNEQUIP]()
+      blessing[TP_ON_UNEQUIP](self.owner)
 
       return true
     end

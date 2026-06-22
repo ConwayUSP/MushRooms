@@ -35,6 +35,8 @@ local MAX_HP = 100
 ---@field id number
 ---@field hp number
 ---@field maxHp number
+---@field size number
+---@field scale number
 ---@field controls table<string, string>
 ---@field colors Color[]
 ---@field speed number
@@ -78,9 +80,9 @@ function Player.new(name, spawnPos, controls, colors, room)
 	---@type Player
 	local player = setmetatable({}, Player) ---@diagnostic disable-line
 
-	local hb = hitbox(Circle.new(20))
-	local hbs = hitboxes({ hb })
-	player:init(name, spawnPos, hbs, room, physicsSettings(1, 9000, 12), MAX_HP)
+	player.scale = 3
+	player.size = 20
+	player:init(name, spawnPos, player:calcHitboxes(), room, physicsSettings(1, 9000, 12), MAX_HP)
 
 	-- atributos que variam
 	player.id = #players + 1 -- número do jogador
@@ -102,7 +104,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
-	player.blessingManager = BlessingManager.new() -- gerenciador de bênçãos do jogador
+	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
 	player.defaultInvulnerableTime = 0.3
@@ -154,6 +156,12 @@ function Player:addParticles()
 	self.particles[WALKING_UP] = walkingParticles
 	self.particles[WALKING_LEFT] = walkingParticles
 	self.particles[WALKING_RIGHT] = walkingParticles
+end
+
+function Player:calcHitboxes()
+	local hb = hitbox(Circle.new(self.size))
+	local hbs = hitboxes({ hb })
+	return hbs
 end
 
 ---@param dt number
@@ -648,7 +656,7 @@ function Player:draw(camera)
 	local p = self.invulnerableTimer > 0
 			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
-	local defaultScale = 3
+	local defaultScale = self.scale
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
 	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
 	local offset = {

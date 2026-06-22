@@ -77,3 +77,21 @@ LOOT = "loot"
 TP_ON_EQUIP = "onEquip"
 TP_ON_UNEQUIP = "onUnequip"
 TP_ON_ATTACK_ENEMY = "onAttackEnemy"
+TP_ON_ATTACK_PLAYER = "onAttackPlayer"
+
+TRIGGER_POINTS = {
+  TP_ON_EQUIP,
+  TP_ON_UNEQUIP,
+  TP_ON_ATTACK_ENEMY,
+  TP_ON_ATTACK_PLAYER
+}
+
+-------------------------------
+--- Blessing Stats
+-------------------------------
+
+---@alias BlessingStat string
+BS_CANCEL = "cancel"
+BS_CONTINUE = "continue"
+BS_REFLECT = "reflect"
+
