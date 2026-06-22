@@ -58,6 +58,27 @@ function sineMovement(amplitude, frequency)
 	end
 end
 
+---@param frequency? integer
+---@return MovementFunc
+-- um movimento em linha reta, mas com uma oscilação quadratica, criando um efeito de "square wave"
+function squaredMovement(frequency)
+	local period = (1/frequency) or 0.1
+	local time = 0
+
+	return function(entity, dt)
+		time = time + dt
+
+		local forward = polarToVec(entity.direction or 0, entity.speed)
+		local tangent = tangentVec(forward)
+
+		local vy = math.cos( math.pi/2 * math.floor(time/period + 1/2) )
+		local vx = (math.cos( math.pi * math.floor(time/period + 3/2) ) + 1) / 2
+		local desiredVel = addVec(scaleVec(forward, vx), scaleVec(tangent, vy))
+
+		applySteering(entity, desiredVel, 30)
+	end
+end
+
 ---@param frequency? number
 ---@return MovementFunc
 -- um movimento de "passo": a velocidade da entidade oscila entre 0 e a velocidade máxima, criando um efeito de "parar e ir"
@@ -79,6 +100,7 @@ end
 ---@param angularSpeed number
 ---@param speed number
 ---@return MovementFunc
+-- um movimento orbital: a entidade orbita em torno de um ponto enquanto se move para frente
 function orbitalMovement(radius, angularSpeed, speed)
 	local angle = 0
 
@@ -88,6 +110,24 @@ function orbitalMovement(radius, angularSpeed, speed)
 		local forwardVel = polarToVec(entity.direction, speed or entity.speed)
 		local orbitVel = polarToVec(angle + entity.direction - math.pi / 2, angularSpeed * radius)
 		local desiredVel = addVec(forwardVel, orbitVel)
+
+		applySteering(entity, desiredVel, 20)
+	end
+end
+
+---@param radius number
+---@param angularSpeed number
+---@return MovementFunc
+-- um movimento em espiral, onde a entidade orbita em torno de um ponto enquanto se afasta dele
+function spiralMovement(radius, angularSpeed)
+	local angle = 0
+	local r = radius/4
+
+	return function(entity, dt)
+		angle = angle + angularSpeed * dt
+		r = r + radius * 2 * dt
+
+		local desiredVel = polarToVec(angle + entity.direction, angularSpeed * r)
 
 		applySteering(entity, desiredVel, 20)
 	end
