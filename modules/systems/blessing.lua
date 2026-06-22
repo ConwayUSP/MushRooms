@@ -61,7 +61,7 @@ end
 
 function BlessingManager:equip(blessing)
   table.insert(self.equipped, blessing)
-  blessing[TP_ON_EQUIP](self.owner)
+  blessing[TP_ON_EQUIP](blessing, self.owner)
 
   return true
 end
@@ -70,7 +70,7 @@ function BlessingManager:unequip(blessing)
   for i, b in ipairs(self.equipped) do
     if b == blessing then
       table.remove(self.equipped, i)
-      blessing[TP_ON_UNEQUIP](self.owner)
+      blessing[TP_ON_UNEQUIP](blessing, self.owner)
 
       return true
     end

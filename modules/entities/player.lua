@@ -41,6 +41,7 @@ local MAX_HP = 100
 ---@field colors Color[]
 ---@field speed number
 ---@field movementVec Vec
+---@field atkSpeed number
 ---@field state string
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
@@ -111,6 +112,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
 	player.inputBuffer = InputBuffer.new(player)
+	player.atkSpeed = 1 -- porcentagem de velocidade de ataque do jogador (1 = 100%)
 
 	collisionManager:register(player)
 	return player

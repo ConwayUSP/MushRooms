@@ -3,12 +3,15 @@
 ----------------------------------------
 
 function newArcherBlessing()
+  local k = 1.5
   local applyFuncs = {
-    [TP_ON_EQUIP] = function(self)
+    [TP_ON_EQUIP] = function(self, owner)
       print("Equipou " .. ARCHER_BLESSING.name)
+      owner.atkSpeed = owner.atkSpeed * k
     end,
-    [TP_ON_UNEQUIP] = function(self)
+    [TP_ON_UNEQUIP] = function(self, owner)
       print("Desequipou " .. ARCHER_BLESSING.name)
+      owner.atkSpeed = owner.atkSpeed / k
     end,
   }
   local blessing = Blessing.new(ARCHER_BLESSING.name, "Aumenta velocidade de ataque", COMBAT, applyFuncs)
@@ -37,13 +40,13 @@ end
 function newPigmeuBlessing()
   local k = 0.7
   local applyFuncs = {
-    [TP_ON_EQUIP] = function(owner)
+    [TP_ON_EQUIP] = function(self, owner)
       print("Equipou " .. PIGMEU_BLESSING.name)
       owner.size = owner.size * k
       owner.scale = owner.scale * k
       owner.hb = owner:calcHitboxes()
     end,
-    [TP_ON_UNEQUIP] = function(owner)
+    [TP_ON_UNEQUIP] = function(self, owner)
       print("Desequipou " .. PIGMEU_BLESSING.name)
       owner.size = owner.size / k
       owner.scale = owner.scale / k
@@ -57,10 +60,10 @@ end
 
 function newGomuGomuBlessing()
   local applyFuncs = {
-    [TP_ON_EQUIP] = function(owner)
+    [TP_ON_EQUIP] = function(self, owner)
       print("Equipou " .. GOMUGOMU_BLESSING.name)
     end,
-    [TP_ON_UNEQUIP] = function(owner)
+    [TP_ON_UNEQUIP] = function(self, owner)
       print("Desequipou " .. GOMUGOMU_BLESSING.name)
     end,
     [TP_ON_ATTACK_PLAYER] = function(self, ctx)

@@ -72,7 +72,8 @@ end
 ---@param dt number
 -- atualiza o estado, o cooldown e o ataque da arma
 function Weapon:update(dt)
-	self.atk:updateTimer(dt)
+	local speedBonus = self.owner and self.owner.atkSpeed or 1
+	self.atk:updateTimer(dt*speedBonus)
 	self.atk:update(dt)
 
 	-- self.rotation = math.atan2(love.mouse.getX() - viewPos.x, -(love.mouse.getY() - viewPos.y)) - math.pi * 0.5
