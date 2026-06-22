@@ -114,18 +114,23 @@ function TargetManager:clearTargets()
     self.targets = {}
 end
 
----@return Vec
+---@return Vec, boolean
 -- faz a média dos targets ponderada por seus pesos;
 -- retorna um vetor com a posição do target final (assumindo um target resultante de atração)
+-- e um booleano indicando sucesso
 function TargetManager:collapseTargets()
     local resultingTarget = vec(0, 0)
     local totalWeight = 0
     for t, _ in pairs(self.targets) do
         totalWeight = totalWeight + t.weight
         -- invertendo o sinal de targets que queremos evitar
-        local w = t.subtype == TG_SEEK and w or -w
-        resultingTarget = sumVec(resultingTarget, scaleVec(t.pos, w)
+        local w = t.subtype == TG_SEEK and t.weight or -t.weight
+        resultingTarget = sumVec(resultingTarget, scaleVec(t.pos, w))
     end
-    resultingTarget = scaleVec(resultingTarget, 1 / totalWeight)
-    return resultingTarget
+    if totalWeight == 0 then
+        return resultingTarget, false
+    else
+        resultingTarget = scaleVec(resultingTarget, 1 / totalWeight)
+        return resultingTarget, true
+    end
 end
