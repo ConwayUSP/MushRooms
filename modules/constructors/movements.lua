@@ -127,7 +127,7 @@ function spiralMovement(radius, angularSpeed)
 		angle = angle + angularSpeed * dt
 		r = r + radius * 2 * dt
 
-		local desiredVel = polarToVec(angle + entity.direction, angularSpeed * r)
+		local desiredVel = polarToVec(angle + (entity.direction or 0), angularSpeed * r)
 
 		applySteering(entity, desiredVel, 20)
 	end
@@ -253,35 +253,33 @@ end
 
 ---@param duration number
 ---@param baseCooldown number
----@param bonusSpeed number
----@param easingFunc easingFunc
 ---@return MovementFunc
-function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
-	local changeInterval = 0.25
+function randomMovement(duration, baseCooldown)
 	local time = 0
+	local age = 0
 	local cooldown = baseCooldown
-	local randomAngle = math.random() * 2 * math.pi
-	easingFunc = easingFunc or function(t)
-		return t
-	end
+	local moveBuilder = function() return spiralMovement(math.random(30, 50), math.random(15, 25)) end
+	local move = moveBuilder()
 
 	return function(entity, dt)
 		if cooldown > 0 then
 			cooldown = cooldown - dt
+			time = 0
+			age = 0
 			return
 		end
 
+		age = age + dt
 		time = time + dt
-		local t = math.min(time / duration, 1)
-		local intensity = easingFunc(1 - t)
 
-		if time >= changeInterval then
-			time = time - changeInterval
-			randomAngle = math.random() * 2 * math.pi
+		if age > duration then
+			applySteering(entity, vec(0, 0), 2)
+			cooldown = baseCooldown + math.random()
+			move = moveBuilder()
+			return
 		end
 
-		local desiredVel = polarToVec(randomAngle, entity.speed * bonusSpeed * intensity)
-		applySteering(entity, desiredVel, 10)
+		move(entity, dt)
 	end
 end
 

@@ -12,7 +12,7 @@ require("modules.utils.easing")
 ---@return Enemy
 -- cria um inimigo do tipo Gato Nuclear
 function newNuclearCat(spawnPos, room)
-	local movementFunc = avoidTargetMovement(350, 0.75, 1.25, math.rad(30), Easing.inOutQuad)
+	local movementFunc = avoidTargetMovement(450, 0.75, 1.25, math.rad(30), Easing.inOutQuad)
 	local atksCooldown = randMultiCooldown({ 1.0, 2.0, 3.0 })
 	local attack = newNuclearShotAttack(false, 5.0, atksCooldown, 400, function()
 		return zigZagMovement(600, 10)
@@ -42,10 +42,14 @@ end
 function newSpiderDuck(spawnPos, room)
 	local movementFunc = dashToTargetMovement(1.2, 1.5, math.rad(10), Easing.outQuad)
 	local atkCooldown = randCooldown(3.0, 4.0)
-	local dur = 0.8
-	local attack = newRotatoryAttack(false, dur, atkCooldown)
+	local frameDur = 0.1
+	local framesAtks = 12
+	local atkDur = framesAtks * frameDur
+	local framesStart = 5
+	local startDur = framesStart * frameDur
+	local attack = newRotatoryAttack(false, atkDur, atkCooldown)
 	local movements = {
-		[attack.name] = randomMovement(dur, 0.2, 15, Easing.outQuad),
+		[attack.name] = randomMovement(atkDur, startDur, 30, 0.2, Easing.outQuad)
 	}
 	local atks = { attack }
 	local hb = hitbox(Circle.new(25))
@@ -56,7 +60,7 @@ function newSpiderDuck(spawnPos, room)
 		Enemy.new(SPIDER_DUCK.name, 20, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	local idleAnimSettings = newAnimSetting(2, { width = 32, height = 32 }, 0.4, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
-	local attackAnimSettings = newAnimSetting(7, { width = 32, height = 32 }, 0.2, false)
+	local attackAnimSettings = newAnimSetting(22, { width = 32, height = 50 }, frameDur, false, 1, 4, vec(0, -9))
 	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
 	enemy.shadowWidth = 30

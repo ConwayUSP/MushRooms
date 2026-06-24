@@ -312,8 +312,8 @@ function Enemy:draw(camera)
 	local scaleX = defaultScale - 0.6 * math.sin(2 * math.pi * p)
 	local scaleY = defaultScale + 0.6 * math.sin(2 * math.pi * p)
 	local offset = {
-		x = animation.frameDim.width / 2,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
+		x = animation.offset.x,
+		y = (animation.frameDim.height * scaleY - (animation.offset.y) * defaultScale) / scaleY,
 	}
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 
