@@ -68,7 +68,7 @@ function stepMovement(frequency)
 	return function(entity, dt)
 		time = time + dt
 
-		local step = 1 - math.cos(2*math.pi*frequency*time)
+		local step = 1 - math.cos(2 * math.pi * frequency * time)
 		local desiredVel = polarToVec(entity.direction or 0, entity.speed * step)
 
 		applySteering(entity, desiredVel, 20)
@@ -86,7 +86,7 @@ function orbitalMovement(radius, angularSpeed, speed)
 		angle = angle + angularSpeed * dt
 
 		local forwardVel = polarToVec(entity.direction, speed or entity.speed)
-		local orbitVel = polarToVec(angle + entity.direction - math.pi/2, angularSpeed * radius)
+		local orbitVel = polarToVec(angle + entity.direction - math.pi / 2, angularSpeed * radius)
 		local desiredVel = addVec(forwardVel, orbitVel)
 
 		applySteering(entity, desiredVel, 20)
@@ -117,7 +117,6 @@ function boomerangMovement(returnSpeed, timing, force)
 
 		local desiredVel = scaleVec(normalize(dir), returnSpeed)
 		applySteering(entity, desiredVel, force or 1)
-		
 	end
 end
 
@@ -140,15 +139,15 @@ function avoidTargetMovement(safeDistance, duration, baseCooldown, angleVar, eas
 			return
 		end
 
-		if not entity.target then
+		if not entity.moveTargeting then
 			return
 		end
 
 		-- se estiver perto e não estiver em fuga, começa a fuga
 		if not escapeDir then
-			local d = dist(entity.pos, entity.target.pos)
+			local d = dist(entity.pos, entity.moveTargeting.targetPos)
 			if d < safeDistance then
-				escapeDir = normalize(subVec(entity.pos, entity.target.pos))
+				escapeDir = normalize(subVec(entity.pos, entity.moveTargeting.targetPos))
 				escapeDir = rotateVec(escapeDir, math.random(-angleVar, angleVar))
 				timer = 0
 			end
@@ -189,8 +188,8 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 		end
 
 		-- inicio do dash
-		if not dashDir and entity.target then
-			dashDir = normalize(subVec(entity.target.pos, entity.pos))
+		if not dashDir and entity.moveTargeting.validTarget then
+			dashDir = normalize(subVec(entity.moveTargeting.targetPos, entity.pos))
 			dashDir = rotateVec(dashDir, math.random(-angleVar, angleVar))
 			timer = 0
 		end
@@ -211,7 +210,6 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 		end
 	end
 end
-
 
 ---@param duration number
 ---@param baseCooldown number
@@ -247,21 +245,19 @@ function randomMovement(duration, baseCooldown, bonusSpeed, easingFunc)
 	end
 end
 
-
 ---@param force? number
 ---@return MovementFunc
 function followTargetMovement(force)
 	force = force or 10
 	return function(entity, dt)
-		entity.target = entity.target or entity:nearestEnemy() -- TEMPORALY
-
-		if not entity.target or entity.target.hp <= 0 then
+		if not entity.moveTargeting then
 			return
 		end
 
-		local dir = subVec(entity.target.pos, entity.pos)
+		local dir = subVec(entity.moveTargeting.targetPos, entity.pos)
 		local desiredVel = scaleVec(normalize(dir), entity.speed)
 
 		applySteering(entity, desiredVel, force)
 	end
 end
+

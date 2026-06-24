@@ -1,17 +1,22 @@
 function seekClosestPlayer(tm, target)
-    local r = tm.entity.room
+    local r = tm.owner.room
+    target.subtype = TG_SEEK
     target.weight = 0
     -- se não enxerga nenhum player, o target fica com peso 0 mesmo...
-    if #r.players == 0 then
+    if r.playersInRoom:size() == 0 then
         return
     end
     local minDist = math.huge
     local closestPlayerPos = nil
-    for _, p in pairs(r.players) do
-        local d = dist(tm.entity.pos, p.pos)
-        if d < minDist then
-            minDist = d
-            closestPlayerPos = p.pos
+    -- buscando todos os players na sala por ID, pq eles ficam em um Set ToT
+    for i = 0, 4 do
+        local p = r.playersInRoom:has(i) and r.playersInRoom:get(i) or nil
+        if p then
+            local d = dist(tm.owner.pos, p.pos)
+            if d < minDist then
+                minDist = d
+                closestPlayerPos = p.pos
+            end
         end
     end
     if closestPlayerPos then
@@ -21,7 +26,8 @@ function seekClosestPlayer(tm, target)
 end
 
 function seekClosestEnemy(tm, target)
-    local r = tm.entity.room
+    local r = tm.owner.room
+    target.subtype = TG_SEEK
     target.weight = 0
     -- se não enxerga nenhum inimigo, o target fica com peso 0 mesmo...
     if #r.enemies == 0 then
@@ -30,7 +36,7 @@ function seekClosestEnemy(tm, target)
     local minDist = math.huge
     local closestEnemyPos = nil
     for _, e in pairs(r.enemies) do
-        local d = dist(tm.entity.pos, e.pos)
+        local d = dist(tm.owner.pos, e.pos)
         if d < minDist then
             minDist = d
             closestEnemyPos = e.pos
@@ -43,21 +49,26 @@ function seekClosestEnemy(tm, target)
 end
 
 function seekAllPlayers(tm, target)
-    local r = tm.entity.room
+    local r = tm.owner.room
+    target.subtype = TG_SEEK
     target.weight = 0
-    if #r.players == 0 then
+    if r.playersInRoom:size() == 0 then
         return
     end
     local posSum = vec(0, 0)
-    for _, p in pairs(r.players) do
-        posSum(p.pos)
+    for i = 0, 4 do
+        local p = r.playersInRoom:has(i) and r.playersInRoom:get(i) or nil
+        if p then
+            addVec(posSum, p.pos)
+        end
     end
     target.pos = scaleVec(posSum, 1 / #r.players)
     target.weight = 1
 end
 
 function seekAllEnemies(tm, target)
-    local r = tm.entity.room
+    local r = tm.owner.room
+    target.subtype = TG_SEEK
     target.weight = 0
     if #r.enemies == 0 then
         return
@@ -88,4 +99,14 @@ function avoidAllPlayersStrong(tm, target)
     if target.weight ~= 0 then
         target.weight = 10
     end
+end
+
+function seekRandomPoint(tm, target)
+    local r = target.owner.room
+    local minX, maxX = room.limit.p1.x, room.limit.p2.x
+    local minY, maxY = room.limit.p1.y, room.limit.p2.y
+    local x, y = math.random(minX, maxX), math.random(minY, maxY)
+    target.subtype = TG_SEEK
+    target.pos = vec(x, y)
+    target.weight = 1
 end

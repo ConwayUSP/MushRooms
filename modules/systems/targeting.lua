@@ -1,6 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
+require("modules.utils.vec")
 local bit = require("bit")
 
 ----------------------------------------
@@ -13,7 +14,8 @@ TC_EVERY_FRAME = 1
 TC_ON_INIT = 2
 TC_ON_KILL = 4
 TC_ON_COLLISION = 8
-TC_ALL = bit.bor(TC_ON_INIT, TC_EVERY_FRAME, TC_ON_KILL, TC_ON_COLLISION)
+TC_ON_TRIGGER_HITBOX = 16
+TC_ALL = bit.bor(TC_ON_INIT, TC_EVERY_FRAME, TC_ON_KILL, TC_ON_COLLISION, TC_ON_TRIGGER_HITBOX)
 
 ---@alias TargetType string
 TG_AVOID = "avoid"
@@ -34,14 +36,14 @@ Target = {}
 Target.__index = Target
 Target.type = TARGET
 
----@param subtype any
----@param changeTrigger any
----@param pos any
----@param weight any
----@param duration any
+---@param subtype TargetType
+---@param changeTrigger TargetChangeTrigger
+---@param duration number
+---@param pos Vec
+---@param weight number
 ---@return table
 -- cria um Target cuja função é ser parte da direção da mira ou do movimento de alguma entidade
-function Target.new(subtype, changeTrigger, pos, weight, duration)
+function Target.new(subtype, changeTrigger, duration, pos, weight)
     local target = setmetatable({}, Target)
     target.subtype = subtype or TG_SEEK
     target.changeTrigger = changeTrigger or TC_ON_INIT
@@ -58,6 +60,8 @@ end
 
 ---@class TargetManager
 ---@field owner Entity
+---@field targetPos Vec
+---@field validTarget boolean
 ---@field targets table<Target, fun(tm: TargetManager, target: Target)>
 ---@field TCTimer Timer
 
@@ -70,8 +74,10 @@ TargetManager.type = TARGET_MANAGER
 -- para inimigos, armas, ou qualquer entidade que "mire" em algo
 function TargetManager.new(entity)
     local manager = setmetatable({}, TargetManager)
-    manager.entity = entity
+    manager.owner = entity
     manager.targets = {}
+    manager.targetPos = vec(0, 0)
+    manager.validTarget = false
 
     return manager
 end
@@ -82,6 +88,7 @@ end
 -- adiciona um target e sua estratégia de seleção ao manager, pode ser encadeado (retorna self)
 function TargetManager:addTarget(target, strategy)
     self.targets[target] = strategy
+    print("UÉ -> " .. tostring(self.targets[target]))
     return self
 end
 
@@ -98,14 +105,15 @@ function TargetManager:update(dt)
     self:applyStrats(TC_EVERY_FRAME)
 end
 
----@param trigger TargetChangeTrigger
+---@param triggerMask TargetChangeTrigger
 -- aplica todas as mudanças de target cujas ativações estejam contidas no bitmask `trigger`
-function TargetManager:applyStrats(trigger)
+function TargetManager:applyStrats(triggerMask)
     for target, strat in pairs(self.targets) do
-        if bit.band(target.changeTrigger, trigger) > 0 then
+        if bit.band(target.changeTrigger, triggerMask) > 0 then
             strat(self, target)
         end
     end
+    self:collapseTargets()
 end
 
 -- limpa todos os targets deste manager;
@@ -114,10 +122,9 @@ function TargetManager:clearTargets()
     self.targets = {}
 end
 
----@return Vec, boolean
 -- faz a média dos targets ponderada por seus pesos;
--- retorna um vetor com a posição do target final (assumindo um target resultante de atração)
--- e um booleano indicando sucesso
+-- define a propriedade targetPos como sendo essa média, e a propriedade
+-- validTarget como uma flag que diz se foi possível definir um targetPos
 function TargetManager:collapseTargets()
     local resultingTarget = vec(0, 0)
     local totalWeight = 0
@@ -125,12 +132,13 @@ function TargetManager:collapseTargets()
         totalWeight = totalWeight + t.weight
         -- invertendo o sinal de targets que queremos evitar
         local w = t.subtype == TG_SEEK and t.weight or -t.weight
-        resultingTarget = sumVec(resultingTarget, scaleVec(t.pos, w))
+        resultingTarget = addVec(resultingTarget, scaleVec(t.pos, w))
     end
     if totalWeight == 0 then
-        return resultingTarget, false
+        -- se todos os targets estão com peso zerado, não temos muito para onde ir
+        self.validTarget = false
     else
-        resultingTarget = scaleVec(resultingTarget, 1 / totalWeight)
-        return resultingTarget, true
+        self.targetPos = scaleVec(resultingTarget, 1 / totalWeight)
+        self.validTarget = true
     end
 end

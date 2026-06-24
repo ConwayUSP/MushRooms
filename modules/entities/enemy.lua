@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.systems.collision")
+require("modules.systems.targeting")
 require("modules.entities.mortal")
 require("modules.utils.states")
 require("modules.utils.types")
@@ -17,9 +18,11 @@ require("table")
 ---@field maxHp number
 ---@field move function
 ---@field state string
+---@field room Room
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
----@field target any
+---@field moveTargeting TargetManager
+---@field atkTargeting TargetManager
 ---@field atk Attack[]
 ---@field atkFrame number[]
 ---@field selectedAtk number
@@ -54,24 +57,30 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy:init(name, spawnPos, hitboxes, room, physics, hp)
 
 	-- atributos que variam
-	enemy.move = move                     -- função de movimento do inimigo
-	enemy.atk = attacks                   -- objetos Attack associados ao inimigo (caso possua)
-	enemy.atkFrame = atkFrames            -- frames para
+	enemy.move = move                           -- função de movimento do inimigo
+	enemy.atk = attacks                         -- objetos Attack associados ao inimigo (caso possua)
+	enemy.atkFrame = atkFrames                  -- frames para
+	enemy.room = room                           -- a sala onde o inimigo está
 	-- atributos fixos na instanciação
-	enemy.selectedAtk = 1                 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
-	enemy.state = IDLE                    -- define o estado atual do inimigo, estreitamente relacionado às animações
-	enemy.spriteSheets = {}               -- no tipo imagem do love
-	enemy.animations = {}                 -- as chaves são estados e os valores são Animações
-	enemy.target = nil                    -- alvo atual do inimigo
-	enemy.isAttacking = false             -- indica se o inimigo está atualmente atacando
-	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
-	enemy.attackJustStarted = false       -- indica se um novo ataque acabou de começar
-	enemy.defaultInvulnerableTime = 0.2   -- tempo padrão de invulnerabilidade após levar dano
-	enemy.hasShadow = true                -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
+	enemy.selectedAtk = 1                       -- o primeiro ataque começa selecionado, os posteriores são aleatórios
+	enemy.state = IDLE                          -- define o estado atual do inimigo, estreitamente relacionado às animações
+	enemy.spriteSheets = {}                     -- no tipo imagem do love
+	enemy.animations = {}                       -- as chaves são estados e os valores são Animações
+	enemy.moveTargeting = TargetManager.new(enemy) -- um gerenciador de alvo do inimigo
+	enemy.atkTargeting = TargetManager.new(enemy) -- um gerenciador de alvo do inimigo
+	enemy.isAttacking = false                   -- indica se o inimigo está atualmente atacando
+	enemy.hasTriggeredAttackThisAnim = false    -- garante que cada animação de ataque dispare apenas uma vez
+	enemy.attackJustStarted = false             -- indica se um novo ataque acabou de começar
+	enemy.defaultInvulnerableTime = 0.2         -- tempo padrão de invulnerabilidade após levar dano
+	enemy.hasShadow = true                      -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	enemy.shadowWidth = 25
-	enemy.isReallyDead = false -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
-	enemy.leavesBody = true -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
-	enemy.movements = movements or {} -- tabela de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
+	enemy.isReallyDead = false                  -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
+	enemy.leavesBody = true                     -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
+	enemy.movements = movements or
+	{}                                          -- tabela de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
+
+	enemy.moveTargeting:applyStrats(TC_ON_INIT)
+	enemy.atkTargeting:applyStrats(TC_ON_INIT)
 
 	table.insert(room.enemies, enemy)
 	return enemy
@@ -212,7 +221,7 @@ end
 
 function Enemy:attack()
 	-- as condições para tentar um ataque não são cumpridas
-	if not self.target or not self.target.pos or not self.atk[self.selectedAtk] then
+	if not self.atkTargeting.validTarget or not self.atk[self.selectedAtk] then
 		return
 	end
 	if self.atk[self.selectedAtk].canAttack and not self.isAttacking then
@@ -223,22 +232,23 @@ function Enemy:attack()
 	end
 end
 
-
 ---@param dt number
 -- atualiza os estados do inimigo e seus ataques, além de movê-lo
 function Enemy:update(dt)
-	self:defineTarget()
+	self.moveTargeting:update(dt)
+	self.atkTargeting:update(dt)
 	self:updateMotion(dt)
 	self:updateAttackState(dt)
 	applyPhysics(self, dt)
 end
 
 function Enemy:updateAttack()
+	local atkTargetPos = self.atkTargeting.targetPos
 	if self.isAttacking then
 		local anim = self.animations[self.state]
 
 		if anim.currFrame >= self.atkFrame[self.selectedAtk] and not self.hasTriggeredAttackThisAnim then
-			local dir = math.atan2(self.target.pos.y - self.pos.y, self.target.pos.x - self.pos.x)
+			local dir = math.atan2(atkTargetPos.y - self.pos.y, atkTargetPos.x - self.pos.x)
 			self.atk[self.selectedAtk]:attack(self, self.pos, dir)
 			self.hasTriggeredAttackThisAnim = true
 		end
@@ -255,7 +265,7 @@ function Enemy:updateState()
 	end
 
 	if self.atk[self.selectedAtk] and self.isAttacking then
-		local dirVec = subVec(self.target.pos, self.pos)
+		local dirVec = subVec(self.atkTargeting.targetPos, self.pos)
 
 		local isVerticalAttack = math.abs(dirVec.y) > math.abs(dirVec.x)
 		if isVerticalAttack and dirVec.y < 0 then
@@ -281,27 +291,6 @@ function Enemy:updateState()
 			self.state = IDLE
 		end
 	end
-end
-
--- define o alvo atual do `Enemy`
-function Enemy:defineTarget()
-	self.target = self:getClosestPlayer()
-end
-
----@return any
--- encontra o jogador mais próximo ao `Enemy`
-function Enemy:getClosestPlayer()
-	local closestDist = math.huge
-	local closestPlayer = nil
-
-	for _, p in pairs(players) do
-		if dist(self.pos, p.pos) < closestDist then
-			closestDist = dist(self.pos, p.pos)
-			closestPlayer = p
-		end
-	end
-
-	return closestPlayer
 end
 
 ----------------------------------------
