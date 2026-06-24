@@ -20,6 +20,7 @@ end
 --------------- INIMIGOS ---------------
 SPIDER_DUCK = registerEntity(ENEMY, "Spider Duck")
 NUCLEAR_CAT = registerEntity(ENEMY, "Nuclear Cat")
+SPIDER_DUCK_BOSS = registerEntity(ENEMY, "Spider Duck Boss")
 
 ----------------- NPCs -----------------
 GLOB = registerEntity(NPC, "Glob")

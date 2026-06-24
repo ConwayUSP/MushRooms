@@ -23,6 +23,7 @@ require("table")
 ---@field animations table<string, Animation>
 ---@field moveTargeting TargetManager
 ---@field atkTargeting TargetManager
+---@field scale number
 ---@field atk Attack[]
 ---@field atkFrame number[]
 ---@field selectedAtk number
@@ -33,6 +34,7 @@ require("table")
 ---@field setProjectileAtk function
 ---@field isReallyDead boolean
 ---@field leavesBody boolean
+---@field isBoss boolean
 ---@field movements? table<string, MovementFunc>
 
 Enemy = setmetatable({}, { __index = Mortal })
@@ -76,8 +78,9 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy.shadowWidth = 25
 	enemy.isReallyDead = false                  -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
 	enemy.leavesBody = true                     -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
-	enemy.movements = movements or
-	{}                                          -- tabela de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
+	enemy.movements = movements or {}           -- tabela de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
+	enemy.scale = 3	-- escala padrão do inimigo
+	enemy.isBoss = false -- indica se o inimigo é um chefe
 
 	enemy.moveTargeting:applyStrats(TC_ON_INIT)
 	enemy.atkTargeting:applyStrats(TC_ON_INIT)
@@ -308,12 +311,11 @@ function Enemy:draw(camera)
 	local p = (self.invulnerableTimer > 0 and self.state ~= DYING)
 		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
-	local defaultScale = 3
-	local scaleX = defaultScale - 0.6 * math.sin(2 * math.pi * p)
-	local scaleY = defaultScale + 0.6 * math.sin(2 * math.pi * p)
+	local scaleX = self.scale - 0.6 * math.sin(2 * math.pi * p)
+	local scaleY = self.scale + 0.6 * math.sin(2 * math.pi * p)
 	local offset = {
 		x = animation.offset.x,
-		y = (animation.frameDim.height * scaleY - (animation.offset.y) * defaultScale) / scaleY,
+		y = (animation.frameDim.height * scaleY - (animation.offset.y) * self.scale) / scaleY,
 	}
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
 

@@ -49,7 +49,7 @@ function newSpiderDuck(spawnPos, room)
 	local startDur = framesStart * frameDur
 	local attack = newRotatoryAttack(false, atkDur, atkCooldown)
 	local movements = {
-		[attack.name] = randomMovement(atkDur, startDur, 30, 0.2, Easing.outQuad)
+		[attack.name] = randomMovement(atkDur, startDur)
 	}
 	local atks = { attack }
 	local hb = hitbox(Circle.new(25))
@@ -64,6 +64,45 @@ function newSpiderDuck(spawnPos, room)
 	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
 	enemy.shadowWidth = 30
+	enemy.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
+	enemy.atkTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
+	return enemy
+end
+
+----------------------------------------------
+--- Bosses
+----------------------------------------------
+
+---@param spawnPos Vec
+---@param room Room
+---@return Enemy
+-- cria um inimigo do tipo Pato Aranha BOSS
+function newSpiderDuckBoss(spawnPos, room)
+	local movementFunc = dashToTargetMovement(1.2, 1.5, math.rad(10), Easing.outQuad)
+	local atkCooldown = randCooldown(3.0, 4.0)
+	local frameDur = 0.1
+	local framesAtks = 12
+	local atkDur = framesAtks * frameDur
+	local framesStart = 5
+	local startDur = framesStart * frameDur
+	local attack = newRotatoryAttack(false, atkDur, atkCooldown)
+	local movements = {
+		[attack.name] = randomMovement(atkDur, startDur)
+	}
+	local atks = { attack }
+	local hb = hitbox(Circle.new(50))
+	local hbs = hitboxes({ hb })
+	local physics = physicsSettings(0.8, 50, 5)
+	local atkFrames = { 4 }
+	local enemy = Enemy.new(SPIDER_DUCK.name, 200, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
+	local idleAnimSettings = newAnimSetting(2, { width = 32, height = 32 }, 0.4, true, 1)
+	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
+	local attackAnimSettings = newAnimSetting(22, { width = 32, height = 50 }, frameDur, false, 1, 4, vec(0, -9))
+	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
+	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, attackAnimSettings, dyingAnimSettings)
+	enemy.scale = 5
+	enemy.shadowWidth = 50
+	enemy.isBoss = true
 	enemy.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
 	enemy.atkTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
 	return enemy
