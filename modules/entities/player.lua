@@ -178,6 +178,7 @@ function Player:update(dt)
 		self:updateBuildingMode(dt)
 		self:updateState()
 		self:resolveInteractive()
+		self.uiManager:update(dt)
 	end
 
 	Mortal.update(self, dt)

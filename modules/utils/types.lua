@@ -63,6 +63,7 @@ UI_INVENTORY_SCENE = "UI player inventory scene"
 UI_MAP_SCENE = "UI player map scene"
 UI_BESTIARY_SCENE = "UI player bestiary scene"
 UI_CRAFTING_SCENE = "UI player crafting scene"
+UI_BOSS_LIFE_BAR_SCENE = "UI boss life bar scene"
 
 ---------- OUTROS ----------
 COLOR = "color"

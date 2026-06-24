@@ -48,3 +48,10 @@ function drawFrameWithOutline(spriteSheet, quad, x, y, scale, offset, thickness,
 	love.graphics.draw(spriteSheet, quad, x, y, 0, scale, scale, offset.x, offset.y)
 	love.graphics.setShader()
 end
+
+function drawWithColorShader(drawFunc, color)
+  love.graphics.setShader(whiteShader)
+  whiteShader:send("fillColor", color or { 1, 1, 1, 1.0 })
+  drawFunc()
+  love.graphics.setShader()
+end

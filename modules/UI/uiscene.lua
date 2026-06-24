@@ -26,12 +26,14 @@ UIScene.type = UI_SCENE
 
 ---@param sceneType Type
 ---@param player any
+---@param hasBg? boolean
 ---@return table
 -- cria uma nova cena de UI com um subtipo e com os controles do `player`
-function UIScene.new(sceneType, player)
+function UIScene.new(sceneType, player, hasBg)
 	local uiscene = setmetatable({}, UIScene)
 	uiscene.subtype = sceneType
 	uiscene.player = player
+	uiscene.hasBg = hasBg == nil and true or hasBg
 	if player then
 		uiscene.controls = player.controls
 	else
@@ -100,7 +102,9 @@ end
 
 -- desenha cada um dos elementos de UI desta cena
 function UIScene:draw()
-	love.graphics.clear(0.0, 0.0, 0.0, 0.3)
+	if self.hasBg then
+		love.graphics.clear(0.0, 0.0, 0.0, 0.3)
+	end
 	for i = 1, #self.layers do
 		local layer = self.layers[i]
 		for _, row in pairs(layer) do

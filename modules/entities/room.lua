@@ -85,6 +85,8 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.limits = limits -- limites da sala nas coordenadas de mundo
 	room.pos = midpoint(room.limits.p1, room.limits.p2) -- centro da sala nas coordenadas de mundo
 	room.color = blueprint.color -- cor da sala
+	room.roomType = blueprint.roomType -- tipo da sala
+	room.name = blueprint.roomName -- nome da sala
 	room.sprites = sprites -- os sprites da sala em camadas
 	-- atributos fixos na instanciação
 	room.adjacentRooms = {} -- salas adjacentes
@@ -98,6 +100,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.obstacles = {} -- lista de obstáculos na sala
 	room.playersInRoom = Set.new() -- lista de jogadores na sala
 	room.linkManager = LinkManager.new() -- gerenciador de links da sala
+	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
 
 	room:addWallsAndDoors()
 
@@ -131,8 +134,9 @@ function Room:update(dt)
 	for _, npc in pairs(self.npcs) do
 		npc:update(dt)
 	end
-	-- atualiza links
+	
 	self.linkManager:update(dt)
+	self.uiManager:update(dt)
 end
 
 ---@param player Player
@@ -145,6 +149,7 @@ function Room:visit(player)
 	self:setExplored()
 	self.playersInRoom:add(player.id, player)
 	activeRooms:add(makeKey(self.arrPos.x, self.arrPos.y), self)
+	self:onEnter()
 	player.room = self
 
 	collisionManager.roomsDirty = true
@@ -189,8 +194,21 @@ end
 function Room:verifyIsEmpty()
 	if self.playersInRoom:size() == 0 then
 		activeRooms:remove(makeKey(self.arrPos.x, self.arrPos.y))
+		self:onExit()
 
 		collisionManager.roomsDirty = true
+	end
+end
+
+function Room:onEnter()
+	if self.roomType == BOSS_ROOM then
+		self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+	end
+end
+
+function Room:onExit()
+	if self.roomType == BOSS_ROOM then
+		self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
 	end
 end
 

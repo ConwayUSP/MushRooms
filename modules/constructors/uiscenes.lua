@@ -4,6 +4,7 @@
 require("modules.UI.uiscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
+require("modules.UI.elements.lifebar")
 require("modules.UI.elements.text")
 require("modules.constructors.uielements")
 
@@ -242,4 +243,33 @@ function newCraftingScene(canvasSize, player)
 	invScene:onSelectionChange()
 
 	return invScene
+end
+
+----------------------------------------
+-- Cenas da Sala
+----------------------------------------
+
+function newBossLifeBarScene(canvasSize, room)
+	local lifeBarScene = UIScene.new(UI_BOSS_LIFE_BAR_SCENE, nil, false)
+	-- ELEMENTOS
+	local lifeCalc = function()
+		local enemies = room.enemies
+		local hp, maxHp = 0, 0
+
+		for _, enemy in pairs(enemies) do
+			if enemy.isBoss then
+				hp = hp + enemy.hp
+				maxHp = maxHp + enemy.maxHp
+			end
+		end
+		return hp, maxHp
+	end
+
+	local lifeBarEl = UILifeBarElem.new("boss lifebar", vec(640, 50), size(640, 64), canvasSize, lifeCalc)
+
+	-- SETUP DA CENA
+	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))
+	
+
+	return lifeBarScene
 end

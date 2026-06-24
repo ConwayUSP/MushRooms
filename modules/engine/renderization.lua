@@ -240,6 +240,7 @@ end
 
 function renderPlayerUIs(camera)
 	camera.playerAttached.uiManager:draw(camera)
+	camera.playerAttached.room.uiManager:draw(camera)
 end
 
 ---@param camera Camera
