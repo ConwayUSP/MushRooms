@@ -52,10 +52,12 @@ function Mortal:init(name, pos, hitboxes, room, entityPhysics, hp)
   end)
   self.healingTimer = Timer.new(math.huge, true) -- timer para cura ao longo do tempo
   self.fearTimer = Timer.new(math.huge, true) -- timer para efeito de medo
+	self.deathTimer = 0 -- timer para efeito de morte
 end
 
 function Mortal:update(dt)
-		if self.state == DYING then
+	if self.state == DYING then
+		self.deathTimer = self.deathTimer + dt
 		return
 	end
 

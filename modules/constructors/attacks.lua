@@ -286,8 +286,8 @@ end
 ---@param cooldown function
 ---@return Attack
 -- um ataque rotatório corpo-a-corpo (sem animação)
-function newRotatoryAttack(ally, duration, cooldown)
-	local hb = hitbox(Circle.new(40), vec(0, -20))
+function newRotatoryAttack(ally, duration, cooldown, hb)
+	hb = hb or hitbox(Circle.new(50), vec(0, -30))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,

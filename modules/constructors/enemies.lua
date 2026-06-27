@@ -55,7 +55,10 @@ function newSpiderDuck(spawnPos, room)
 	local startDur = framesStart * frameDur
 	local attack = newRotatoryAttack(false, atkDur, atkCooldown)
 	local movements = {
-		[attack.name] = randomMovement(atkDur, startDur)
+		[attack.name] = function()
+			local moveBuilder = function() return spiralMovement(math.random(30, 50), math.random(15, 25)) end
+			return randomMovement(atkDur, startDur, moveBuilder) 
+		end
 	}
 	local atkFrames = { 
 		[attack.name] = 4
@@ -94,15 +97,18 @@ function newSpiderDuckBoss(spawnPos, room)
 	local atkDur = framesAtks * frameDur
 	local framesStart = 5
 	local startDur = framesStart * frameDur
-	local attackRotate = newRotatoryAttack(false, atkDur, atkCooldown)
+	local attackRotate = newRotatoryAttack(false, atkDur, atkCooldown, hitbox(Circle.new(100), vec(0, -60)))
 	local attackSpawn = Attack.new(SPAWN_ATTACK, newAtkSetting({
 		subtype = SPAWN_ATTACK,
 		ally = false,
-		cooldown = constCooldown(10)
+		cooldown = constCooldown(12)
 	}))
-	attackSpawn:addAttackFunc(spawnCircularEntities(1, 4, nil, SPIDER_DUCK, vec(0, 100)))
+	attackSpawn:addAttackFunc(spawnCircularEntities(1, 3, nil, SPIDER_DUCK, vec(0, 100)))
 	local movements = {
-		[attackRotate.name] = randomMovement(atkDur, startDur),
+		[attackRotate.name] = function()
+			local moveBuilder = function() return spiralMovement(math.random(30, 50), math.random(15, 25)) end
+			return randomMovement(atkDur, startDur, moveBuilder) 
+		end,
 	}
 	local atkFrames = { 
 		[attackRotate.name] = 4,
@@ -112,7 +118,7 @@ function newSpiderDuckBoss(spawnPos, room)
 		[attackRotate.name] = newAnimSetting(22, { width = 32, height = 50 }, frameDur, false, nil, nil, vec(0, -9)),
 		[attackSpawn.name] = newAnimSetting(2, { width = 32, height = 32 }, 0.5, false)
 	}
-	local atks = { attackSpawn }
+	local atks = { attackSpawn, attackRotate }
 	local hb = hitbox(Circle.new(50))
 	local hbs = hitboxes({ hb })
 	local physics = physicsSettings(0.8, 50, 5)

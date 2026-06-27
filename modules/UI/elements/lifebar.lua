@@ -149,6 +149,10 @@ function UILifeBarElem:update(dt)
 end
 
 function UILifeBarElem:draw(camera)
+  if self.front.frontTarget <= 0 or self.front.backTarget <= 0 then
+    return
+  end
+
   love.graphics.setColor(1, 1, 1, 0.5)
 
   self.back:draw(camera)

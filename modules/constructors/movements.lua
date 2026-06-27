@@ -253,19 +253,17 @@ end
 
 ---@param duration number
 ---@param baseCooldown number
+---@param moveBuilder fun(): MovementFunc
 ---@return MovementFunc
-function randomMovement(duration, baseCooldown)
+function randomMovement(duration, baseCooldown, moveBuilder)
 	local time = 0
 	local age = 0
 	local cooldown = baseCooldown
-	local moveBuilder = function() return spiralMovement(math.random(30, 50), math.random(15, 25)) end
 	local move = moveBuilder()
 
 	return function(entity, dt)
 		if cooldown > 0 then
 			cooldown = cooldown - dt
-			time = 0
-			age = 0
 			return
 		end
 
@@ -273,9 +271,7 @@ function randomMovement(duration, baseCooldown)
 		time = time + dt
 
 		if age > duration then
-			applySteering(entity, vec(0, 0), 2)
-			cooldown = baseCooldown + math.random()
-			move = moveBuilder()
+			applySteering(entity, vec(0, 0), 10)
 			return
 		end
 
