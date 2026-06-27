@@ -91,10 +91,10 @@ end
 
 ---@param idleSettings AnimSettings
 ---@param walkingSettings AnimSettings
----@param attackSettings AnimSettings
 ---@param dyingSettings AnimSettings
+---@param attackSettings table<string, AnimSettings>
 -- adiciona as animações dos estados dos inimigos à sua tabela de animações
-function Enemy:addAnimations(idleSettings, walkingSettings, attackSettings, dyingSettings)
+function Enemy:addAnimations(idleSettings, walkingSettings, dyingSettings, attackSettings)
 	----------------- IDLE -----------------
 	local path = pngPathFormat({ "assets", "animations", "enemies", self.name, IDLE })
 	addAnimation(self, path, IDLE, idleSettings)
@@ -110,22 +110,27 @@ function Enemy:addAnimations(idleSettings, walkingSettings, attackSettings, dyin
 	---------------- WALKING RIGHT -----------------
 	path = pngPathFormat({ "assets", "animations", "enemies", self.name, WALKING_RIGHT })
 	addAnimation(self, path, WALKING_RIGHT, walkingSettings)
-	---------------- ATTACKING UP -----------------
-	path = pngPathFormat({ "assets", "animations", "enemies", self.name, ATTACKING_UP })
-	addAnimation(self, path, ATTACKING_UP, attackSettings)
-	self:initAttackAnim(self.animations[ATTACKING_UP])
-	---------------- ATTACKING DOWN -----------------
-	path = pngPathFormat({ "assets", "animations", "enemies", self.name, ATTACKING_DOWN })
-	addAnimation(self, path, ATTACKING_DOWN, attackSettings)
-	self:initAttackAnim(self.animations[ATTACKING_DOWN])
-	---------------- ATTACKING LEFT -----------------
-	path = pngPathFormat({ "assets", "animations", "enemies", self.name, ATTACKING_LEFT })
-	addAnimation(self, path, ATTACKING_LEFT, attackSettings)
-	self:initAttackAnim(self.animations[ATTACKING_LEFT])
-	---------------- ATTACKING RIGHT -----------------
-	path = pngPathFormat({ "assets", "animations", "enemies", self.name, ATTACKING_RIGHT })
-	addAnimation(self, path, ATTACKING_RIGHT, attackSettings)
-	self:initAttackAnim(self.animations[ATTACKING_RIGHT])
+
+	for name, settings in pairs(attackSettings) do
+		local prefix = ATTACKING .. " " .. name
+		for _, dir in ipairs(DIRECTIONS) do
+			local fullName = prefix .. " " .. dir
+
+			path = pngPathFormat({ "assets", "animations", "enemies", self.name, fullName })
+			local f = io.open(path, "r")
+
+			if f then
+				f:close()
+				addAnimation(self, path, fullName, settings)
+				self:initAttackAnim(self.animations[fullName])
+			else
+				path = pngPathFormat({ "assets", "animations", "enemies", self.name, prefix })
+				addAnimation(self, path, fullName, settings)
+				self:initAttackAnim(self.animations[fullName])
+			end
+		end
+	end
+
 	---------------- DYING -----------------
 	path = pngPathFormat({ "assets", "animations", "enemies", self.name, DYING })
 	addAnimation(self, path, DYING, dyingSettings)
@@ -151,19 +156,22 @@ end
 
 -- reseta todas as animações de ataque para o primeiro frame
 function Enemy:resetAttackAnimations()
-	local attackStates = { ATTACKING_UP, ATTACKING_DOWN, ATTACKING_LEFT, ATTACKING_RIGHT }
-	for _, state in ipairs(attackStates) do
-		local anim = self.animations[state]
-		if anim then
-			anim:reset()
-			anim.timer = 0
+	for _, atk in ipairs(self.atk) do
+		local prefix = ATTACKING .. " " .. atk.name .. " "
+		for _, dir in ipairs(DIRECTIONS) do
+			local fullState = prefix .. dir
+			local anim = self.animations[fullState]
+			if anim then
+				anim:reset()
+				anim.timer = 0
+			end
 		end
 	end
 end
 
 -- verifica se um estado é de ataque
 function Enemy:isAttackState(state)
-	return state == ATTACKING_UP or state == ATTACKING_DOWN or state == ATTACKING_LEFT or state == ATTACKING_RIGHT
+	return state:startsWith(ATTACKING)
 end
 
 -- sincroniza o frame atual entre todas as animações de ataque
@@ -177,9 +185,11 @@ function Enemy:synchronizeAttackAnimations()
 		return
 	end
 
-	local attackStates = { ATTACKING_UP, ATTACKING_DOWN, ATTACKING_LEFT, ATTACKING_RIGHT }
-	for _, state in ipairs(attackStates) do
-		local anim = self.animations[state]
+	local activeAtk = self.atk[self.selectedAtk]
+	local prefix = ATTACKING .. " " .. activeAtk.name .. " "
+	for _, dir in ipairs(DIRECTIONS) do
+		local fullState = prefix .. dir
+		local anim = self.animations[fullState]
 		if anim and anim ~= sourceAnim then
 			anim.currFrame = sourceAnim.currFrame
 			anim.timer = sourceAnim.timer
@@ -250,7 +260,7 @@ function Enemy:updateAttack()
 	if self.isAttacking then
 		local anim = self.animations[self.state]
 
-		if anim.currFrame >= self.atkFrame[self.selectedAtk] and not self.hasTriggeredAttackThisAnim then
+		if anim.currFrame >= self.atkFrame[self.atk[self.selectedAtk].name] and not self.hasTriggeredAttackThisAnim then
 			local dir = math.atan2(atkTargetPos.y - self.pos.y, atkTargetPos.x - self.pos.x)
 			self.atk[self.selectedAtk]:attack(self, self.pos, dir)
 			self.hasTriggeredAttackThisAnim = true
@@ -270,15 +280,16 @@ function Enemy:updateState()
 	if self.atk[self.selectedAtk] and self.isAttacking then
 		local dirVec = subVec(self.atkTargeting.targetPos, self.pos)
 
+		local prefix = ATTACKING .. " " .. self.atk[self.selectedAtk].name .. " "
 		local isVerticalAttack = math.abs(dirVec.y) > math.abs(dirVec.x)
 		if isVerticalAttack and dirVec.y < 0 then
-			self.state = ATTACKING_UP
+			self.state = prefix .. UP
 		elseif isVerticalAttack and dirVec.y > 0 then
-			self.state = ATTACKING_DOWN
+			self.state = prefix .. DOWN
 		elseif not isVerticalAttack and dirVec.x > 0 then
-			self.state = ATTACKING_RIGHT
+			self.state = prefix .. RIGHT
 		elseif not isVerticalAttack and dirVec.x < 0 then
-			self.state = ATTACKING_LEFT
+			self.state = prefix .. LEFT
 		end
 	elseif self.move then
 		local isVerticalMovement = math.abs(self.vel.y) > math.abs(self.vel.x)

@@ -15,8 +15,10 @@ function newKatana()
 		atkEvent.pos = origin
 	end
 	local onHitFunc = function(atkEvent, target)
-		print("Katana acertou um " .. target.type .. " por " .. atkEvent.dmg .. " de dano!")
-		target.hp = target.hp - atkEvent.dmg
+		-- print("Katana acertou um " .. target.type .. " por " .. atkEvent.dmg .. " de dano!")
+	end
+	local rotationFunc = function (e)
+		return e.dire
 	end
 	local hb = hitbox(Circle.new(100))
 	local hbs = hitboxes({ hb })
@@ -47,7 +49,7 @@ function newSlingShot()
 	local cooldown = constCooldown(0.4)
 	local attack = newPebbleShotAttack(true, 5, cooldown, 1200, nil)
 	attack:setOnHit(onHitLinkTwoEnemies)
-	local slingshot = Weapon.new(SLING_SHOT.name, math.huge, attack, vec(-2, 25), vec(40, -30))
+	local slingshot = Weapon.new(SLING_SHOT.name, math.huge, attack, vec(-10, 10), vec(40, -30))
 	local idleAnimSettings = newAnimSetting(2, { width = 64, height = 64 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(10, { width = 64, height = 64 }, 0.05, false, 1)
 	slingshot:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -94,7 +96,7 @@ end
 -- cria uma arma do tipo Flowergun
 function newFlowergun()
 	local cooldown = constCooldown(0.05)
-	local attack = newSeedAttack(true, 0.3, cooldown, 1800, nil)
+	local attack = newSeedAttack(true, 0.2, cooldown, 1800, nil)
 	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
 	local flowergun = Weapon.new(FLOWERGUN.name, math.huge, attack, vec(25, 20), vec(30, -5))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)

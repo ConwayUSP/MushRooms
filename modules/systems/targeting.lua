@@ -88,7 +88,6 @@ end
 -- adiciona um target e sua estratégia de seleção ao manager, pode ser encadeado (retorna self)
 function TargetManager:addTarget(target, strategy)
     self.targets[target] = strategy
-    print("UÉ -> " .. tostring(self.targets[target]))
     return self
 end
 
