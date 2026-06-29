@@ -13,6 +13,7 @@ require("modules.utils.types")
 ---@field active boolean
 ---@field limit number
 ---@field goingOff boolean
+---@field completed boolean
 ---@field callback fun(...?: any)
 ---@field update fun(self, dt: number)
 ---@field start fun(self)
@@ -41,6 +42,7 @@ function Timer.new(duration, increasing, callback)
 	end
 	t.active = false -- se inativo, o timer está congelado
 	t.goingOff = false -- vira true no frame exato em que o timer chegar em seu limite, funciona como um sinal
+	t.completed = false -- se o timer já completou, ou seja, chegou no limite
 	return t
 end
 
@@ -70,6 +72,7 @@ function Timer:update(dt)
 	-- fim dessa contagem
 	self.active = false
 	self.goingOff = true
+	self.completed = true
 	if self.callback then
 		self.callback()
 	end
@@ -78,6 +81,7 @@ end
 -- começa a contagem do tempo desde o início, tornando o timer ativo
 function Timer:start()
 	self.active = true
+	self.completed = false
 	if self.increasing then
 		self.time = 0
 	else
@@ -92,6 +96,7 @@ end
 -- para de rodar o timer, mas não reseta o atributo time
 function Timer:stop()
 	self.active = false
+	self.completed = false
 end
 
 ---@param label any
