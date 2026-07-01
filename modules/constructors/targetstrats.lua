@@ -36,7 +36,7 @@ function seekClosestEnemy(tm, target)
 	local minDist = math.huge
 	local closestEnemyPos = nil
 	for _, e in pairs(r.enemies) do
-		if not e.isReallyDead then
+		if e.state ~= DYING then
 			local d = dist(tm.owner.pos, e.pos)
 			if d < minDist then
 				minDist = d
@@ -77,7 +77,7 @@ function seekAllEnemies(tm, target)
 	end
 	local posSum = vec(0, 0)
 	for _, e in pairs(r.enemies) do
-		if not e.isReallyDead then
+		if e.state ~= DYING then
 			posSum(e.pos)
 		end
 	end

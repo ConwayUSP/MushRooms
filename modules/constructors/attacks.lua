@@ -1,6 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
+require("modules.constructors.targetstrats")
 require("modules.systems.movement")
 require("modules.systems.attack")
 require("modules.utils.types")
