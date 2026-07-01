@@ -49,14 +49,15 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local animIntact = newAnimSetting(5, { width = 16, height = 16 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 16, height = 16 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
-	local rotationFunc = function (e)
+	local rotationFunc = function(e)
 		return math.atan2(e.vel.y, e.vel.x)
 	end
 	local onHitFunc = function(e, t)
 		-- print("Pebble Shot acertou um alvo")
 	end
 
-	local attack = Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack =
+		Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -86,19 +87,20 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 		accFactor = -speed / 2,
 		restitution = 1,
 		bounces = 2,
-		pierces = 1
+		pierces = 1,
 	})
 	local animIntact = newAnimSetting(3, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(5, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
-	local rotationFunc = function (e)
+	local rotationFunc = function(e)
 		return -math.rad(90) + math.atan2(e.vel.y, e.vel.x)
 	end
 	local onHitFunc = function(e, t)
 		-- print("Nuclear Shot acertou um alvo")
 	end
 
-	local attack = Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack =
+		Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -114,7 +116,9 @@ end
 -- um tiro nuclear
 function newBoomerangueAttack(ally, speed, timing, force)
 	local cooldown = constCooldown(0.4)
-	local trajectoryFuncBuilder = function() return boomerangMovement(speed * 1.6, timing, force) end
+	local trajectoryFuncBuilder = function()
+		return boomerangMovement(speed * 1.6, timing, force)
+	end
 	local hb = hitbox(Circle.new(25))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
@@ -131,21 +135,29 @@ function newBoomerangueAttack(ally, speed, timing, force)
 		restitution = 1,
 		bounces = math.huge,
 		pierces = math.huge,
-		tick = 0.2
+		tick = 0.2,
 	})
 	local anim = newAnimSetting(12, { width = 32, height = 32 }, 0.1, true, 1)
 	local updateFunc = AttackEvent.baseUpdate
-	local rotationFunc = function (e)
+	local rotationFunc = function(e)
 		return e.age * 12
 	end
 	local onHitFunc = function(e, t)
 		-- print(BOOMERANGUE_SHOT.name .. " acertou um alvo")
 	end
-	local onShotFunc = function (e)
+	local onShotFunc = function(e)
 		e.weapon.visible = false
 	end
 
-	local attack = Attack.new(BOOMERANGUE_SHOT.name, settings, updateFunc, onHitFunc, onShotFunc, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(
+		BOOMERANGUE_SHOT.name,
+		settings,
+		updateFunc,
+		onHitFunc,
+		onShotFunc,
+		trajectoryFuncBuilder,
+		rotationFunc
+	)
 	attack:addAnimations(anim)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -171,10 +183,16 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		-- tick = 0.5
 	})
 
+	if ally then
+		settings.targetStrats = { seekClosestEnemy }
+	else
+		settings.targetStrats = { seekClosestPlayer }
+	end
+
 	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
-	local rotationFunc = function (e)
+	local rotationFunc = function(e)
 		local angle = math.atan2(e.vel.y, e.vel.x)
 		local flip = flipSecondAndThirdQuadrants(angle)
 		return flip
@@ -183,7 +201,8 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		-- print(SKULL_SHOT.name .. " acertou um alvo")
 	end
 
-	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack =
+		Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -207,12 +226,12 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		friction = 0.8,
 		bounces = 0,
 		pierces = math.huge,
-		tick = 0.5
+		tick = 0.5,
 	})
 
 	local animIntact = newAnimSetting(16, { width = 32, height = 32 }, 0.1, true, 1, 0)
 	local animBreaking = newAnimSetting(16, { width = 32, height = 32 }, 0.1, false, 1, 0)
-	local updateFunc = function (e, dt)
+	local updateFunc = function(e, dt)
 		e:baseUpdate(dt)
 		local room = e.attacker.room
 		for _, enemy in pairs(room.enemies) do
@@ -230,17 +249,17 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 				local forceVec = scaleVec(normalize(dir), force)
 				applyForce(enemy, forceVec)
 			end
-			
 		end
 	end
-	local rotationFunc = function (e)
+	local rotationFunc = function(e)
 		return 0
 	end
 	local onHitFunc = function(e, t)
 		print(BLACKHOLE_SHOT.name .. " acertou um alvo")
 	end
 
-	local attack = Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack =
+		Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 20
@@ -296,7 +315,7 @@ function newRotatoryAttack(ally, duration, cooldown, hb)
 		dur = duration,
 		hb = hbs,
 		cooldown = cooldown,
-		tick = 0.5
+		tick = 0.5,
 	})
 	local updateFunc = function(e, dt)
 		e:baseUpdate(dt)
@@ -324,7 +343,7 @@ end
 function defaultCircularAttackFunc(min, max, ang)
 	return function(atk, attacker, origin, direction)
 		for i = min, max do
-			local dirIncrement = ang and (ang * i) or math.rad(360/(max - min + 1)) * i
+			local dirIncrement = ang and (ang * i) or math.rad(360 / (max - min + 1)) * i
 			local newDirection = direction + dirIncrement
 
 			AttackEvent.new(atk, attacker, origin, newDirection)
@@ -369,7 +388,7 @@ end
 function spawnCircularEntities(min, max, ang, entity, offset)
 	return function(atk, attacker, origin, direction)
 		for i = min, max do
-			local dirIncrement = ang and (ang * i) or math.rad(360/(max - min + 1)) * i
+			local dirIncrement = ang and (ang * i) or math.rad(360 / (max - min + 1)) * i
 			local newDirection = direction + dirIncrement
 			local newOrigin = addVec(origin, polarToVec(newDirection, offset and lenVec(offset) or 0))
 

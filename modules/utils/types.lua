@@ -33,6 +33,8 @@ SPAWN_DATA = "spawn data"
 COLLISION_MANAGER = "collision manager"
 DIALOGUE = "dialogue"
 INVENTORY = "inventory"
+TARGET_MANAGER = "target manager"
+TARGET = "target"
 
 ---------- CRAFTING ----------
 CRAFTING_MANAGER = "crafting manager"

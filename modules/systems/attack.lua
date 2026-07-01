@@ -14,6 +14,7 @@ require("modules.utils.utils")
 ---@field dur number
 ---@field hb Hitboxes
 ---@field cooldown function
+---@field targetStrats fun(tm: TargetManager, t: Target)[]
 ---@field initialMass number
 ---@field initialSpeed number
 ---@field friction number
@@ -33,6 +34,7 @@ function newAtkSetting(config)
 		cooldown = config.cooldown,
 		hb = config.hb or nil,
 		dmg = config.dmg or 0,
+		targetStrats = config.targetStrats or {},
 		dur = config.dur or 1,
 		initialMass = config.initialMass or 1,
 		initialSpeed = config.initialSpeed or 0,
@@ -41,7 +43,7 @@ function newAtkSetting(config)
 		bounces = config.bounces or 0,
 		pierces = config.pierces or math.huge,
 		restitution = config.restitution or 0.2,
-		tick = config.tick or math.huge
+		tick = config.tick or math.huge,
 	}
 end
 
@@ -82,30 +84,29 @@ Attack.type = ATTACK
 -- de um ataque e informações de controle (como o cooldown)
 function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFuncBuilder, rotationFunc)
 	local attack = setmetatable({}, Attack)
-	attack.name = name                          -- nome do tipo de ataque
-	attack.subtype = atkSettings.subtype        -- indica se o ataque é melee, ranged ou outro tipo
-	attack.ally = atkSettings.ally              -- true se for de um player e false se for de um inimigo
-	attack.dmg = atkSettings.dmg                -- dano base do ataque
-	attack.dur = atkSettings.dur                -- duração do evento de ataque associado
+	attack.name = name -- nome do tipo de ataque
+	attack.subtype = atkSettings.subtype -- indica se o ataque é melee, ranged ou outro tipo
+	attack.ally = atkSettings.ally -- true se for de um player e false se for de um inimigo
+	attack.dmg = atkSettings.dmg -- dano base do ataque
+	attack.dur = atkSettings.dur -- duração do evento de ataque associado
 	attack.initialMass = atkSettings.initialMass
 	attack.initialSpeed = atkSettings.initialSpeed -- fator inicial de velocidade do ataque/projétil
 	attack.friction = atkSettings.friction
-	attack.accFactor = atkSettings.accFactor    -- fator inicial de aceleração do ataque/projétil
+	attack.accFactor = atkSettings.accFactor -- fator inicial de aceleração do ataque/projétil
 	attack.restitution = atkSettings.restitution -- fator de restituição do ataque/projétil
-	attack.hb = atkSettings.hb                  -- hitboxes do ataque
-	attack.bounces = atkSettings.bounces        -- quantas vezes o ataque pode ricochetear (caso seja projétil)
-	attack.pierces = atkSettings.pierces        -- quantas vezes o ataque pode atravessar um alvo
-	attack.tick = atkSettings.tick              -- tempo mínimo entre acertos em um mesmo alvo
-	attack.cooldown = atkSettings.cooldown      -- tempo que deve passar entre ataques
-	attack.timer = 0                            -- timer do cooldown, ao chegar em 0 permite gerar ataques
-	attack.canAttack = true                     -- se pode gerar um AttackEvent ou não
-	attack.updateEvent = updateFunc 
-		or AttackEvent.baseUpdate -- função executada para cada AttackEvent, atualizando seu estado atual
-	attack.onHit = onHit or function () end     -- função executada toda vez que um ataque acertar um alvo
-	attack.onShot = onShot or function () end   -- função executada quando um ataque é disparado
-	attack.trajectoryFuncBuilder = 
-		trajectoryFuncBuilder 										-- função que define a trajetória do ataque/projétil
-	attack.rotationFunc = rotationFunc          -- função que define a rotação do ataque/projétil
+	attack.hb = atkSettings.hb -- hitboxes do ataque
+	attack.bounces = atkSettings.bounces -- quantas vezes o ataque pode ricochetear (caso seja projétil)
+	attack.pierces = atkSettings.pierces -- quantas vezes o ataque pode atravessar um alvo
+	attack.tick = atkSettings.tick -- tempo mínimo entre acertos em um mesmo alvo
+	attack.cooldown = atkSettings.cooldown -- tempo que deve passar entre ataques
+	attack.targetStrats = atkSettings.targetStrats -- estratégias de targeting para os AtkEvents emitidos
+	attack.timer = 0 -- timer do cooldown, ao chegar em 0 permite gerar ataques
+	attack.canAttack = true -- se pode gerar um AttackEvent ou não
+	attack.updateEvent = updateFunc or AttackEvent.baseUpdate -- função executada para cada AttackEvent, atualizando seu estado atual
+	attack.onHit = onHit or function() end -- função executada toda vez que um ataque acertar um alvo
+	attack.onShot = onShot or function() end -- função executada quando um ataque é disparado
+	attack.trajectoryFuncBuilder = trajectoryFuncBuilder -- função que define a trajetória do ataque/projétil
+	attack.rotationFunc = rotationFunc -- função que define a rotação do ataque/projétil
 
 	-- Atributos fixos na instanciação
 	attack.events = {}
@@ -218,7 +219,7 @@ end
 ---@field trajectoryFunc? MovementFunc
 ---@field bouncesLeft number
 ---@field piercesLeft number
----@field target any
+---@field moveTargeting TargetManager
 ---@field ignoreSolids boolean
 ---@field subtype Type
 ---@field animDir rad
@@ -258,33 +259,35 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent:init(attackState.name, origin, hitboxes, attacker.room, physics)
 
 	atkEvent.atk = attackState
-	atkEvent.name = attackState.name                         -- para descobrirmos o caminho até os assets
-	atkEvent.ally = attackState.ally                         -- para definir quem é afetado pelo ataque
-	atkEvent.subtype = attackState.subtype                   -- subtipo do ataque, como melee, ranged, etc
-	atkEvent.attacker = attacker                             -- jogador ou inimigo que desferiu o ataque
-	atkEvent.pos = origin                                    -- posição atual do ataque
-	atkEvent.dmg = attackState.dmg                           -- dano atual do ataque (caso mude com o tempo)
-	atkEvent.timer = attackState.dur                         -- tempo até o ataque terminar
-	atkEvent.dur = attackState.dur                           -- duração total do ataque/projétil
-	atkEvent.direction = direction                           -- ângulo do ataque em radianos
-	atkEvent.bouncesLeft = attackState.bounces               -- número de ricochetes restantes
-	atkEvent.piercesLeft = attackState.pierces               -- número de alvos atravessáveis restantes
-	atkEvent.tick = attackState.tick                         -- tempo mínimo entre acertos em um mesmo alvo
-	atkEvent.trajectoryFunc = attackState.trajectoryFuncBuilder 
-		and attackState.trajectoryFuncBuilder() 
-		or nil     																						 -- função que define a trajetória do ataque/projétil
-	atkEvent.rotationFunc = attackState.rotationFunc         -- função que define a rotação do ataque/projétil
-	atkEvent.onHit = attackState.onHit                       -- função executada ao acertar um alvo
-	atkEvent.target = attacker.target                        -- alvo do ataque
+	atkEvent.name = attackState.name -- para descobrirmos o caminho até os assets
+	atkEvent.ally = attackState.ally -- para definir quem é afetado pelo ataque
+	atkEvent.subtype = attackState.subtype -- subtipo do ataque, como melee, ranged, etc
+	atkEvent.attacker = attacker -- jogador ou inimigo que desferiu o ataque
+	atkEvent.pos = origin -- posição atual do ataque
+	atkEvent.dmg = attackState.dmg -- dano atual do ataque (caso mude com o tempo)
+	atkEvent.timer = attackState.dur -- tempo até o ataque terminar
+	atkEvent.dur = attackState.dur -- duração total do ataque/projétil
+	atkEvent.direction = direction -- ângulo do ataque em radianos
+	atkEvent.bouncesLeft = attackState.bounces -- número de ricochetes restantes
+	atkEvent.piercesLeft = attackState.pierces -- número de alvos atravessáveis restantes
+	atkEvent.tick = attackState.tick -- tempo mínimo entre acertos em um mesmo alvo
+	atkEvent.trajectoryFunc = attackState.trajectoryFuncBuilder and attackState.trajectoryFuncBuilder() or nil -- função que define a trajetória do ataque/projétil
+	atkEvent.rotationFunc = attackState.rotationFunc -- função que define a rotação do ataque/projétil
+	atkEvent.onHit = attackState.onHit -- função executada ao acertar um alvo
+	atkEvent.moveTargeting = TargetManager.new(atkEvent) -- gerenciador de target do ataque
+	-- uma limitação é que todos os targets serão SEEK e atualizarão EVERY_FRAME, não vejo muito como resolver sem deixar o código horrível
+	for _, strat in pairs(attackState.targetStrats) do
+		atkEvent.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), strat)
+	end
 	atkEvent.ignoreSolids = attackState.subtype == MELEE_ATTACK -- se o ataque colide com sólidos ou não
 	atkEvent.state = INTACT
 	atkEvent.hasShadow = attackState.hasShadow or false
 	atkEvent.shadowWidth = attackState.shadowWidth or 0
 
 	-- atributos fixos na instanciação
-	atkEvent.animDir = 0      -- direção visual do sprite, usada para corrigir a rotação do sprite caso necessário
-	atkEvent.age = 0          -- tempo desde a criação do ataque
-	atkEvent.active = true    -- se o ataque atualmente pode dar dano
+	atkEvent.animDir = 0 -- direção visual do sprite, usada para corrigir a rotação do sprite caso necessário
+	atkEvent.age = 0 -- tempo desde a criação do ataque
+	atkEvent.active = true -- se o ataque atualmente pode dar dano
 	atkEvent.breakingFinished = false
 	atkEvent.targetsDamaged = {} -- lista de alvos feridos pelo ataque
 	atkEvent.spriteSheets = {}
@@ -302,10 +305,11 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 end
 
 ---@param dt number
--- atualiza o estado interno de um evento de ataque (`AttackEvent`)
+-- atualiza o estado interno de um evento de ataque, além de movimentá-lo
 function AttackEvent:baseUpdate(dt)
 	self.age = self.age + dt
 	self.timer = self.timer - dt
+	self.moveTargeting:update(dt)
 
 	-- aplica função de trajetória se existir
 	if self.trajectoryFunc then
@@ -387,7 +391,7 @@ function AttackEvent:draw(camera)
 	local viewPos = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	
+
 	local rotation
 	if self.rotationFunc then
 		rotation = self:rotationFunc()

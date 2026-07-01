@@ -4,6 +4,7 @@
 require("modules.engine.animation")
 require("modules.entities.entity")
 require("modules.systems.attack")
+require("modules.systems.targeting")
 require("modules.utils.shapes")
 require("modules.utils.types")
 
@@ -16,7 +17,7 @@ require("modules.utils.types")
 ---@field atk Attack
 ---@field canShoot boolean
 ---@field visible boolean
----@field target any
+---@field atkTargeting TargetManager
 ---@field rotation rad
 ---@field gunOffset Vec
 ---@field shotOffset Vec
@@ -51,7 +52,7 @@ function Weapon.new(name, ammo, attack, gunOffset, shotOffset)
 	weapon.rotateOffset = vec(-10, 0)
 	weapon.canShoot = false
 	weapon.visible = true
-	weapon.target = nil -- inimigo para o qual a arma está mirando
+	weapon.atkTargeting = TargetManager.new(weapon) -- gerenciador de alvo da arma
 	weapon.rotation = 0 -- rotação da arma em radianos
 	weapon.state = IDLE -- estado atual da arma
 	weapon.spriteSheets = {} -- no tipo imagem do love
@@ -73,7 +74,7 @@ end
 -- atualiza o estado, o cooldown e o ataque da arma
 function Weapon:update(dt)
 	local speedBonus = self.owner and self.owner.atkSpeed or 1
-	self.atk:updateTimer(dt*speedBonus)
+	self.atk:updateTimer(dt * speedBonus)
 	self.atk:update(dt)
 
 	-- self.rotation = math.atan2(love.mouse.getX() - viewPos.x, -(love.mouse.getY() - viewPos.y)) - math.pi * 0.5
@@ -104,7 +105,10 @@ end
 function Weapon:atkOriginPoint()
 	local flip = invertSecondAndThirdQuadrants(self.rotation)
 	local gunCenter = addVec(self.owner.pos, vec(self.gunOffset.x * flip, self.gunOffset.y))
-	local rotateOffset = rotateVec(vec(-self.rotateOffset.x + self.shotOffset.x, -self.rotateOffset.y + self.shotOffset.y*flip), self.rotation)
+	local rotateOffset = rotateVec(
+		vec(-self.rotateOffset.x + self.shotOffset.x, -self.rotateOffset.y + self.shotOffset.y * flip),
+		self.rotation
+	)
 	local origin = addVec(gunCenter, rotateOffset)
 
 	return origin
@@ -117,9 +121,9 @@ function Weapon:addAnimations(idleSettings, weaponAtkSettings)
 	-- animação idle
 	local path = pngPathFormat({ "assets", "animations", "weapons", self.name, IDLE })
 	addAnimation(self, path, IDLE, idleSettings)
-	
+
 	if weaponAtkSettings then
-			-- animação da arma ao atacar
+		-- animação da arma ao atacar
 		path = pngPathFormat({ "assets", "animations", "weapons", self.name, ATTACKING })
 		addAnimation(self, path, ATTACKING, weaponAtkSettings)
 	end
@@ -147,9 +151,9 @@ function Weapon:draw(camera)
 	local viewPos = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
-	
+
 	local p = self.owner.invulnerableTimer > 0
-		and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+			and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
 		or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
@@ -159,7 +163,7 @@ function Weapon:draw(camera)
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
 	}
 	local flip = invertSecondAndThirdQuadrants(self.rotation)
-	
+
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		quad,
