@@ -114,6 +114,7 @@ function Mortal:applyFear(attacker, duration)
 		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_ON_INIT, FEAR_DEFAULT_DUR), avoidAllPlayersStrong)
 		self.moveTargeting:applyStrats(TC_ON_INIT)
 		self.fearTimer:start()
+		self:interruptAttack()
 	end
 end
 

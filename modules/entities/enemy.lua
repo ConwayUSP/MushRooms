@@ -291,6 +291,13 @@ function Enemy:tryTriggerAttack()
 	end
 end
 
+function Enemy:interruptAttack()
+	self.isAttacking = false
+	self.hasTriggeredAttackThisAnim = false
+	self.attackJustStarted = false
+	self:resetAttackAnimations()
+end
+
 ----------------------------------------
 -- Funções de Estado
 ----------------------------------------
