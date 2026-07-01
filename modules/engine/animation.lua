@@ -137,9 +137,9 @@ function newAnimSetting(numFrames, quadSize, frameDur, looping, loopFrame, gap, 
 		quadSize = quadSize,
 		frameDur = frameDur,
 		looping = looping,
-		loopFrame = loopFrame,
-		gap = gap,
-		offset = offset
+		loopFrame = loopFrame or 1,
+		gap = gap or 4,
+		offset = offset or vec(0, 0)
 	}
 end
 

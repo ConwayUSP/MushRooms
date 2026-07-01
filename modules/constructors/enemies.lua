@@ -103,7 +103,7 @@ function newSpiderDuckBoss(spawnPos, room)
 		ally = false,
 		cooldown = constCooldown(12)
 	}))
-	attackSpawn:addAttackFunc(spawnCircularEntities(1, 3, nil, SPIDER_DUCK, vec(0, 100)))
+	attackSpawn:addAttackFunc(spawnCircularEntitiesAsAttack(1, 3, nil, SPIDER_DUCK, vec(0, 100)))
 	local movements = {
 		[attackRotate.name] = function()
 			local moveBuilder = function() return spiralMovement(math.random(30, 50), math.random(15, 25)) end

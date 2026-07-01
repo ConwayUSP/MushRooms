@@ -212,23 +212,6 @@ function Enemy:update(dt)
 end
 
 function Enemy:updateMotion(dt)
-	if self.state ~= DYING then
-		if self.isAttacking then
-			local movementFunc = self.movements[self.atk[self.selectedAtk].name]
-			if movementFunc then
-				movementFunc(self, dt)
-			end
-		elseif self.fearTimer.active then
-			followTarget(self, dt)
-		else
-			self.move(self, dt)
-		end
-	else
-		self.deathTimer = self.deathTimer + dt
-	end
-end
-
-function Enemy:updateMotion(dt)
 	if self.state == DYING then
 		return
 	end

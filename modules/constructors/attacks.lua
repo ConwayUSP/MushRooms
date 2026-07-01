@@ -380,25 +380,25 @@ function newPebbleCircularConeAttack(ally, duration, cooldown, speed, trajectory
 	return pebble
 end
 
-function spawnOneEntity(entity, offset)
+function spawnOneEntityAsAttack(entity, offset)
 	return function(atk, attacker, origin, direction)
-		spawnEntity(entity, offset, attacker, origin, direction)
+		spawnEntityAsAttack(entity, offset, attacker, origin, direction)
 	end
 end
 
-function spawnCircularEntities(min, max, ang, entity, offset)
+function spawnCircularEntitiesAsAttack(min, max, ang, entity, offset)
 	return function(atk, attacker, origin, direction)
 		for i = min, max do
 			local dirIncrement = ang and (ang * i) or math.rad(360 / (max - min + 1)) * i
 			local newDirection = direction + dirIncrement
 			local newOrigin = addVec(origin, polarToVec(newDirection, offset and lenVec(offset) or 0))
 
-			spawnEntity(entity, offset, attacker, newOrigin, newDirection)
+			spawnEntityAsAttack(entity, offset, attacker, newOrigin, newDirection)
 		end
 	end
 end
 
-function spawnEntity(entity, offset, attacker, origin, direction)
+function spawnEntityAsAttack(entity, offset, attacker, origin, direction)
 	local constructor = CONSTRUCTORS[Enemy.type][entity.name]
 	local realOffset = polarToVec(direction, offset and lenVec(offset) or 0)
 	local realPos = addVec(origin, realOffset)

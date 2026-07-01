@@ -284,7 +284,7 @@ end
 function followTargetMovement(force)
 	force = force or 10
 	return function(entity, dt)
-		if not entity.moveTargeting then
+		if not entity.moveTargeting or not entity.moveTargeting.validTarget then
 			return
 		end
 
