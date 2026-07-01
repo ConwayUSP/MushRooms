@@ -72,7 +72,8 @@ end
 ---@param dt number
 -- atualiza o estado, o cooldown e o ataque da arma
 function Weapon:update(dt)
-	self.atk:updateTimer(dt)
+	local speedBonus = self.owner and self.owner.atkSpeed or 1
+	self.atk:updateTimer(dt*speedBonus)
 	self.atk:update(dt)
 
 	-- self.rotation = math.atan2(love.mouse.getX() - viewPos.x, -(love.mouse.getY() - viewPos.y)) - math.pi * 0.5
@@ -148,16 +149,14 @@ function Weapon:draw(camera)
 	local quad = animation.frames[animation.currFrame]
 	
 	local p = self.owner.invulnerableTimer > 0
-	and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+		and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
 		or 0
-		local defaultScale = 3
-		local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
-		local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
-		local offset = {
-			-- x = animation.frameDim.width / 2 - 8,
-			x = animation.frameDim.width / 2 + self.rotateOffset.x,
+	local defaultScale = 3
+	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
+	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
+	local offset = {
+		x = animation.frameDim.width / 2 + self.rotateOffset.x,
 		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
-		-- y = animation.frameDim.height / 2
 	}
 	local flip = invertSecondAndThirdQuadrants(self.rotation)
 	

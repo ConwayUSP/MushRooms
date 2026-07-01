@@ -35,6 +35,7 @@ CONSTRUCTORS[PLAYER] = {
 CONSTRUCTORS[ENEMY] = {
 	[SPIDER_DUCK.name] = newSpiderDuck,
 	[NUCLEAR_CAT.name] = newNuclearCat,
+	[SPIDER_DUCK_BOSS.name] = newSpiderDuckBoss,
 }
 
 CONSTRUCTORS[NPC] = {
@@ -106,4 +107,6 @@ CONSTRUCTORS[PRODUCT] = {
 CONSTRUCTORS[BLESSING] = {
 	[ARCHER_BLESSING.name] = newArcherBlessing,
 	[FIRE_BLESSING.name] = newFireBlessing,
+	[PIGMEU_BLESSING.name] = newPigmeuBlessing,
+	[GOMUGOMU_BLESSING.name] = newGomuGomuBlessing,
 }

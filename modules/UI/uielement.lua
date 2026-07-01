@@ -21,7 +21,7 @@ UIElement.type = UI_ELEMENT
 ---@param elementType Type
 ---@param pos Vec
 ---@param size Size
----@param hitboxes Hitboxes
+---@param hitboxes? Hitboxes
 -- inicializa um elemento de UI com estado `IDLE` e selected = `false`
 function UIElement:init(name, elementType, pos, size, hitboxes)
 	self.name = name
@@ -48,6 +48,10 @@ end
 ---@param dt number
 -- atualiza a animação do elemento de UI
 function UIElement:update(dt)
+	if not self.animations[self.state] then
+		return
+	end
+
 	self.animations[self.state]:update(dt)
 end
 
@@ -60,7 +64,9 @@ end
 -- marca o elemento de UI como não selecionado e seu estado como `IDLE`
 function UIElement:deselect()
 	self.selected = false
-	self.animations[self.state]:reset()
+	if self.animations[self.state] then
+		self.animations[self.state]:reset()
+	end
 	self.state = IDLE
 end
 
@@ -72,6 +78,9 @@ function UIElement:draw(camera)
 		viewPos = camera:viewPos(self.pos)
 	end
 	local anim = self.animations[self.state]
+	if not anim then
+		return
+	end
 	local quad = anim.frames[anim.currFrame]
 	local scale = self.size.width / anim.frameDim.width
 	local offset = {

@@ -30,9 +30,9 @@ function newAtkSetting(config)
 	return {
 		subtype = config.subtype,
 		ally = config.ally,
-		dmg = config.dmg,
-		hb = config.hb,
 		cooldown = config.cooldown,
+		hb = config.hb or nil,
+		dmg = config.dmg or 0,
 		dur = config.dur or 1,
 		initialMass = config.initialMass or 1,
 		initialSpeed = config.initialSpeed or 0,
@@ -71,7 +71,7 @@ Attack.type = ATTACK
 
 ---@param name string
 ---@param atkSettings AtkSetting
----@param updateFunc function
+---@param updateFunc? function
 ---@param onHit? function
 ---@param onShot? function
 ---@param trajectoryFuncBuilder? function
@@ -99,7 +99,8 @@ function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFunc
 	attack.cooldown = atkSettings.cooldown      -- tempo que deve passar entre ataques
 	attack.timer = 0                            -- timer do cooldown, ao chegar em 0 permite gerar ataques
 	attack.canAttack = true                     -- se pode gerar um AttackEvent ou não
-	attack.updateEvent = updateFunc             -- função executada para cada AttackEvent, atualizando seu estado atual
+	attack.updateEvent = updateFunc 
+		or AttackEvent.baseUpdate -- função executada para cada AttackEvent, atualizando seu estado atual
 	attack.onHit = onHit or function () end     -- função executada toda vez que um ataque acertar um alvo
 	attack.onShot = onShot or function () end   -- função executada quando um ataque é disparado
 	attack.trajectoryFuncBuilder = 
@@ -140,20 +141,13 @@ function Attack:attack(attacker, origin, direction)
 	self.timer = self.cooldown()
 	self.canAttack = false
 
-	self:onShot()
+	self:onShot(attacker, origin, direction)
 
 	local attacks = {}
 	if self.attackFunc then
 		attacks = self.attackFunc(self, attacker, origin, direction)
 	else
 		table.insert(attacks, AttackEvent.new(self, attacker, origin, direction))
-	end
-	
-	for _, atkEvent in ipairs(attacks) do
-		if self.animIntactSettings then
-			atkEvent:addAnimation(self.animIntactSettings, self.animBreakingSettings)
-		end
-		table.insert(self.events, atkEvent)
 	end
 end
 
@@ -298,6 +292,11 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 
 	-- adicionando à respectiva lista de hitboxes
 	collisionManager:register(atkEvent)
+	
+	table.insert(attackState.events, atkEvent)
+	if attackState.animIntactSettings then
+		atkEvent:addAnimation(attackState.animIntactSettings, attackState.animBreakingSettings)
+	end
 
 	return atkEvent
 end
@@ -319,6 +318,20 @@ function AttackEvent:baseUpdate(dt)
 			self.targetsDamaged[key] = nil
 		end
 	end
+end
+
+function AttackEvent:reflect(newOwner)
+	if not self.active then
+		return
+	end
+
+	collisionManager:unregister(self)
+	self.attacker = newOwner
+	self.ally = newOwner.type == PLAYER
+	self.direction = (self.direction + math.pi) % (2 * math.pi)
+	self.vel = scaleVec(polarToVec(self.direction, 1), self.atk.initialSpeed)
+	self.acc = scaleVec(polarToVec(self.direction, 1), self.atk.accFactor)
+	collisionManager:register(self)
 end
 
 function AttackEvent:reducePierces()

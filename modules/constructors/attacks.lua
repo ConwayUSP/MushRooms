@@ -53,7 +53,7 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		return math.atan2(e.vel.y, e.vel.x)
 	end
 	local onHitFunc = function(e, t)
-		print("Pebble Shot acertou um alvo")
+		-- print("Pebble Shot acertou um alvo")
 	end
 
 	local attack = Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
@@ -95,7 +95,7 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 		return -math.rad(90) + math.atan2(e.vel.y, e.vel.x)
 	end
 	local onHitFunc = function(e, t)
-		print("Nuclear Shot acertou um alvo")
+		-- print("Nuclear Shot acertou um alvo")
 	end
 
 	local attack = Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
@@ -139,7 +139,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 		return e.age * 12
 	end
 	local onHitFunc = function(e, t)
-		print(BOOMERANGUE_SHOT.name .. " acertou um alvo")
+		-- print(BOOMERANGUE_SHOT.name .. " acertou um alvo")
 	end
 	local onShotFunc = function (e)
 		e.weapon.visible = false
@@ -180,7 +180,7 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		return flip
 	end
 	local onHitFunc = function(e, t)
-		print(SKULL_SHOT.name .. " acertou um alvo")
+		-- print(SKULL_SHOT.name .. " acertou um alvo")
 	end
 
 	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
@@ -248,13 +248,13 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	return attack
 end
 
-function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot)
 	local hb = hitbox(Circle.new(8))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 2,
+		dmg = 4,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -270,10 +270,10 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.1, false, 1, 0)
 	local updateFunc = AttackEvent.baseUpdate
 	local onHitFunc = function(e, t)
-		print(SEED_SHOT.name .. " acertou um alvo")
+		-- print(SEED_SHOT.name .. " acertou um alvo")
 	end
 
-	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, nil)
+	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, onShot, trajectoryFuncBuilder, nil)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 8
@@ -286,8 +286,8 @@ end
 ---@param cooldown function
 ---@return Attack
 -- um ataque rotatório corpo-a-corpo (sem animação)
-function newRotatoryAttack(ally, duration, cooldown)
-	local hb = hitbox(Circle.new(40), vec(0, -20))
+function newRotatoryAttack(ally, duration, cooldown, hb)
+	hb = hb or hitbox(Circle.new(50), vec(0, -30))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,
@@ -303,7 +303,7 @@ function newRotatoryAttack(ally, duration, cooldown)
 		e.pos = e.attacker.pos
 	end
 	local onHitFunc = function(e, t)
-		print("Rotatory Attack acertou um alvo")
+		-- print("Rotatory Attack acertou um alvo")
 	end
 
 	local attack = Attack.new(ROTATORY.name, settings, updateFunc, onHitFunc, nil)
@@ -312,6 +312,9 @@ function newRotatoryAttack(ally, duration, cooldown)
 	return attack
 end
 
+------------------------------------
+--- Attack Funcs
+------------------------------------
 
 ---@param min integer
 ---@param max integer
@@ -320,45 +323,13 @@ end
 -- função que gera múltiplos `AttackEvents` em um padrão circular, com `min` e `max` controlando a quantidade de eventos gerados
 function defaultCircularAttackFunc(min, max, ang)
 	return function(atk, attacker, origin, direction)
-		local atks = {}
 		for i = min, max do
-			local dirIncrement = ang and (ang/(max - min) * i) or math.rad(360/(max - min)) * i
+			local dirIncrement = ang and (ang * i) or math.rad(360/(max - min + 1)) * i
 			local newDirection = direction + dirIncrement
 
-			local atkEvent = AttackEvent.new(atk, attacker, origin, newDirection)
-			table.insert(atks, atkEvent)
+			AttackEvent.new(atk, attacker, origin, newDirection)
 		end
-
-		return atks
 	end
-end
-
----@param ally boolean
----@param cooldown function
----@param speed number
----@param trajectoryFuncBuilder? function
----@return Attack
--- um tiro de pedrinha em círculo
-function newPebbleCircularAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
-	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
-	local attackFunc = defaultCircularAttackFunc(1, 8)
-	pebble:addAttackFunc(attackFunc)
-
-	return pebble
-end
-
----@param ally boolean
----@param cooldown function
----@param speed number
----@param trajectoryFuncBuilder? function
----@return Attack
--- um tiro de pedrinha em cone
-function newPebbleConeAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
-	local pebble = newPebbleShotAttack(ally, duration, cooldown, speed, trajectoryFuncBuilder)
-	local attackFunc = defaultCircularAttackFunc(-1, 1, math.rad(30))
-	pebble:addAttackFunc(attackFunc)
-
-	return pebble
 end
 
 ---@param ally boolean
@@ -387,4 +358,30 @@ function newPebbleCircularConeAttack(ally, duration, cooldown, speed, trajectory
 	pebble:addAttackFunc(attackFunc)
 
 	return pebble
+end
+
+function spawnOneEntity(entity, offset)
+	return function(atk, attacker, origin, direction)
+		spawnEntity(entity, offset, attacker, origin, direction)
+	end
+end
+
+function spawnCircularEntities(min, max, ang, entity, offset)
+	return function(atk, attacker, origin, direction)
+		for i = min, max do
+			local dirIncrement = ang and (ang * i) or math.rad(360/(max - min + 1)) * i
+			local newDirection = direction + dirIncrement
+			local newOrigin = addVec(origin, polarToVec(newDirection, offset and lenVec(offset) or 0))
+
+			spawnEntity(entity, offset, attacker, newOrigin, newDirection)
+		end
+	end
+end
+
+function spawnEntity(entity, offset, attacker, origin, direction)
+	local constructor = CONSTRUCTORS[Enemy.type][entity.name]
+	local realOffset = polarToVec(direction, offset and lenVec(offset) or 0)
+	local realPos = addVec(origin, realOffset)
+	constructor(realPos, attacker.room)
+	collisionManager.roomsDirty = true
 end

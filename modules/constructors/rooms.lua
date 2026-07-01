@@ -70,9 +70,8 @@ end
 function newBossRoom1()
 	local bp = Blueprint.new(BOSS_ROOM, "Test Boss Room", rgba8(255, 41, 41, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
-	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.5)
-	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 1.0)
-	sp1:insert(enemyData1):insert(enemyData2)
+	local enemyData1 = SpawnData.new(SPIDER_DUCK_BOSS, 1.0)
+	sp1:insert(enemyData1)
 	bp:insert(sp1)
 	return bp
 end

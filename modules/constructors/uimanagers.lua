@@ -24,3 +24,10 @@ function newPlayerUIManager(player)
 
 	return playerManager
 end
+
+function newRoomUIManager(room)
+	local roomManager = UIManager.new()
+	local lifeBar = newBossLifeBarScene(roomManager.canvasSize, room)
+	roomManager:addScene(lifeBar)
+	return roomManager
+end

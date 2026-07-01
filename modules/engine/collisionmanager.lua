@@ -535,6 +535,14 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 	if not attack.active or player.invisible then
 		return
 	end
+	local ctx = { attack = attack, player = player }
+	player.blessingManager:dispatch(TP_ON_ATTACK_PLAYER, ctx)
+
+	if ctx.result == BS_REFLECT then
+		attack:reflect(player)
+		return
+	end
+
 	if attack.targetsDamaged[player] then
 		return
 	end

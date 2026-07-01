@@ -51,7 +51,7 @@ function hitboxes(default, solids, triggers)
 	}
 end
 
----@param hbs Hitboxes
+---@param hbs? Hitboxes
 -- retorna uma cópia da tabela de hitboxes `hbs`
 function copyHitboxes(hbs)
 	local newHbs = {
@@ -59,6 +59,10 @@ function copyHitboxes(hbs)
 		solids = {},
 		triggers = {},
 	}
+
+	if not hbs then
+		return newHbs
+	end
 
 	for _, hb in ipairs(hbs.default) do
 		table.insert(newHbs.default, copyHitbox(hb))
