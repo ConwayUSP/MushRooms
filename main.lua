@@ -24,9 +24,11 @@ require("modules.systems.shaders")
 require("game")
 require("table")
 
-local appleCake = require("libs.applecake")(true)
-appleCake.setBuffer(true)
-appleCake.beginSession()
+-- local appleCake = require("libs.applecake")(false)
+-- appleCake.setBuffer(false)
+-- appleCake.beginSession()
+
+local lurker = require("libs.lurker.lurker")
 
 ----------------------------------------
 -- Variáveis Globais
@@ -146,8 +148,9 @@ end
 ----------------------------------------
 
 function love.update(dt)
+	lurker.update()
 	-- iniciando o profiling da função de update
-	updateProfile = appleCake.profileFunc(nil, updateProfile)
+	-- updateProfile = appleCake.profileFunc(nil, updateProfile)
 
 	-- pulando o update de gameplay enquanto está no menu
 	if gameCtx == MENU_CTX then
@@ -176,7 +179,7 @@ function love.update(dt)
 	updateFPSVisor(dt)
 
 	-- encerrando o profiling
-	updateProfile:stop()
+	-- updateProfile:stop()
 end
 
 ----------------------------------------
@@ -185,7 +188,7 @@ end
 
 function love.draw()
 	-- iniciando o profiling da função de update
-	drawProfile = appleCake.profileFunc(nil, drawProfile)
+	-- drawProfile = appleCake.profileFunc(nil, drawProfile)
 
 	for _, c in pairs(cameras) do
 		c:draw()
@@ -198,8 +201,8 @@ function love.draw()
 	end
 
 	-- encerrando o profiling
-	drawProfile:stop()
-	appleCake.flush()
+	-- drawProfile:stop()
+	-- appleCake.flush()
 end
 
 ----------------------------------------
@@ -207,5 +210,5 @@ end
 ----------------------------------------
 
 function love.quit()
-	appleCake.endSession()
+	-- appleCake.endSession()
 end
