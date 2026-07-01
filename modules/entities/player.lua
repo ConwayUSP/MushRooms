@@ -663,7 +663,7 @@ end
 
 function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
-	cameras[self.id]:shake(damage/5, 0.5)
+	cameras[self.id]:shake(damage / 5, 0.5)
 end
 
 ---@param camera Camera

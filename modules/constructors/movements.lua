@@ -295,3 +295,13 @@ function followTargetMovement(force)
 	end
 end
 
+function followTarget(entity, dt)
+	if not entity.moveTargeting then
+		return
+	end
+
+	local dir = subVec(entity.moveTargeting.targetPos, entity.pos)
+	local desiredVel = scaleVec(normalize(dir), entity.speed * 2)
+
+	applySteering(entity, desiredVel, 10)
+end

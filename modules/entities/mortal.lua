@@ -5,6 +5,12 @@
 require("modules.entities.entity")
 
 ----------------------------------------
+-- Enums e Constantes
+----------------------------------------
+
+local FEAR_DEFAULT_DUR = 3
+
+----------------------------------------
 -- Classe Mortal
 ----------------------------------------
 
@@ -18,7 +24,7 @@ require("modules.entities.entity")
 ---@field burningDamage number
 ---@field healingTimer Timer
 ---@field fearTimer Timer
----@field invulnerableTimer number	
+---@field invulnerableTimer number
 ---@field blinkTimer number
 Mortal = setmetatable({}, { __index = Entity })
 Mortal.__index = Mortal
@@ -32,27 +38,26 @@ Mortal.__index = Mortal
 function Mortal:init(name, pos, hitboxes, room, entityPhysics, hp)
 	Entity.init(self, name, pos, hitboxes, room, entityPhysics)
 
-  self.maxHp = hp
-  self.hp = hp
+	self.maxHp = hp
+	self.hp = hp
 
-  self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
-  self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
+	self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
+	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
 
-  self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
-  self.burningTicks = 0 -- número de ticks restantes para o efeito de queimadura
-  self.burningDamage = 1 -- dano causado por cada tick de queimadura
-  self.burningTimer = Timer.new(1.5, true, function() 
-    self:takeDamage(self.burningDamage)
-    if self.burningTicks > 0 then
-      self.burningTicks = self.burningTicks - 1
-      self.burningTimer:start()
-    else
-      self.burningTimer:stop()
-    end
-  end)
-  self.healingTimer = Timer.new(math.huge, true) -- timer para cura ao longo do tempo
-  self.fearTimer = Timer.new(math.huge, true) -- timer para efeito de medo
-	self.deathTimer = 0 -- timer para efeito de morte
+	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
+	self.burningTicks = 0 -- número de ticks restantes para o efeito de queimadura
+	self.burningDamage = 1 -- dano causado por cada tick de queimadura
+	self.burningTimer = Timer.new(1.5, true, function()
+		self:takeDamage(self.burningDamage)
+		if self.burningTicks > 0 then
+			self.burningTicks = self.burningTicks - 1
+			self.burningTimer:start()
+		else
+			self.burningTimer:stop()
+		end
+	end)
+	self.healingTimer = Timer.new(math.huge, true) -- timer para cura ao longo do tempo
+	self.fearTimer = Timer.new(FEAR_DEFAULT_DUR, true) -- timer para efeito de medo
 end
 
 function Mortal:update(dt)
@@ -77,7 +82,6 @@ function Mortal:setInvulnerable(duration)
 	self.defaultInvulnerableTime = duration or self.defaultInvulnerableTime
 	self.invulnerableTimer = self.defaultInvulnerableTime
 end
-
 
 ---@param damage number
 -- função para aplicar dano à entidade, levando em conta invulnerabilidade e estado de morte
@@ -106,8 +110,11 @@ function Mortal:heal(amount)
 end
 
 function Mortal:applyFear(attacker, duration)
-  print("Tomou sustinho!")
-	self.fearTimer:start()
+	if self.type == ENEMY then
+		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_ON_INIT, FEAR_DEFAULT_DUR), avoidAllPlayersStrong)
+		self.moveTargeting:applyStrats(TC_ON_INIT)
+		self.fearTimer:start()
+	end
 end
 
 -- inicia o processo de morte do inimigo
@@ -149,7 +156,7 @@ function Mortal:getQuadInfo()
 end
 
 function Mortal:drawShaders()
-  ---@diagnostic disable
+	---@diagnostic disable
 	if self.state ~= DYING then
 		if self.invulnerableTimer > 0 then
 			love.graphics.setShader(whiteShader)
@@ -160,6 +167,12 @@ function Mortal:drawShaders()
 			particleShader:send("time", self.healingTimer.time)
 			particleShader:send("quad_info", { u_min, v_min, u_width, v_height })
 			particleShader:send("heal_color", { 0.2, 0.8, 0.35 })
+		elseif self.fearTimer.active then
+			local u_min, v_min, u_width, v_height = self:getQuadInfo()
+			love.graphics.setShader(particleShader)
+			particleShader:send("time", self.healingTimer.time)
+			particleShader:send("quad_info", { u_min, v_min, u_width, v_height })
+			particleShader:send("heal_color", { 0.7, 0.2, 0.8 })
 		elseif self.invisible then
 			love.graphics.setShader(invisibilityShader)
 			-- seria legal ter um jeito mais ergonômico de fazer isso:
@@ -179,5 +192,5 @@ function Mortal:drawShaders()
 		deadBodyShader:send("death_timer", self.deathTimer)
 		love.graphics.setShader(deadBodyShader)
 	end
-  ---@diagnostic enable
+	---@diagnostic enable
 end

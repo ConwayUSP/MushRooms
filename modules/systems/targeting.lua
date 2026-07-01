@@ -128,18 +128,20 @@ end
 -- validTarget como uma flag que diz se foi possível definir um targetPos
 function TargetManager:collapseTargets()
 	local resultingTarget = vec(0, 0)
+	local entityPos = self.owner.pos
 	local totalWeight = 0
 	for t, _ in pairs(self.targets) do
 		totalWeight = totalWeight + t.weight
 		-- invertendo o sinal de targets que queremos evitar
 		local w = t.subtype == TG_SEEK and t.weight or -t.weight
-		resultingTarget = addVec(resultingTarget, scaleVec(t.pos, w))
+		local diff = subVec(t.pos, entityPos)
+		resultingTarget = addVec(resultingTarget, scaleVec(diff, w))
 	end
 	if totalWeight == 0 then
 		-- se todos os targets estão com peso zerado, não temos muito para onde ir
 		self.validTarget = false
 	else
-		self.targetPos = scaleVec(resultingTarget, 1 / totalWeight)
+		self.targetPos = addVec(entityPos, scaleVec(resultingTarget, 1 / totalWeight))
 		self.validTarget = true
 	end
 end
