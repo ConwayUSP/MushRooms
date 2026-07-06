@@ -64,7 +64,7 @@ Room = {}
 Room.__index = Room
 Room.type = ROOM
 Room.stdDim = { width = 1536, height = 1536 }
-Room.spacingV = 360
+Room.spacingV = 96
 Room.spacingH = 96
 
 ---@param pos Vec
@@ -134,7 +134,7 @@ function Room:update(dt)
 	for _, npc in pairs(self.npcs) do
 		npc:update(dt)
 	end
-	
+
 	self.linkManager:update(dt)
 	self.uiManager:update(dt)
 end
@@ -241,7 +241,7 @@ function Room:addWallsAndDoors()
 	-- perdoe a quantidade de números mágicos nessa função T~T
 	local doors = { DOOR_UP, DOOR_LEFT, DOOR_RIGHT, DOOR_DOWN }
 	local doorsRelPos = {
-		vec(0, -Room.stdDim.height / 2 - 80),
+		vec(0, -Room.stdDim.height / 2 - 120),
 		vec(-Room.stdDim.width / 2 - 47, -120),
 		vec(Room.stdDim.width / 2 + 47, -120),
 		vec(0, Room.stdDim.height / 2 + 40),
@@ -327,7 +327,7 @@ function newRoom(pos, dimensions, roomType)
 	local p1 = vec(leftLimit, topLimit)
 	local p2 = vec(rightLimit, bottomLimit)
 	local limits = { p1 = p1, p2 = p2 }
-	local hb = hitbox(Rectangle.new(dimensions.width + Room.spacingH, dimensions.height + Room.spacingV))
+	local hb = hitbox(Rectangle.new(dimensions.width + Room.spacingH, dimensions.height + Room.spacingV), vec(0, -40))
 	local hbs = hitboxes({}, {}, { hb })
 
 	-- decorando a sala

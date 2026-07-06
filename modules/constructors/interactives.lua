@@ -62,7 +62,7 @@ local updateDoor = function(door, dt)
 		if oldTimer > 0.3 and door.closingTimer < 0.3 then
 			-- o hitbox depende da direção da porta
 			if door.name == DOOR_UP.name or door.name == DOOR_DOWN.name then
-				door.hb.solids = { hitbox(Rectangle.new(140, 80)) }
+				door.hb.solids = { hitbox(Rectangle.new(180, 80)) }
 			else
 				door.hb.solids = { hitbox(Rectangle.new(60, 200), vec(0, 100)) }
 			end

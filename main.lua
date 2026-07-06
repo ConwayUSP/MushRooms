@@ -28,7 +28,7 @@ require("table")
 -- appleCake.setBuffer(false)
 -- appleCake.beginSession()
 
-local lurker = require("libs.lurker.lurker")
+-- local lurker = require("libs.lurker.lurker")
 
 ----------------------------------------
 -- Variáveis Globais
@@ -148,7 +148,7 @@ end
 ----------------------------------------
 
 function love.update(dt)
-	lurker.update()
+	-- lurker.update()
 	-- iniciando o profiling da função de update
 	-- updateProfile = appleCake.profileFunc(nil, updateProfile)
 
