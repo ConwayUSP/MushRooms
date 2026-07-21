@@ -12,6 +12,8 @@ require("table")
 ----------------------------------------
 rooms = BiList.new()
 activeRooms = Set.new()
+doors = BiList.new()
+walls = BiList.new()
 
 -- tipos de sala
 PUZZLE_ROOM = "puzzle room"
@@ -53,12 +55,13 @@ EVENT_ROOM = "event room"
 ---@field enemies Enemy[]
 ---@field npcs Npc[]
 ---@field obstacles Obstacle[]
----@field doors Interactive[]
 ---@field playersInRoom Set
 ---@field populate function
 ---@field visit function
 ---@field adjacentRooms Vec[]
 ---@field linkManager LinkManager
+---@field getDoors fun() : Interactive[]
+---@field getWalls fun() : Obstacle[]
 
 Room = {}
 Room.__index = Room
@@ -93,7 +96,6 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.explored = false -- se algum jogador já entrou na sala ou não
 	room.destructibles = {} -- lista de objetos destrutíveis da sala
 	room.interactives = {} -- lista de objetos interativos na sala
-	room.doors = {} -- lista de portas da sala
 	room.drops = {} -- lista de itens dropados na sala
 	room.enemies = {} -- lista de inimigos na sala
 	room.npcs = {} -- lista de NPCs na sala
@@ -118,10 +120,6 @@ function Room:update(dt)
 	for _, i in pairs(self.interactives) do
 		i:update(dt)
 	end
-	-- atualiza portas
-	for _, d in pairs(self.doors) do
-		d:update(dt)
-	end
 	-- atualiza drops
 	for _, drop in pairs(self.drops) do
 		drop:update(dt)
@@ -133,6 +131,10 @@ function Room:update(dt)
 	-- atualiza NPCs
 	for _, npc in pairs(self.npcs) do
 		npc:update(dt)
+	end
+	-- atualiza portas
+	for _, door in pairs(self:getDoors()) do
+		door:update(dt)
 	end
 
 	self.linkManager:update(dt)
@@ -265,11 +267,72 @@ end
 
 -- abre as portas se estiverem fechadas e fecha elas se estiverem abertas
 function Room:toggleDoors()
-	for _, d in pairs(self.doors) do
+	for _, d in pairs(self:getDoors()) do
 		d:onInteract()
 	end
 end
 
+---@param doorName string
+---@return Vec?
+-- retorna o índice na array global de portas de uma porta com nome doorName (uma das 4 direções)
+function Room:getDoorIndex(doorName)
+	if doorName == DOOR_UP.name then
+		return vec(self.arrPos.y * 3 - 1, self.arrPos.x)
+	elseif doorName == DOOR_DOWN.name then
+		return vec(self.arrPos.y * 3 + 1, self.arrPos.x)
+	elseif doorName == DOOR_LEFT.name then
+		return vec(self.arrPos.y * 3, self.arrPos.x)
+	elseif doorName == DOOR_RIGHT.name then
+		return vec(self.arrPos.y * 3, self.arrPos.x + 1)
+	end
+end
+
+---@return Interactive[]
+-- retorna todas as portas que conectam esta sala com as adjacentes
+function Room:getDoors()
+	local doorTypes = { DOOR_UP, DOOR_DOWN, DOOR_LEFT, DOOR_RIGHT }
+	local roomDoors = {}
+	for _, dt in pairs(doorTypes) do
+		local idx = self:getDoorIndex(dt.name)
+		table.insert(roomDoors, doors[idx.y][idx.x])
+	end
+	return roomDoors
+end
+
+---@param wallName string
+---@return Vec?
+-- retorna o índice na array global de paredes de uma parede com nome wallName (uma das 6 possíveis)
+function Room:getWallIndex(wallName)
+	if wallName == WALL_UP.name then
+		return vec(self.arrPos.y * 4 - 1, self.arrPos.x)
+	elseif wallName == WALL_DOWN.name then
+		return vec(self.arrPos.y * 4 + 2, self.arrPos.x)
+	elseif wallName == WALL_LEFT_BACK.name then
+		return vec(self.arrPos.y * 4, self.arrPos.x)
+	elseif wallName == WALL_LEFT_FRONT.name then
+		return vec(self.arrPos.y * 4 + 1, self.arrPos.x)
+	elseif wallName == WALL_RIGHT_BACK.name then
+		return vec(self.arrPos.y * 4, self.arrPos.x + 1)
+	elseif wallName == WALL_RIGHT_FRONT.name then
+		return vec(self.arrPos.y * 4 + 1, self.arrPos.x + 1)
+	end
+end
+
+---@return Obstacle[]
+-- retorna todas as paredes que separam esta sala das adjacentes
+function Room:getWalls()
+	local wallTypes = { WALL_UP, WALL_DOWN, WALL_LEFT_BACK, WALL_LEFT_FRONT, WALL_RIGHT_BACK, WALL_RIGHT_FRONT }
+	local roomWalls = {}
+	for _, wt in pairs(wallTypes) do
+		local idx = self:getWallIndex(wt.name)
+		table.insert(roomWalls, walls[idx.y][idx.x])
+	end
+	return roomWalls
+end
+
+---@param building Product
+---@return Interactive
+-- torna uma construção tangível e insere ela na sala, registrando sua hitbox
 function Room:addBuilding(building)
 	local interactive = building.makeInteractive(building.pos, self)
 	table.insert(self.interactives, interactive)

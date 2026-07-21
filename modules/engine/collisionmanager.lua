@@ -96,8 +96,8 @@ function CollisionManager:fetchHitboxesByRoom(room)
 		self:register(inter)
 	end
 
-	-- pegando hitboxes de interativos
-	for _, door in pairs(room.doors) do
+	-- pegando hitboxes de portas
+	for _, door in pairs(room:getDoors()) do
 		self:register(door)
 	end
 
@@ -114,6 +114,11 @@ function CollisionManager:fetchHitboxesByRoom(room)
 	-- pegando hitboxes de obstáculos
 	for _, obs in pairs(room.obstacles) do
 		self:register(obs)
+	end
+
+	-- pegando hitboxes de paredes
+	for _, wall in pairs(room:getWalls()) do
+		self:register(wall)
 	end
 end
 
@@ -151,7 +156,7 @@ function CollisionManager:clearHitboxesByRoom(room)
 	end
 
 	-- removendo hitboxes de portas
-	for _, door in pairs(room.doors) do
+	for _, door in pairs(room:getDoors()) do
 		self:unregister(door)
 	end
 
@@ -168,6 +173,11 @@ function CollisionManager:clearHitboxesByRoom(room)
 	-- removendo hitboxes de obstáculos
 	for _, obs in pairs(room.obstacles) do
 		self:unregister(obs)
+	end
+
+	-- removendo hitboxes de paredes
+	for _, wall in pairs(room:getWalls()) do
+		self:unregister(wall)
 	end
 end
 

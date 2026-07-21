@@ -7,6 +7,7 @@
 ----------------------------------------
 
 ---@class Interactive : Entity
+---@field arrPos Vec?
 ---@field onInteract function
 ---@field customUpdate function?
 ---@field customEnter function?
@@ -40,13 +41,11 @@ function Interactive.new(name, pos, hitboxes, room, physics, onInteract, update,
 	interactive.customUpdate = update
 	interactive.customEnter = customEnter
 	interactive.customExit = customExit
-	interactive.state = IDLE -- define o estado atual do objeto, pode ser usado de formas criativas em interagiveis
+	interactive.state = IDLE   -- define o estado atual do objeto, pode ser usado de formas criativas em interagiveis
 	interactive.spriteSheets = {} -- no tipo imagem do love
 	interactive.animations = {} -- as chaves são estados e os valores são Animações
 
-	if name == DOOR_UP.name or name == DOOR_DOWN.name or name == DOOR_LEFT.name or name == DOOR_RIGHT.name then
-		table.insert(room.doors, interactive)
-	else
+	if name:sub(1, 4) ~= "door" then
 		table.insert(room.interactives, interactive)
 	end
 	return interactive
@@ -97,4 +96,18 @@ function Interactive:draw(camera)
 		y = anim.frameDim.height / 2,
 	}
 	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+
+	-- DEBUG -------------------------------
+	if debugMode and self.name:sub(1, 4) == "door" then
+		love.graphics.print(
+			tostring(self.arrPos.x) .. ", " .. tostring(self.arrPos.y),
+			viewPos.x,
+			viewPos.y,
+			0,
+			3,
+			3,
+			10,
+			10
+		)
+	end
 end

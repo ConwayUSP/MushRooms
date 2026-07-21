@@ -83,6 +83,16 @@ function newDoor(spawnPos, room, doorType)
 	door.openingTimer = 0 ---@diagnostic disable-line
 	door.closingTimer = 0 ---@diagnostic disable-line
 
+	-- adicionando na lista global de portas
+	local idx = room:getDoorIndex(doorType.name)
+	if not doors[idx.y] then
+		doors:insert(idx.y, BiList.new())
+	end
+	if not doors[idx.y][idx.x] then -- evitando overwrite
+		doors[idx.y]:insert(idx.x, door)
+	end
+	door.arrPos = idx
+
 	local animSettings = {}
 
 	if doorType == DOOR_UP or doorType == DOOR_DOWN then

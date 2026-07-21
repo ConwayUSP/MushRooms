@@ -4,7 +4,8 @@
 
 ---@class Obstacle : Entity
 ---@field image table
----@field scale? number
+---@field arrPos Vec?
+---@field scale number?
 ---@field transparent boolean
 
 Obstacle = setmetatable({}, { __index = Entity })
@@ -24,7 +25,19 @@ function Obstacle.new(name, hbs, spawnPos, room, scale)
 
 	ob.transparent = false
 
-	table.insert(room.obstacles, ob)
+	if name:sub(1, 4) ~= "wall" then
+		table.insert(room.obstacles, ob)
+	else
+		local idx = room:getWallIndex(name)
+		if not walls[idx.y] then
+			walls:insert(idx.y, BiList.new())
+		end
+		if not walls[idx.y][idx.x] then -- evitando overwrite
+			walls[idx.y]:insert(idx.x, ob)
+		end
+		ob.arrPos = idx
+	end
+
 	return ob
 end
 

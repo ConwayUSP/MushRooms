@@ -305,9 +305,8 @@ end
 --- Angles
 -------------------------------------
 
-
 function invertSecondAndThirdQuadrants(angle)
-	return (angle <= -math.pi/2 or angle >= math.pi/2) and -1 or 1
+	return (angle <= -math.pi / 2 or angle >= math.pi / 2) and -1 or 1
 end
 
 function invertFirstAndSecondQuadrants(angle)
@@ -315,7 +314,7 @@ function invertFirstAndSecondQuadrants(angle)
 end
 
 function flipSecondAndThirdQuadrants(angle)
-	return sign(angle)*(math.pi/2 - math.abs( math.abs(angle) - math.pi/2 ))
+	return sign(angle) * (math.pi / 2 - math.abs(math.abs(angle) - math.pi / 2))
 end
 
 -----------------------------------------
@@ -327,3 +326,4 @@ end
 function string:startsWith(prefix)
 	return self:sub(1, #prefix) == prefix
 end
+

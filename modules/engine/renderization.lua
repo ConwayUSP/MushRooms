@@ -66,12 +66,22 @@ function renderEntities(camera)
 			})
 		end
 		-- Adiciona portas
-		for _, d in pairs(r.doors) do
+		for _, d in pairs(r:getDoors()) do
 			table.insert(drawList, {
 				it = d,
 				y = d.pos.y + getAnchor(d, FLOOR),
 				draw = function()
 					d:draw(camera)
+				end,
+			})
+		end
+		-- Adiciona paredes
+		for _, w in pairs(r:getWalls()) do
+			table.insert(drawList, {
+				it = w,
+				y = w.pos.y + getAnchor(w, FLOOR),
+				draw = function()
+					w:draw(camera)
 				end,
 			})
 		end
