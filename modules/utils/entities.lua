@@ -48,6 +48,7 @@ INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")
 ------------- DESTRUTÍVEIS -------------
 JAR = registerEntity(DESTRUCTIBLE, "jar")
 BARREL = registerEntity(DESTRUCTIBLE, "barrel")
+TALL_GRASS = registerEntity(DESTRUCTIBLE, "tall grass")
 
 ----------------- DROP -----------------
 COIN = registerEntity(DROP, "coin")
@@ -97,7 +98,8 @@ WALL_RIGHT_BACK = registerEntity(OBSTACLE, "wall right back")
 WALL_RIGHT_FRONT = registerEntity(OBSTACLE, "wall right front")
 
 ------------------ BUILDINGS -----------------
-FIRECAMP = registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
+FIRECAMP =
+	registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
 CHEST = registerEntity(BUILDING, "chest", "It's bigger on the inside than it looks... and it's made with love")
 ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
 KITCHEN = registerEntity(BUILDING, "kitchen")

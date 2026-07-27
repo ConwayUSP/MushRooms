@@ -49,6 +49,7 @@ CONSTRUCTORS[ARTIFACT] = {
 CONSTRUCTORS[DESTRUCTIBLE] = {
 	[BARREL.name] = newBarrel,
 	[JAR.name] = newJar,
+	[TALL_GRASS.name] = newTallGrass,
 }
 
 CONSTRUCTORS[OBSTACLE] = {

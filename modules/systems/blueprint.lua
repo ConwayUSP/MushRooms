@@ -174,7 +174,12 @@ end
 ---@return Blueprint
 -- retorna um `Blueprint` aleatório de sala de **Recurso**
 function randResourceRoomBP()
-	return newResourceRoom1()
+	local r = math.random()
+	if r < 0.8 then
+		return newResourceRoom2()
+	else
+		return newResourceRoom1()
+	end
 end
 
 ---@return Blueprint

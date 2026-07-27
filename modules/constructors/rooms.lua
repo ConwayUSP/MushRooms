@@ -30,6 +30,21 @@ function newNPCRoom1()
 end
 
 ---@return Blueprint
+-- Sala de Recurso 2: contém grama alta pra caralho
+function newResourceRoom2()
+	local bp = Blueprint.new(RESOURCE_ROOM, "Test Resource Room 2", rgba8(255, 248, 122, 255))
+	local grassData = SpawnData.new(TALL_GRASS, 1.0)
+	for i = 1, 4 do
+		for j = 1, 4 do
+			local sp = SpawnPoint.new(vec(i * 60 - 120 - j, j * 30 - 80 + i))
+			sp:insert(grassData)
+			bp:insert(sp)
+		end
+	end
+	return bp
+end
+
+---@return Blueprint
 -- Sala de Recurso 1: contém barrís e jarros
 function newResourceRoom1()
 	local bp = Blueprint.new(RESOURCE_ROOM, "Test Resource Room", rgba8(255, 248, 122, 255))

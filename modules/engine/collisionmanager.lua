@@ -368,10 +368,6 @@ function CollisionManager:handleCollisions()
 				hitSomeInteractive = true
 			end
 		end
-
-		-- if not hitSomeInteractive and player.interactiveObj and player.interactiveObj.type == INTERACTIVE then
-		-- 	self:onPlayerInteractiveExit(player, player.interactiveObj)
-		-- end
 	end
 
 	--------- PLAYER / INIMIGO ----------
@@ -402,7 +398,7 @@ function CollisionManager:handleCollisions()
 			local hit = checkColision(destrhb.default, destr, attackhb.default, attack)
 
 			if hit then
-				self:onPlayerDestructible(attack, destr)
+				self:onAttackDestructible(attack, destr)
 			end
 		end
 	end
@@ -488,8 +484,6 @@ function CollisionManager:onPlayerRoom(player, room)
 
 	-- se mudou de sala, se retira dela e entra na próxima
 	if prevRoom and prevRoom ~= room then
-		-- print("Player entered room: " .. vecToString(room.arrPos))
-
 		prevRoom.playersInRoom:remove(player.id)
 		prevRoom:verifyIsEmpty()
 
@@ -586,7 +580,17 @@ end
 ---@param destructible Destructible
 -- trata a colisão entre um `player` ou um `attack` do player e um `destructible`
 function CollisionManager:onPlayerDestructible(_, destructible)
-	destructible:damage(math.huge)
+	if destructible.fragility == FRAGILE then
+		destructible:damage(math.huge)
+	elseif destructible.fragility == UNSTABLE then
+		destructible:destabilize()
+	end
+end
+
+---@param destructible Destructible
+-- trata a colisão entre um `player` ou um `attack` do player e um `destructible`
+function CollisionManager:onAttackDestructible(_, destructible)
+	destructible:damage(math.huge) -- !WARNING: mudar para ser o dano do ataque
 end
 
 ---@param player Player

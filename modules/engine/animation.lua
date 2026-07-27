@@ -27,9 +27,11 @@ Animation.__index = Animation
 ---@param looping boolean
 ---@param loopFrame number
 ---@param frameDim Size
+---@param offset Vec?
+---@param onFinish function?
 ---@return Animation
 -- cria uma animação com as configurações passadas como argumento
-function Animation.new(frames, frameDur, looping, loopFrame, frameDim, offset)
+function Animation.new(frames, frameDur, looping, loopFrame, frameDim, offset, onFinish)
 	local animation = setmetatable({}, Animation)
 
 	-- atributos que variam
@@ -38,10 +40,10 @@ function Animation.new(frames, frameDur, looping, loopFrame, frameDim, offset)
 	animation.looping = looping -- se a animação é ciclica ou não
 	animation.loopFrame = loopFrame -- a partir de qual frame a animação é ciclica
 	animation.frameDim = frameDim -- dimensões de cada frame
+	animation.onFinish = onFinish -- callback chamado quando a animação não-loop termina
 	-- atributos fixos na instanciação
 	animation.currFrame = 1 -- frame atual
 	animation.timer = 0 -- tempo decorrido desde a última mudança de frame
-	animation.onFinish = nil -- callback chamado quando a animação não-loop termina
 
 	local center = vec(frameDim.width / 2, frameDim.height / 2)
 	animation.offset = offset and addVec(offset, center) or center -- offset do centro do sprite
@@ -110,7 +112,14 @@ function newAnimation(path, settings)
 	end
 
 	::createanimation::
-	return Animation.new(frames, settings.frameDur, settings.looping, settings.loopFrame, settings.quadSize, settings.offset)
+	return Animation.new(
+		frames,
+		settings.frameDur,
+		settings.looping,
+		settings.loopFrame,
+		settings.quadSize,
+		settings.offset
+	)
 end
 
 ---@class AnimSettings
@@ -129,9 +138,10 @@ end
 ---@param loopFrame number?
 ---@param gap number?
 ---@param offset Vec?
+---@param onFinish function?
 ---@return AnimSettings
 -- cria uma cofiguração de animação, usada para criar novas animações
-function newAnimSetting(numFrames, quadSize, frameDur, looping, loopFrame, gap, offset)
+function newAnimSetting(numFrames, quadSize, frameDur, looping, loopFrame, gap, offset, onFinish)
 	return {
 		numFrames = numFrames,
 		quadSize = quadSize,
@@ -139,7 +149,8 @@ function newAnimSetting(numFrames, quadSize, frameDur, looping, loopFrame, gap, 
 		looping = looping,
 		loopFrame = loopFrame or 1,
 		gap = gap or 4,
-		offset = offset or vec(0, 0)
+		offset = offset or vec(0, 0),
+		onFinish or nil,
 	}
 end
 
