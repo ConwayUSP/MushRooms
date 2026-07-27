@@ -12,7 +12,7 @@ require("modules.entities.product")
 local physics = physicsSettings(math.huge, 0, 0, nil, nil, nil, 0)
 
 function newChest()
-	local hb = hitboxes({ hitbox(Circle.new(30)) }, { hitbox(Circle.new(30)) }, {})
+	local hb = hitboxes({ hitbox(Circle.new(30)) }, { hitbox(Circle.new(30)) }, { hitbox(Circle.new(100)) })
 	local onInteract = function(chest, player)
 		print("Player interacted with chest")
 	end
@@ -24,7 +24,14 @@ function newChest()
 
 	local makeInteractive = function(pos, room)
 		local chestInteractive = Interactive.new(CHEST.name, pos, hb, room, physics, onInteract)
+		chestInteractive.inventory = Inventory.new(chestInteractive)
 		addAnimations(chestInteractive, pathStart, animSettings)
+
+		chestInteractive.onInteract = function(chest, player)
+			-- sim, é um nível a mais de indireção, mas como a cena é do player
+			-- acho justo ele montar ela e não o baú
+			player:openChest(chest)
+		end
 
 		return chestInteractive
 	end

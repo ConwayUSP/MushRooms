@@ -89,27 +89,27 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player:init(name, spawnPos, player:calcHitboxes(), room, physicsSettings(1, 9000, 12), MAX_HP)
 
 	-- atributos que variam
-	player.id = #players + 1                          -- número do jogador
-	player.controls = controls                        -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
-	player.colors = colors                            -- paleta de cores do jogador
+	player.id = #players + 1 -- número do jogador
+	player.controls = controls -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.colors = colors -- paleta de cores do jogador
 	-- atributos fixos na instanciação
-	player.movementVec = { x = 0, y = 0 }             -- vetor de direção e magnitude do movimento do jogador
-	player.state = IDLE                               -- define o estado atual do jogador, estreitamente relacionado às animações
-	player.spriteSheets = {}                          -- no tipo imagem do love
-	player.animations = {}                            -- as chaves são estados e os valores são Animações
-	player.particles = {}                             -- efeitos de partícula emitidos pelo player
-	player.weapons = {}                               -- lista das armas que o jogador possui
-	player.weapon = nil                               -- arma equipada
-	player.artifacts = {}                             -- lista de artefatos (itens ativos) que o jogador possui
-	player.artifact = nil                             -- artefato equipado
-	player.inDialogue = false                         -- se o player está em diálogo
-	player.interactiveObj = nil                       -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
-	player.inventory = Inventory.new(player)          -- inventário do jogador
-	player.candidateInteractives = {}                 -- lista de objetos interativos próximos ao jogador
-	player.craftingManager = newCraftingRaw(player)   -- gerenciador de crafting do jogador
-	player.uiManager = newPlayerUIManager(player)     -- gerenciador da UI do jogador
+	player.movementVec = { x = 0, y = 0 } -- vetor de direção e magnitude do movimento do jogador
+	player.state = IDLE -- define o estado atual do jogador, estreitamente relacionado às animações
+	player.spriteSheets = {} -- no tipo imagem do love
+	player.animations = {} -- as chaves são estados e os valores são Animações
+	player.particles = {} -- efeitos de partícula emitidos pelo player
+	player.weapons = {} -- lista das armas que o jogador possui
+	player.weapon = nil -- arma equipada
+	player.artifacts = {} -- lista de artefatos (itens ativos) que o jogador possui
+	player.artifact = nil -- artefato equipado
+	player.inDialogue = false -- se o player está em diálogo
+	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
+	player.inventory = Inventory.new(player) -- inventário do jogador
+	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
+	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
+	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
 	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
-	player.building = nil                             -- construção que o player está posicionando para construir
+	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
 	player.defaultInvulnerableTime = 0.3
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
@@ -439,9 +439,14 @@ end
 -- verifica se o `Player` está pressionando a tecla de ação 2
 -- caso positivo, executa a ação correta dependendo do contexto
 function Player:checkAction2(key)
-	if key ~= self.controls.act2 or self.uiManager.activeScene or self.state == DYING then
+	if key ~= self.controls.act2 or self.state == DYING then
 		return
 	end
+	if self.uiManager.activeScene then
+		self.uiManager:deactivateAllScenes()
+		return
+	end
+
 	if self.building then
 		self:endBuildingMode()
 	elseif self.interactiveObj then
@@ -669,9 +674,52 @@ function Player:chooseBestInteractive(list)
 	return best
 end
 
+---@param damage number
+-- diminui a vida do player e treme sua câmera um pouco
 function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
 	cameras[self.id]:shake(damage / 5, 0.5)
+end
+
+---@param chest Interactive
+-- abre a UI do baú e a preenche com os recursos necessários
+function Player:openChest(chest)
+	-- limpando a UI do baú caso outro player tenha mexido nela e modificado sem sabermos
+	self.uiManager.scenes[UI_CHEST_SCENE].layers[ELEM_LAYER_2] = {}
+	-- salvando a posição da seleção para não bugar ao inserir novos elementos na cena
+	local selPos = self.uiManager.scenes[UI_CHEST_SCENE].selectionPos
+	-- adicionando os items do player nos slots da esquerda
+	local idx = 0
+	for _, itemList in pairs(self.inventory.items) do
+		for _, item in pairs(itemList) do
+			idx = idx + 1
+			self.uiManager.scenes[UI_CHEST_SCENE]:addPlayerResourceEl(
+				item,
+				self.inventory,
+				self.uiManager.canvasSize,
+				idx,
+				self,
+				chest
+			)
+		end
+	end
+	-- adicionando os items que estão no baú nos slots da direita
+	idx = 0
+	for _, itemList in pairs(chest.inventory.items) do
+		for _, item in pairs(itemList) do
+			idx = idx + 1
+			self.uiManager.scenes[UI_CHEST_SCENE]:addChestResourceEl(
+				item,
+				inventory,
+				self.uiManager.canvasSize,
+				idx,
+				self,
+				chest
+			)
+		end
+	end
+	self.uiManager.scenes[UI_CHEST_SCENE].selectionPos = selPos
+	self.uiManager:activateScene(UI_CHEST_SCENE)
 end
 
 ---@param camera Camera
@@ -691,7 +739,7 @@ function Player:draw(camera)
 	local animation = self.animations[self.state]
 	local quad = animation.frames[animation.currFrame]
 	local p = self.invulnerableTimer > 0
-		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local defaultScale = self.scale
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)

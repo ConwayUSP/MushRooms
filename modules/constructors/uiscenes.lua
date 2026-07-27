@@ -88,7 +88,11 @@ function newResourceInventoryScene(canvasSize)
 		local invLength = inventory:length(RESOURCE)
 		local col = math.fmod(invLength - 1, 5)
 		local row = math.floor((invLength - 1) / 5)
-		local resourceEl = newResourceItemElement(resource.name, invLength, canvasSize)
+		if row > 2 then
+			return -- ultrapassou o limite do inventário
+		end
+		local topLeft = addVec(scaleVec(sizeToVec(canvasSize), 0.5), vec(-300, 0))
+		local resourceEl = newResourceItemElement(resource.name, invLength, topLeft, 108, 5)
 		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
 	end
 
@@ -156,6 +160,7 @@ function newCraftingScene(canvasSize, player)
 		local x = math.fmod(i - 1, COLS)
 		local y = math.floor((i - 1) / COLS)
 		local itemEl = newCraftingItemElement(recipe, vec(leftMargin, topMargin), slotOffset, x, y)
+		itemEl.ctx = { player = player }
 		invScene:addElement(itemEl, ELEM_LAYER_2, vec(x + 1, y + 2))
 	end
 
@@ -245,6 +250,92 @@ function newCraftingScene(canvasSize, player)
 	return invScene
 end
 
+function newChestScene(canvasSize)
+	local chestScene = UIScene.new(UI_CHEST_SCENE)
+	local canvasCenter = vec(canvasSize.width / 2, canvasSize.height / 2)
+
+	-- ANIMAÇÕES
+	local slotAnimSettings = {}
+	slotAnimSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	slotAnimSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+
+	local arrowAnimSettings = {}
+	arrowAnimSettings[IDLE] = newAnimSetting(1, size(16, 16), 1, true, 1)
+	arrowAnimSettings[SELECTED] = newAnimSetting(1, size(16, 16), 1, true, 1)
+
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 128), 1, true, 1)
+
+	-- BACKGROUND
+	local pos = subVec(canvasCenter, vec(128, 128))
+	local chestBg = UIImageElem.new("chest bg", canvasCenter, size(1024, 512))
+	chestBg:addAnimations(bgAnimSettings)
+	chestScene:addElement(chestBg, BG_LAYER_1, vec(1, 1))
+
+	-- PLAYER ITEM SLOTS
+	local leftMargin = canvasCenter.x - 382
+	local topMargin = canvasCenter.y - 124
+	for row = 0, 2 do
+		for col = 0, 2 do
+			local posX = leftMargin + col * 132
+			local posY = topMargin + row * 132
+			local slot = UIImageElem.new("chest player slot", vec(posX, posY), size(120, 120))
+			slot:addAnimations(slotAnimSettings)
+			chestScene:addElement(slot, ELEM_LAYER_1, vec(col + 1, row + 1))
+		end
+	end
+
+	-- CHEST SLOTS
+	leftMargin = canvasCenter.x + 108
+	topMargin = canvasCenter.y - 124
+	for row = 0, 2 do
+		for col = 0, 2 do
+			local posX = leftMargin + col * 132
+			local posY = topMargin + row * 132
+			local slot = UIImageElem.new("chest slot", vec(posX, posY), size(120, 120))
+			slot:addAnimations(slotAnimSettings)
+			chestScene:addElement(slot, ELEM_LAYER_1, vec(3 + col + 1, row + 1))
+		end
+	end
+
+	-- MÉTODOS AUXILIARES
+	function chestScene:addPlayerResourceEl(resource, inventory, canvasSize, idx, player, chest)
+		local col = math.fmod(idx - 1, 3)
+		local row = math.floor((idx - 1) / 3)
+		if row > 2 then
+			return -- ultrapassou o limite do inventário
+		end
+		local topLeft = addVec(scaleVec(sizeToVec(canvasSize), 0.5), vec(-382, -124))
+		local resourceEl = newResourceItemElement(resource.name, idx, topLeft, 132, 3)
+		resourceEl.ctx = { resource = resource, player = player, chest = chest }
+		-- ao clicar, transfere o recurso do player ao baú e recarrega a UI (com openChest)
+		resourceEl.onClick = function(self)
+			self.ctx.player.inventory:transferItem(self.ctx.resource, self.ctx.chest.inventory)
+			self.ctx.player:openChest(self.ctx.chest)
+		end
+		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
+	end
+
+	function chestScene:addChestResourceEl(resource, inventory, canvasSize, idx, player, chest)
+		local col = 3 + math.fmod(idx - 1, 3)
+		local row = math.floor((idx - 1) / 3)
+		if row > 2 then
+			return -- ultrapassou o limite do inventário
+		end
+		local topLeft = addVec(scaleVec(sizeToVec(canvasSize), 0.5), vec(108, -124))
+		local resourceEl = newResourceItemElement(resource.name, idx, topLeft, 132, 3)
+		resourceEl.ctx = { resource = resource, player = player, chest = chest }
+		-- ao clicar, transfere o recurso do baú ao player e recarrega a UI (com openChest)
+		resourceEl.onClick = function(self)
+			self.ctx.chest.inventory:transferItem(self.ctx.resource, self.ctx.player.inventory)
+			self.ctx.player:openChest(self.ctx.chest)
+		end
+		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
+	end
+
+	return chestScene
+end
+
 ----------------------------------------
 -- Cenas da Sala
 ----------------------------------------
@@ -269,7 +360,6 @@ function newBossLifeBarScene(canvasSize, room)
 
 	-- SETUP DA CENA
 	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))
-	
 
 	return lifeBarScene
 end

@@ -5,14 +5,11 @@ require("modules.UI.uielement")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 
-function newResourceItemElement(resName, invLength, canvasSize)
-	local canvasCenter = vec(canvasSize.width / 2, canvasSize.height / 2)
-	local leftMargin = canvasCenter.x - 300
-	local topMargin = canvasCenter.y
-	local col = math.fmod(invLength - 1, 5)
-	local row = math.floor((invLength - 1) / 5)
-	local posX = leftMargin + col * 108
-	local posY = topMargin + row * 108
+function newResourceItemElement(resName, invLength, topLeft, spacing, numColumns)
+	local col = math.fmod(invLength - 1, numColumns)
+	local row = math.floor((invLength - 1) / numColumns)
+	local posX = topLeft.x + col * spacing
+	local posY = topLeft.y + row * spacing
 	local resourceEl = UIButtonElem.new(resName, vec(posX, posY), size(96, 96), nil, function(scene)
 		print("Recurso clicado: " .. resName)
 	end)
@@ -31,8 +28,8 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	local itemName = recipe.output.name
 	local vec = vec(x * vecOffset.x, y * vecOffset.y)
 	local finalPos = addVec(coordStart, vec)
-	local onClick = function(scene)
-		scene.player:startBuildingMode(CONSTRUCTORS[PRODUCT][recipe.output.name]())
+	local onClick = function(self)
+		self.ctx.player:startBuildingMode(CONSTRUCTORS[PRODUCT][recipe.output.name]())
 	end
 	local itemEl = UIButtonElem.new(itemName, finalPos, size(96, 96), nil, onClick)
 	local animSettings = {}

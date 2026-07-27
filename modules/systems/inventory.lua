@@ -36,7 +36,7 @@ function Inventory:addItem(item)
 			type = item.type,
 			description = item.description,
 			weight = item.weight,
-			quantity = 1,
+			quantity = item.quantity or 1,
 		}
 
 		table.insert(self.items[item.type], newItem)
@@ -84,6 +84,21 @@ function Inventory:hasItem(item)
 	end
 
 	return false
+end
+
+---@param item Resource
+---@param dest Inventory
+-- transfere um item de um inventário para outro
+function Inventory:transferItem(item, dest)
+	local destIdx = dest:hasItem(item)
+	local selfIdx = self:hasItem(item)
+	if destIdx then
+		dest.items[item.type][destIdx].quantity = dest.items[item.type][destIdx].quantity
+			+ self.items[item.type][selfIdx].quantity
+	else
+		dest:addItem(self.items[item.type][selfIdx])
+	end
+	table.remove(self.items[item.type], selfIdx)
 end
 
 function Inventory:length(itemType)

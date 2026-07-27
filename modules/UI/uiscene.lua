@@ -205,10 +205,10 @@ function UIScene:keypressed(key, isrepeat)
 
 	-- lidando com cliques
 	if key == self.controls.act1 then
-		for _, l in ipairs(interactionLayers) do
+		for _, l in pairs(interactionLayers) do
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 			if el and el.subtype == UI_BUTTON_ELEM then
-				el.onClick(self)
+				el:onClick()
 			end
 		end
 	end

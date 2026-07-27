@@ -123,11 +123,11 @@ end
 ---@return Vec
 -- retorna um vetor tangente ao original
 function tangentVec(v)
-	return vec( -v.y, v.x)
+	return vec(-v.y, v.x)
 end
 
 function proj(v1, v2)
-	local k = dotProd(v1, v2)/dotProd(v2, v2)
+	local k = dotProd(v1, v2) / dotProd(v2, v2)
 
 	return scaleVec(v2, k)
 end
@@ -137,4 +137,10 @@ end
 -- converte um vetor em string para debug
 function vecToString(v)
 	return "(" .. tostring(v.x) .. ", " .. tostring(v.y) .. ")"
+end
+
+---@param s any
+-- transforma um size {width, height} em um vec {x, y}
+function sizeToVec(s)
+	return vec(s.width, s.height)
 end

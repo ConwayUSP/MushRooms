@@ -66,6 +66,7 @@ UI_INVENTORY_SCENE = "UI player inventory scene"
 UI_MAP_SCENE = "UI player map scene"
 UI_BESTIARY_SCENE = "UI player bestiary scene"
 UI_CRAFTING_SCENE = "UI player crafting scene"
+UI_CHEST_SCENE = "UI chest scene"
 UI_BOSS_LIFE_BAR_SCENE = "UI boss life bar scene"
 
 ---------- OUTROS ----------
@@ -84,10 +85,10 @@ TP_ON_ATTACK_ENEMY = "onAttackEnemy"
 TP_ON_ATTACK_PLAYER = "onAttackPlayer"
 
 TRIGGER_POINTS = {
-  TP_ON_EQUIP,
-  TP_ON_UNEQUIP,
-  TP_ON_ATTACK_ENEMY,
-  TP_ON_ATTACK_PLAYER
+	TP_ON_EQUIP,
+	TP_ON_UNEQUIP,
+	TP_ON_ATTACK_ENEMY,
+	TP_ON_ATTACK_PLAYER,
 }
 
 -------------------------------
@@ -98,4 +99,3 @@ TRIGGER_POINTS = {
 BS_CANCEL = "cancel"
 BS_CONTINUE = "continue"
 BS_REFLECT = "reflect"
-
