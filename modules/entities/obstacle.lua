@@ -41,6 +41,32 @@ function Obstacle.new(name, hbs, spawnPos, room, scale)
 	return ob
 end
 
+function Obstacle:updateShaderUniforms(shader)
+	local spriteWidth = self.image:getWidth() * self.scale
+	local spriteHeight = self.image:getHeight() * self.scale
+	local obsLeft = self.pos.x - spriteWidth / 2
+	local obsTop = self.pos.y - spriteHeight / 2
+
+	shader:send("aspect_ratio", spriteWidth / spriteHeight)
+	shader:send("radius", 0.25)
+	shader:send("min_alpha", 0.35)
+
+	for i = 1, 4 do
+		local player = players[i]
+		if player then
+			-- posição relativa do player ao canto superior-esquerdo do obstáculo
+			local relX = player.pos.x - obsLeft
+			local relY = player.pos.y - obsTop
+			-- precisa ser normalizada
+			local uvX = relX / spriteWidth
+			local uvY = relY / spriteHeight
+			shader:send("p" .. i .. "_uv", { uvX, uvY })
+		else
+			shader:send("p" .. i .. "_uv", { -999.0, -999.0 })
+		end
+	end
+end
+
 function Obstacle:draw(camera)
 	local viewPos = camera:viewPos(self.pos)
 	local offset = {
@@ -48,7 +74,15 @@ function Obstacle:draw(camera)
 		y = self.image:getHeight() / 2,
 	}
 
-	love.graphics.setColor(1, 1, 1, self.transparent and 0.75 or 1)
+	if self.transparent then
+		love.graphics.setShader(seeThroughShader)
+		self:updateShaderUniforms(seeThroughShader)
+	end
+
 	love.graphics.draw(self.image, viewPos.x, viewPos.y, 0, self.scale, self.scale, offset.x, offset.y)
 	love.graphics.setColor(1, 1, 1, 1)
+
+	if self.transparent then
+		love.graphics.setShader()
+	end
 end

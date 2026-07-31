@@ -6,6 +6,7 @@ ditherShadowShader = love.graphics.newShader("shaders/dithershadow.glsl")
 deadBodyShader = love.graphics.newShader("shaders/deadbody.glsl")
 invisibilityShader = love.graphics.newShader("shaders/invisibility.glsl")
 particleShader = love.graphics.newShader("shaders/particle.glsl")
+seeThroughShader = love.graphics.newShader("shaders/seethrough.glsl")
 
 rescaleShader:send("new_res", { 20, 20 })
 
@@ -50,8 +51,8 @@ function drawFrameWithOutline(spriteSheet, quad, x, y, scale, offset, thickness,
 end
 
 function drawWithColorShader(drawFunc, color)
-  love.graphics.setShader(whiteShader)
-  whiteShader:send("fillColor", color or { 1, 1, 1, 1.0 })
-  drawFunc()
-  love.graphics.setShader()
+	love.graphics.setShader(whiteShader)
+	whiteShader:send("fillColor", color or { 1, 1, 1, 1.0 })
+	drawFunc()
+	love.graphics.setShader()
 end

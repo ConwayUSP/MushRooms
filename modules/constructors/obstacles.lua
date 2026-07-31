@@ -6,7 +6,7 @@ require("modules.entities.obstacle")
 function newPillar(spawnPos, room)
 	local scale = 4
 	local solidHb = hitbox(Circle.new(12 * scale), vec(0, 12 * scale))
-	local triggerHb = hitbox(Rectangle.new(20 * scale, 40 * scale), vec(0, -8 * scale))
+	local triggerHb = hitbox(Rectangle.new(60 * scale, 60 * scale), vec(0, -20 * scale))
 	local hbs = hitboxes({}, { solidHb }, { triggerHb })
 	local randPillar = tostring(math.random(4))
 	local obs = Obstacle.new(PILLAR.name .. randPillar, hbs, spawnPos, room, scale)
