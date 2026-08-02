@@ -31,12 +31,13 @@ SPAWN_DATA = "spawn data"
 
 ---------- SISTEMAS ----------
 COLLISION_MANAGER = "collision manager"
+AUDIO_MANAGER = "audio manager"
 DIALOGUE = "dialogue"
 INVENTORY = "inventory"
 TARGET_MANAGER = "target manager"
 TARGET = "target"
 
----------- CRAFTING ----------
+---------- CONSTRUÇÃO ----------
 CRAFTING_MANAGER = "crafting manager"
 RECIPE = "recipe"
 RESOURCE = "resource"
@@ -46,7 +47,7 @@ PRODUCT = "product"
 BUILDING = "building"
 FOOD = "food"
 
---------- BLESSINGS ----------
+--------- BENÇÃOS ----------
 BLESSING_MANAGER = "blessing manager"
 BLESSING = "blessing"
 COMBAT = "combat"
@@ -68,6 +69,15 @@ UI_BESTIARY_SCENE = "UI player bestiary scene"
 UI_CRAFTING_SCENE = "UI player crafting scene"
 UI_CHEST_SCENE = "UI chest scene"
 UI_BOSS_LIFE_BAR_SCENE = "UI boss life bar scene"
+
+---------- ÁUDIOS ----------
+MUSIC_MENU = "menu music"
+MUSIC_LAYER1 = "layer 1 music"
+MUSIC_LAYER2 = "layer 2 music"
+MUSIC_LAYER3 = "layer 3 music"
+AUDIO_MOVEMENT = "movement audio"
+AUDIO_ATTACK = "atk audio"
+AUDIO_COLLIDE = "collision audio"
 
 ---------- OUTROS ----------
 COLOR = "color"

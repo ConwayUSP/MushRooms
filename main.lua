@@ -8,18 +8,19 @@ require("modules.engine.camera")
 require("modules.engine.collisionmanager")
 require("modules.engine.renderization")
 require("modules.engine.assetmanager")
+require("modules.engine.audiomanager")
 require("modules.entities.destructible")
 require("modules.entities.enemy")
 require("modules.entities.drop")
 require("modules.entities.player")
 require("modules.entities.room")
 require("modules.entities.weapon")
-require("modules.systems.dialogue")
 require("modules.tooling.roomcontrol")
 require("modules.tooling.spawnBlessing")
 require("modules.tooling.spawnDrop")
 require("modules.tooling.turtledebug")
 require("modules.tooling.fpsvisor")
+require("modules.systems.dialogue")
 require("modules.systems.shaders")
 require("game")
 require("table")
@@ -122,6 +123,16 @@ function love.load()
 
 	-- carregando o gerenciador de assets
 	assetManager = AssetManager.init()
+
+	-- carregando o gerenciador de áudios
+	globalAudioManager = AudioManager.new({
+		MUSIC_MENU,
+		MUSIC_LAYER1,
+		MUSIC_LAYER2,
+		MUSIC_LAYER3,
+	})
+
+	globalAudioManager:play(MUSIC_MENU)
 
 	-- carregando a biblioteca de UI
 	globalUIManager = initGlobalUIManager()

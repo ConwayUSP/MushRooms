@@ -289,6 +289,36 @@ function pngPathFormat(parts)
 	return path
 end
 
+---@param parts string[]
+---@return string
+-- transforma uma lista de pastas e um nome de arquivo em um caminho para o arquivo
+function oggPathFormat(parts)
+	local path = ""
+	for i, v in ipairs(parts) do
+		if i ~= #parts then
+			path = path .. pathlizeName(v) .. "/"
+		else
+			path = path .. pathlizeName(v) .. ".ogg"
+		end
+	end
+	return path
+end
+
+---@param parts string[]
+---@return string
+-- transforma uma lista de pastas e um nome de arquivo em um caminho para o arquivo
+function wavPathFormat(parts)
+	local path = ""
+	for i, v in ipairs(parts) do
+		if i ~= #parts then
+			path = path .. pathlizeName(v) .. "/"
+		else
+			path = path .. pathlizeName(v) .. ".wav"
+		end
+	end
+	return path
+end
+
 ----------------------------------------
 -- Funções de Debug
 ----------------------------------------

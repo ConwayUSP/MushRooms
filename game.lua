@@ -35,6 +35,7 @@ function startGame()
 	players[1].blessingManager:equip(newFireBlessing())
 	gameCtx = GAMEPLAY_CTX
 	globalUIManager:deactivateAllScenes()
+	globalAudioManager:changeMusic(MUSIC_LAYER1)
 end
 
 function quitGame()
