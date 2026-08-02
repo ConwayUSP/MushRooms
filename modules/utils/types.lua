@@ -76,6 +76,7 @@ MUSIC_LAYER1 = "layer 1 music"
 MUSIC_LAYER2 = "layer 2 music"
 MUSIC_LAYER3 = "layer 3 music"
 AUDIO_MOVEMENT = "movement audio"
+AUDIO_GET_HIT = "get hit audio"
 AUDIO_ATTACK = "atk audio"
 AUDIO_COLLIDE = "collision audio"
 

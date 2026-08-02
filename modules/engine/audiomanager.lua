@@ -13,6 +13,7 @@ local AUDIO_LOOP_TABLE = {
 	[MUSIC_LAYER2] = true,
 	[MUSIC_LAYER3] = true,
 	[AUDIO_MOVEMENT] = true,
+	[AUDIO_GET_HIT] = false,
 	[AUDIO_ATTACK] = false,
 	[AUDIO_COLLIDE] = false
 }

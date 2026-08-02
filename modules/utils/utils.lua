@@ -320,6 +320,14 @@ function wavPathFormat(parts)
 end
 
 ----------------------------------------
+-- Estados
+----------------------------------------
+
+function isMovementState(state)
+	return state == MOVING or state == WALKING_LEFT or state == WALKING_DOWN or state == WALKING_RIGHT or state == WALKING_UP
+end
+
+----------------------------------------
 -- Funções de Debug
 ----------------------------------------
 

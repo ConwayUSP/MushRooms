@@ -4,6 +4,7 @@
 require("modules.constructors.particles")
 require("modules.constructors.craftings")
 require("modules.engine.animation")
+require("modules.engine.audiomanager")
 require("modules.entities.mortal")
 require("modules.entities.artifact")
 require("modules.systems.blessing")
@@ -59,6 +60,7 @@ local MAX_HP = 100
 ---@field inventory Inventory
 ---@field candidateInteractives Interactive|Npc[]
 ---@field uiManager table
+---@field audioManager AudioManager
 ---@field craftingManager CraftingManager
 ---@field blessingManager BlessingManager
 ---@field building any
@@ -108,6 +110,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
+	player.audioManager = AudioManager.new({AUDIO_MOVEMENT, AUDIO_GET_HIT}, player) -- gerenciador de áudios do jogador
 	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
@@ -312,12 +315,21 @@ function Player:updateState()
 		self.particles[WALKING_UP]:stop()
 	end
 
-	-- resetando a animação anterior, caso o estado tenha mudado
+	-- situações que ocorrem em troca de estado
 	if self.state ~= prevState then
+		-- resetando a animação anterior
+		self.animations[prevState]:reset()
+		-- parando efeito de partículas
 		if prevState == DEFENDING then
 			self.particles[DEFENDING]:stop()
 		end
-		self.animations[prevState]:reset()
+		-- iniciando ou parando áudio de movimento
+		local wasMoving = isMovementState(prevState)
+		if isMoving and not wasMoving then
+			self.audioManager:play(AUDIO_MOVEMENT)
+		elseif not isMoving and wasMoving then
+			self.audioManager:stop(AUDIO_MOVEMENT)
+		end
 	end
 end
 
@@ -679,6 +691,7 @@ end
 function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
 	cameras[self.id]:shake(damage / 5, 0.5)
+	self.audioManager:play(AUDIO_GET_HIT)
 end
 
 ---@param chest Interactive
