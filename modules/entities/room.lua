@@ -120,6 +120,10 @@ function Room:update(dt)
 	for _, i in pairs(self.interactives) do
 		i:update(dt)
 	end
+	-- atualiza obstáculos
+	for _, o in pairs(self.obstacles) do
+		o:update(dt)
+	end
 	-- atualiza drops
 	for _, drop in pairs(self.drops) do
 		drop:update(dt)

@@ -14,6 +14,7 @@ function AssetManager.init()
 		local am = setmetatable({}, AssetManager)
 		am.imageCache = {}
 		am.audioCache = {}
+		am.emptyTex = love.graphics.newImage(love.image.newImageData(1, 1))
 		-- !TODO: cache de fontes?
 		return am
 	end

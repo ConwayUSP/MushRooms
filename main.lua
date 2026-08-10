@@ -42,6 +42,8 @@ gameCtx = MENU_CTX
 local updateProfile
 local drawProfile
 
+lightLevels = 7
+
 ----------------------------------------
 -- Callbacks
 ----------------------------------------
@@ -86,6 +88,12 @@ function love.keypressed(key, scancode, isrepeat)
 		if key == "0" then
 			debugMode = not debugMode
 		end
+	end
+
+	if key == "." then
+		lightLevels = lightLevels + 1
+	elseif key == "," then
+		lightLevels = lightLevels - 1
 	end
 
 	-------- FIM DEBUG --------
