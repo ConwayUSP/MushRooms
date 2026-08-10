@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.engine.assetmanager")
+require("modules.utils.types")
 
 ----------------------------------------
 -- Variáveis
@@ -14,8 +15,6 @@ local AUDIO_LOOP_TABLE = {
 	[MUSIC_LAYER3] = true,
 	[AUDIO_MOVEMENT] = true,
 	[AUDIO_GET_HIT] = false,
-	[AUDIO_ATTACK] = false,
-	[AUDIO_COLLIDE] = false
 }
 
 ----------------------------------------
@@ -45,9 +44,9 @@ function AudioManager.new(audioTypes, owner)
 		local pathParts = {}
 		local isMusic = type:sub(#type - 4, #type) == "music"
 		if owner then
-			pathParts = {"assets", "audios", owner.type, owner.name, type}
+			pathParts = { "assets", "audios", owner.type, owner.name, type }
 		else
-			pathParts = {"assets", "audios", "global", type}
+			pathParts = { "assets", "audios", "global", type }
 		end
 		local path = isMusic and oggPathFormat(pathParts) or wavPathFormat(pathParts)
 		am.audios[type] = assetManager:getAudio(path, isMusic):clone()
@@ -61,7 +60,7 @@ end
 ---@return nil
 function AudioManager:play(audioType)
 	self.audios[audioType]:play()
-	self.musicPlaying = self.audios[audioType]:getType() == "stream" and audioType or self.musicPlaying;
+	self.musicPlaying = self.audios[audioType]:getType() == "stream" and audioType or self.musicPlaying
 end
 
 ---@param audioType string
