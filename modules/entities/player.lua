@@ -112,7 +112,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
-	player.audioManager = AudioManager.new({AUDIO_MOVEMENT, AUDIO_GET_HIT}, player) -- gerenciador de áudios do jogador
+	player.audioManager = AudioManager.new({ AUDIO_MOVEMENT, AUDIO_GET_HIT }, player) -- gerenciador de áudios do jogador
 	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
@@ -470,11 +470,11 @@ function Player:checkAction2(key)
 	elseif self.interactiveObj then
 		if self.interactiveObj.type == NPC then
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
-			stopMovement(self)
 		elseif self.interactiveObj.type == INTERACTIVE then
 			-- define a interação ativa se for uma interação duradoura (como um baú, que se mantém aberto até ser fechado)
 			self.activeInteraction = self.interactiveObj.onInteract(self.interactiveObj, self)
 		end
+		stopMovement(self)
 	elseif self.vel.x ~= 0 then
 		local len = #self.weapons
 		if len <= 1 then
@@ -519,6 +519,7 @@ function Player:checkSpecialActions(key)
 	if key == "p" and love.keyboard.isDown(self.controls.act1) then
 		self.room:toggleDoors()
 	end
+	stopMovement(self)
 end
 
 ---@param weapon Weapon
