@@ -10,11 +10,14 @@ function newPuzzleRoom2()
 	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room 2", rgba8(12, 253, 255, 255))
 	local sp1 = SpawnPoint.new(vec(-150, 0))
 	local sp2 = SpawnPoint.new(vec(150, 0))
+	local sp3 = SpawnPoint.new(vec(0, 0))
 	local pillarData1 = SpawnData.new(PILLAR, 1.0)
 	local pillarData2 = SpawnData.new(PILLAR, 1.0)
+	local candleData = SpawnData.new(CANDLE, 1.0)
 	sp1:insert(pillarData1)
 	sp2:insert(pillarData2)
-	bp:insert(sp1):insert(sp2)
+	sp3:insert(candleData)
+	bp:insert(sp1):insert(sp2):insert(sp3)
 	return bp
 end
 

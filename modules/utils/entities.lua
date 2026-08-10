@@ -90,13 +90,14 @@ ZUB = registerEntity(RESOURCE, "zub")
 ----------------- SALA -----------------
 
 ------------- OBSTÁCULO ----------------
-PILLAR = registerEntity(OBSTACLE, "pillar")
 WALL_UP = registerEntity(OBSTACLE, "wall up")
 WALL_DOWN = registerEntity(OBSTACLE, "wall down")
 WALL_LEFT_BACK = registerEntity(OBSTACLE, "wall left back")
 WALL_LEFT_FRONT = registerEntity(OBSTACLE, "wall left front")
 WALL_RIGHT_BACK = registerEntity(OBSTACLE, "wall right back")
 WALL_RIGHT_FRONT = registerEntity(OBSTACLE, "wall right front")
+PILLAR = registerEntity(OBSTACLE, "pillar")
+CANDLE = registerEntity(OBSTACLE, "candle")
 
 ------------------ BUILDINGS -----------------
 FIRECAMP =

@@ -225,6 +225,8 @@ function Camera:draw()
 	renderEntities(self)
 	-- renderiza as hitboxes ativas (debug)
 	renderHitboxes(self)
+	-- renderiza pós-processamento
+	renderPostProcessing(self)
 	-- renderiza caixas de diálogo por cima de tudo
 	renderDialogues(self)
 

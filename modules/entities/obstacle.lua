@@ -3,7 +3,8 @@
 ----------------------------------------
 
 ---@class Obstacle : Entity
----@field image table
+---@field animations table<string, Animation>
+---@field spriteSheets table<string, table>
 ---@field arrPos Vec?
 ---@field scale number?
 ---@field transparent boolean
@@ -18,11 +19,8 @@ function Obstacle.new(name, hbs, spawnPos, room, scale)
 	local entityPhysics = physicsSettings(math.huge, 0, 1, nil, nil, nil, 0)
 	ob:init(name, spawnPos, hbs, room, entityPhysics)
 	ob.scale = scale or 1
-
-	local sprite_path = pngPathFormat({ "assets", "sprites", "obstacles", ob.name, IDLE })
-	ob.image = love.graphics.newImage(sprite_path)
-	ob.image:setFilter("nearest", "nearest")
-
+	ob.animations = {}
+	ob.spriteSheets = {}
 	ob.transparent = false
 
 	if name:sub(1, 4) ~= "wall" then
@@ -41,9 +39,24 @@ function Obstacle.new(name, hbs, spawnPos, room, scale)
 	return ob
 end
 
-function Obstacle:updateShaderUniforms(shader)
-	local spriteWidth = self.image:getWidth() * self.scale
-	local spriteHeight = self.image:getHeight() * self.scale
+---@param idleSettings AnimSettings
+-- adiciona a animação do obstáculo (só possuem IDLE)
+function Obstacle:addAnimations(idleSettings)
+	----------------- IDLE -----------------
+	local path = pngPathFormat({ "assets", "animations", "obstacles", self.name, IDLE })
+	addAnimation(self, path, IDLE, idleSettings)
+end
+
+---@param dt number
+-- atualiza a animação do obstáculo, se houver
+function Obstacle:update(dt)
+	self.animations[IDLE]:update(dt)
+end
+
+function Obstacle:updateTransparentShaderUniforms(shader)
+	local anim = self.animations[IDLE]
+	local spriteWidth = anim.frameDim.width * self.scale
+	local spriteHeight = anim.frameDim.height * self.scale
 	local obsLeft = self.pos.x - spriteWidth / 2
 	local obsTop = self.pos.y - spriteHeight / 2
 
@@ -69,20 +82,31 @@ end
 
 function Obstacle:draw(camera)
 	local viewPos = camera:viewPos(self.pos)
+	local anim = self.animations[IDLE] -- obstáculos só possuem a animação IDLE
+	local quad = anim.frames[anim.currFrame]
 	local offset = {
-		x = self.image:getWidth() / 2,
-		y = self.image:getHeight() / 2,
+		x = anim.frameDim.width / 2,
+		y = anim.frameDim.height / 2,
 	}
 
 	if self.transparent then
 		love.graphics.setShader(seeThroughShader)
-		self:updateShaderUniforms(seeThroughShader)
+		self:updateTransparentShaderUniforms(seeThroughShader)
 	end
 
-	love.graphics.draw(self.image, viewPos.x, viewPos.y, 0, self.scale, self.scale, offset.x, offset.y)
-	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(
+		self.spriteSheets[IDLE],
+		quad,
+		viewPos.x,
+		viewPos.y,
+		0,
+		self.scale,
+		self.scale,
+		offset.x,
+		offset.y
+	)
 
-	if self.transparent then
+	if self.transparent or self.emitsLight then
 		love.graphics.setShader()
 	end
 end

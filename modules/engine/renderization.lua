@@ -248,6 +248,33 @@ function renderEntities(camera)
 	end
 end
 
+---@param camera Camera
+-- renderiza pós processamentos como por exemplo iluminação
+function renderPostProcessing(camera)
+	for _, r in activeRooms:iter() do
+		-- Iluminações de obstáculos
+		for _, obs in pairs(r.obstacles) do
+			if obs.emitsLight then
+				local viewPos = camera:viewPos(obs.pos)
+				love.graphics.setShader(glowShader)
+				glowShader:send("glow_color", { 0.9, 0.2, 0.4, 0.66 })
+				glowShader:send("steps", lightLevels)
+				glowShader:send("grid_size", obs.glowRadius / 5)
+				glowShader:send("time", love.timer.getTime())
+				love.graphics.draw(
+					assetManager.emptyTex,
+					viewPos.x - obs.glowRadius / 2,
+					viewPos.y - obs.glowRadius / 2,
+					0,
+					obs.glowRadius,
+					obs.glowRadius
+				)
+				love.graphics.setShader()
+			end
+		end
+	end
+end
+
 function renderPlayerUIs(camera)
 	camera.playerAttached.uiManager:draw(camera)
 	camera.playerAttached.room.uiManager:draw(camera)
