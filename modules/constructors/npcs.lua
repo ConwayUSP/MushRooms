@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.constructors.dialogues")
+require("modules.utils.types")
 require("modules.entities.npc")
 
 ---@param spawnPos Vec
@@ -18,9 +19,10 @@ function initTenkar(spawnPos, room)
 		"Uma criatura chifruda carregando um frasco. Ele parece cansado.",
 		SEDENTARY)
 	npc = Npc.new(description, spawnPos, hbs, room)
-	local idleAnimSettings = newAnimSetting(4, { width = 64, height = 50 }, 0.3, true)
-	local speakAnimSettings = newAnimSetting(7, { width = 50, height = 50 }, 0.3, true)
-	npc:addAnimations(idleAnimSettings, speakAnimSettings)
+	local animSettings = {}
+	animSettings[IDLE] = newAnimSetting(4, { width = 64, height = 50 }, 0.3, true)
+	animSettings[SPEAKING] = newAnimSetting(7, { width = 50, height = 50 }, 0.3, true)
+	npc:addAnimations(animSettings)
 	npc.dialogue = tenkarDialogue()
 	npc.shadowWidth = 30
 	return npc
@@ -40,9 +42,10 @@ function initShoumShoum(spawnPos, room)
 		"Um caracol alegre porém com uma ganância interminável.",
 		SEDENTARY)
 	npc = Npc.new(description, spawnPos, hbs, room)
-	local idleAnimSettings = newAnimSetting(2, { width = 50, height = 50 }, 0.5, true)
-	local speakAnimSettings = newAnimSetting(2, { width = 50, height = 50 }, 0.4, true)
-	npc:addAnimations(idleAnimSettings, speakAnimSettings)
+	local animSettings = {}
+	animSettings[IDLE] = newAnimSetting(2, { width = 50, height = 50 }, 0.5, true)
+	animSettings[SPEAKING] = newAnimSetting(2, { width = 50, height = 50 }, 0.4, true)
+	npc:addAnimations(animSettings)
 	npc.dialogue = shoumShoumDialogue()
 	npc.shadowWidth = 30
 	return npc
