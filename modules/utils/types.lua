@@ -32,6 +32,7 @@ SPAWN_DATA = "spawn data"
 ---------- SISTEMAS ----------
 COLLISION_MANAGER = "collision manager"
 AUDIO_MANAGER = "audio manager"
+PARTICLE_MANAGER = "particle manager"
 DIALOGUE = "dialogue"
 INVENTORY = "inventory"
 TARGET_MANAGER = "target manager"
@@ -79,6 +80,11 @@ AUDIO_MOVEMENT = "movement audio"
 AUDIO_GET_HIT = "get hit audio"
 AUDIO_ATTACK = "atk audio"
 AUDIO_COLLIDE = "collision audio"
+
+---------- PARTICLES ----------
+PARTICLE_WALKING = "walking particle"
+PARTICLE_HIT = "hit particle"
+PARTICLE_DEFENSE = "defense particle"
 
 ---------- OUTROS ----------
 COLOR = "color"
