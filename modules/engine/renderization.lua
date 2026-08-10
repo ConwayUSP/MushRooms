@@ -248,6 +248,20 @@ function renderEntities(camera)
 	end
 end
 
+---@param drawFunc function
+---@param color table
+---@param lightLevels number
+---@param gridSize number
+function renderWithLight(drawFunc, color, lightLevels, gridSize)
+	love.graphics.setShader(glowShader)
+	glowShader:send("glow_color", color)
+	glowShader:send("steps", lightLevels)
+	glowShader:send("grid_size", gridSize)
+	glowShader:send("time", love.timer.getTime())
+	drawFunc()
+	love.graphics.setShader()
+end
+
 ---@param camera Camera
 -- renderiza pós processamentos como por exemplo iluminação
 function renderPostProcessing(camera)
@@ -256,22 +270,39 @@ function renderPostProcessing(camera)
 		for _, obs in pairs(r.obstacles) do
 			if obs.emitsLight then
 				local viewPos = camera:viewPos(obs.pos)
-				love.graphics.setShader(glowShader)
-				glowShader:send("glow_color", { 0.9, 0.2, 0.4, 0.66 })
-				glowShader:send("steps", lightLevels)
-				glowShader:send("grid_size", obs.glowRadius / 5)
-				glowShader:send("time", love.timer.getTime())
-				love.graphics.draw(
-					assetManager.emptyTex,
-					viewPos.x - obs.glowRadius / 2,
-					viewPos.y - obs.glowRadius / 2,
-					0,
-					obs.glowRadius,
-					obs.glowRadius
-				)
-				love.graphics.setShader()
+				local drawFunc = function()
+					love.graphics.draw(
+						assetManager.emptyTex,
+						viewPos.x - obs.glowRadius / 2,
+						viewPos.y - obs.glowRadius / 2,
+						0,
+						obs.glowRadius,
+						obs.glowRadius
+					)
+				end
+				renderWithLight(drawFunc, { 0.9, 0.2, 0.4, 0.66 }, lightLevels, obs.glowRadius / 5)
 			end
 		end
+	end
+
+	-- Player
+	for _, p in pairs(players) do
+		-- if p.emitsLight then
+			local viewPos = camera:viewPos(p.pos)
+			local glowRadius = p.glowRadius or 600
+			local lightLevels = p.lightLevels or 20
+			local drawFunc = function()
+				love.graphics.draw(
+					assetManager.emptyTex,
+					viewPos.x - glowRadius / 2,
+					viewPos.y - glowRadius / 2,
+					0,
+					glowRadius,
+					glowRadius
+				)
+			end
+			renderWithLight(drawFunc, { 0.7, 0.7, 0.9, 0.15 }, lightLevels, glowRadius / 5)
+		-- end
 	end
 end
 
