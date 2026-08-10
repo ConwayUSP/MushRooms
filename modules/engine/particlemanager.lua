@@ -29,9 +29,14 @@ end
 
 ---@param particleType string
 ---@param particle table
+---@param x? number
+---@param y? number
 -- adiciona uma particula ao gerenciador
-function ParticleManager:addParticle(particleType, particle)
+function ParticleManager:addParticle(particleType, particle, x, y)
 	self.particles[particleType] = particle
+	if x and y then
+		self:setPos(particleType, x, y)
+	end
 end
 
 ---@param dt number
@@ -67,9 +72,20 @@ function ParticleManager:setPos(particleType, x, y)
 	self.particles[particleType]:setPosition(x, y)
 end
 
----@param particleType string
+---@param particleType? string
 ---@param x number
 ---@param y number
 function ParticleManager:draw(particleType, x, y)
-	love.graphics.draw(self.particles[particleType], x, y)
+	if particleType then
+		love.graphics.draw(self.particles[particleType], x, y)
+		return
+	end
+
+	for _, particle in pairs(self.particles) do
+		love.graphics.draw(particle, x, y)
+	end
+end
+
+function ParticleManager:getPosition(particleType)
+	return self.particles[particleType]:getPosition()
 end

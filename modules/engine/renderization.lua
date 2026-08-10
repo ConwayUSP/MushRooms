@@ -231,6 +231,17 @@ function renderEntities(camera)
 		end
 	end
 
+	for particleType, particle in pairs(globalParticleManager.particles) do
+		local x, y = globalParticleManager:getPosition(particleType)
+		table.insert(drawList, {
+			it = particle,
+			y = y,
+			draw = function()
+				globalParticleManager:draw(particleType, x, y)
+			end,
+		})
+	end
+
 	-- Ordena por posição Y
 	table.sort(drawList, function(a, b)
 		return a.y < b.y

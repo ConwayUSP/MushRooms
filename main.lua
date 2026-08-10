@@ -145,6 +145,9 @@ function love.load()
 	-- carregando a biblioteca de UI
 	globalUIManager = initGlobalUIManager()
 
+	-- carregando o gerenciador de partículas
+	globalParticleManager = ParticleManager.new(nil)
+
 	-- definindo a seed de aleatoriedade
 	math.randomseed(os.time())
 
@@ -191,6 +194,8 @@ function love.update(dt)
 	for _, r in activeRooms:iter() do
 		r:update(dt)
 	end
+	---------- Partículas ----------
+	globalParticleManager:update(dt)
 
 	-------------- UI -------------
 	::uiupdate::
