@@ -23,8 +23,9 @@ end
 function newNPCRoom1()
 	local bp = Blueprint.new(NPC_ROOM, "Test NPC Room", rgba8(120, 58, 242, 255))
 	local sp1 = SpawnPoint.new(vec(250, 0))
-	local globData = SpawnData.new(GLOB, 1.0)
-	sp1:insert(globData)
+	local tenkarData = SpawnData.new(TENKAR, 0.5)
+	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 1.0)
+	sp1:insert(tenkarData):insert(shoumShoumData)
 	bp:insert(sp1)
 	return bp
 end

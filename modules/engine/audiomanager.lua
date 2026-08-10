@@ -76,3 +76,6 @@ function AudioManager:changeMusic(audioType)
 	self.audios[self.musicPlaying]:stop()
 	self.audios[audioType]:play()
 end
+
+-- !TODO: Lembrar de criar uma ferramenta para destruir os áudios
+-- clonados quando eles passarem a ser desnecessários

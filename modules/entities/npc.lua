@@ -86,11 +86,15 @@ function newNpcDescription(name, job, personality, lifestyle)
 end
 
 ---@param idleSettings AnimSettings
+---@param speakingSettings AnimSettings
 -- adiciona as animações dos estados dos npcs à sua tabela de animações
-function Npc:addAnimations(idleSettings)
+function Npc:addAnimations(idleSettings, speakingSettings)
 	----------------- IDLE -----------------
 	local path = pngPathFormat({ "assets", "animations", "npcs", self.name, IDLE })
 	addAnimation(self, path, IDLE, idleSettings)
+	--------------- SPEAKING ---------------
+	local path = pngPathFormat({ "assets", "animations", "npcs", self.name, SPEAKING })
+	addAnimation(self, path, SPEAKING, speakingSettings)
 
 	-- TODO: adicionar o resto das animações
 end

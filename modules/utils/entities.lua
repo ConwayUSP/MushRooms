@@ -23,7 +23,8 @@ NUCLEAR_CAT = registerEntity(ENEMY, "Nuclear Cat")
 SPIDER_DUCK_BOSS = registerEntity(ENEMY, "Spider Duck Boss")
 
 ----------------- NPCs -----------------
-GLOB = registerEntity(NPC, "Glob")
+TENKAR = registerEntity(NPC, "Tenkar")
+SHOUM_SHOUM = registerEntity(NPC, "Shoum Shoum")
 
 ---------------- ARMAS -----------------
 KATANA = registerEntity(WEAPON, "Katana")

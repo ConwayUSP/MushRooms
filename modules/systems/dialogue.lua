@@ -51,6 +51,7 @@ function Dialogue:start()
 	self.active = true
 	self.listener.inDialogue = true
 	self.speaker.inDialogue = true
+	self.speaker.state = SPEAKING
 
 	local playerCamera = getCameraByPlayer(self.listener)
 	if playerCamera then
@@ -110,6 +111,7 @@ function Dialogue:endDialogue()
 
 	self.listener.inDialogue = false
 	self.speaker.inDialogue = false
+	self.speaker.state = IDLE -- !warning: se tiver mais de dois estados no NPC, rever essa linha
 	self.active = false
 	self.activeSequence.idx = -1
 	self.activeSequence = nil
@@ -194,4 +196,72 @@ function DialogueManager:getDialogueByPlayer(player)
 		end
 	end
 	return nil
+end
+
+----------------------------------------
+-- Funções auxiliares
+----------------------------------------
+
+function parseDialogueBlocks(path)
+  assert(love.filesystem.getInfo(path), "Diálogo inexistente ou caminho incorreto: " .. path)
+
+  local blocks = {}
+  local current = {}
+
+  for line in love.filesystem.lines(path) do
+    -- linha vazia = próximo bloco
+    if line == "" then
+      if #current > 0 then
+        table.insert(blocks, current)
+        current = {}
+      end
+    else
+      table.insert(current, line)
+    end
+  end
+
+  -- último bloco
+  if #current > 0 then
+    table.insert(blocks, current)
+    current = {}
+  end
+
+  return blocks
+end
+
+function newSequence(text, condition)
+  return {
+    text = text,
+    idx = -1,
+    triggered = false,
+    condition = condition or nil,
+  }
+end
+
+function buildDialogueData(blocks)
+  local data = {
+    intro = nil,
+    loop = nil,
+    event = {},
+  }
+
+  if blocks[1] then
+    data.intro = newSequence(blocks[1])
+  end
+
+  if blocks[2] then
+    data.loop = newSequence(blocks[2])
+  end
+
+  for i = 3, #blocks do
+    local block = blocks[i]
+    local key = block[1]
+
+    local condition = getCondition(key)
+    local text = { unpack(blocks[i], 2) }
+
+    table.insert(data.event, newSequence(text, condition))
+  end
+
+  return data
 end

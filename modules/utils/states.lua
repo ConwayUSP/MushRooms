@@ -22,7 +22,10 @@ DYING = "dying"
 
 DIRECTIONS = { UP, DOWN, LEFT, RIGHT }
 
-------------- DESTRUTÍVEIS / ATAQUES -------------
+----------------- NPCS -----------------
+SPEAKING = "speaking"
+
+-------- DESTRUTÍVEIS / ATAQUES --------
 
 INTACT = "intact"
 BREAKING = "breaking"
