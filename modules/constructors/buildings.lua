@@ -14,24 +14,40 @@ local physics = physicsSettings(math.huge, 0, 0, nil, nil, nil, 0)
 function newChest()
 	local hb = hitboxes({ hitbox(Circle.new(30)) }, { hitbox(Circle.new(30)) }, { hitbox(Circle.new(100)) })
 	local onInteract = function(chest, player)
-		print("Player interacted with chest")
+		chest.animations[chest.state]:reset()
+		chest.state = OPENING
+		-- sim, é um nível a mais de indireção, mas como a cena é do player
+		-- acho justo ele montar ela e não o baú
+		player:openChest(chest)
+		return chest -- será definido como activeInteraction do player
+	end
+
+	local onCloseInteract = function(chest, player)
+		chest.animations[chest.state]:reset()
+		chest.state = CLOSING
+	end
+
+	local onExit = function(chest, player)
+		if chest.state == OPEN or chest.state == OPENING then
+			chest.animations[chest.state]:reset()
+			chest.state = CLOSING
+		end
 	end
 
 	local animSettings = {}
-	animSettings[IDLE] = newAnimSetting(1, size(128, 128), 1, true, 1)
-	animSettings[ACTIVE] = newAnimSetting(1, size(128, 128), 1, true, 1)
+	animSettings[IDLE] = newAnimSetting(1, size(46, 46), 1, true, 1)
 	local pathStart = dirPathFormat({ "assets", "animations", "products", BUILDING, CHEST.name })
 
 	local makeInteractive = function(pos, room)
-		local chestInteractive = Interactive.new(CHEST.name, pos, hb, room, physics, onInteract)
+		local chestInteractive = Interactive.new(CHEST.name, pos, hb, room, physics, onInteract, onCloseInteract, nil, nil, onExit)
 		chestInteractive.inventory = Inventory.new(chestInteractive)
+		animSettings[OPENING] = newAnimSetting(5, size(46, 46), 0.2, false, 1, 4, nil, function(anim)
+			chestInteractive.state = OPEN
+		end)
+		animSettings[CLOSING] = newAnimSetting(3, size(46, 46), 0.15, false, 1, 4, nil, function(anim)
+			chestInteractive.state = IDLE
+		end)
 		addAnimations(chestInteractive, pathStart, animSettings)
-
-		chestInteractive.onInteract = function(chest, player)
-			-- sim, é um nível a mais de indireção, mas como a cena é do player
-			-- acho justo ele montar ela e não o baú
-			player:openChest(chest)
-		end
 
 		return chestInteractive
 	end
@@ -85,13 +101,12 @@ function newFirecamp()
 	end
 
 	local animSettings = {}
-	animSettings[IDLE] = newAnimSetting(2, size(128, 128), 0.2, true, 1)
-	animSettings[ACTIVE] = newAnimSetting(2, size(128, 128), 0.2, true, 1)
+	animSettings[IDLE] = newAnimSetting(4, size(45, 45), 0.3, true, 1)
 	local pathStart = dirPathFormat({ "assets", "animations", "products", BUILDING, FIRECAMP.name })
 
 	local makeInteractive = function(pos, room)
 		local firecampInteractive =
-			Interactive.new(FIRECAMP.name, pos, hb, room, physics, onInteract, customUpdate, onEnter, onExit)
+			Interactive.new(FIRECAMP.name, pos, hb, room, physics, onInteract, nil, customUpdate, onEnter, onExit)
 		addAnimations(firecampInteractive, pathStart, animSettings)
 
 		return firecampInteractive

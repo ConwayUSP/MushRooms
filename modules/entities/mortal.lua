@@ -124,6 +124,13 @@ function Mortal:die()
 		return
 	end
 
+	if self.type == PLAYER then
+		if self.activeInteraction then
+			self.activeInteraction:onExit(self.activeInteraction, self)
+			self.uiManager:deactivateAllScenes()
+		end
+	end
+
 	self.state = DYING
 	self.deathTimer = 0
 	stopMovement(self)

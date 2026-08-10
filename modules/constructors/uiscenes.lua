@@ -203,7 +203,7 @@ function newCraftingScene(canvasSize, player)
 			-- adiciona o preview do item (grande)
 			self:addSelectedItemPreviewSlot()
 			local spritePath = pngPathFormat({ "assets", "sprites", "recipes", recipe.output.name })
-			local previewImg = newCraftingItemPreviewElement(recipe.output.name, previewPos, size(128, 128), spritePath)
+			local previewImg = newCraftingItemPreviewElement(recipe.output.name, previewPos, size(128, 128), spritePath, 45)
 			self:addElement(previewImg, VISUAL_LAYER_2, vec(1, 1))
 
 			-- textos
@@ -239,7 +239,7 @@ function newCraftingScene(canvasSize, player)
 				local slotX = previewPos.x - 38 + (i - 1) * 80
 				local spritePath = pngPathFormat({ "assets", "sprites", "resources", resName })
 				local ingredientEl =
-					newCraftingItemPreviewElement(resName, vec(slotX, ingredientsY), size(96, 96), spritePath)
+					newCraftingItemPreviewElement(resName, vec(slotX, ingredientsY), size(96, 96), spritePath, 32)
 				self:addElement(ingredientEl, VISUAL_LAYER_2, vec(i, 4))
 			end
 		end

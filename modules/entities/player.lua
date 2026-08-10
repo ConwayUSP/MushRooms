@@ -57,8 +57,9 @@ local MAX_HP = 100
 ---@field addParticles function
 ---@field inDialogue boolean
 ---@field interactiveObj? Entity
+---@field activeInteraction? Interactive|Npc[]
 ---@field inventory Inventory
----@field candidateInteractives Interactive|Npc[]
+---@field candidateInteractives? Interactive|Npc[]
 ---@field uiManager table
 ---@field audioManager AudioManager
 ---@field craftingManager CraftingManager
@@ -106,6 +107,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.artifact = nil -- artefato equipado
 	player.inDialogue = false -- se o player está em diálogo
 	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
+	player.activeInteraction = nil -- objeto com o qual o player está interagindo agora (pode ser nenhum)
 	player.inventory = Inventory.new(player) -- inventário do jogador
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
@@ -456,6 +458,10 @@ function Player:checkAction2(key)
 	end
 	if self.uiManager.activeScene then
 		self.uiManager:deactivateAllScenes()
+		if self.activeInteraction then
+			self.activeInteraction:onCloseInteract(self)
+			self.activeInteraction = nil
+		end
 		return
 	end
 
@@ -466,7 +472,8 @@ function Player:checkAction2(key)
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
 			stopMovement(self)
 		elseif self.interactiveObj.type == INTERACTIVE then
-			self.interactiveObj.onInteract(self.interactiveObj, self)
+			-- define a interação ativa se for uma interação duradoura (como um baú, que se mantém aberto até ser fechado)
+			self.activeInteraction = self.interactiveObj.onInteract(self.interactiveObj, self)
 		end
 	elseif self.vel.x ~= 0 then
 		local len = #self.weapons

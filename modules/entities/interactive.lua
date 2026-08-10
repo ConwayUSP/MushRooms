@@ -9,6 +9,7 @@
 ---@class Interactive : Entity
 ---@field arrPos Vec?
 ---@field onInteract function
+---@field customCloseInteract? function
 ---@field customUpdate function?
 ---@field customEnter function?
 ---@field customExit function?
@@ -27,17 +28,19 @@ Interactive.type = INTERACTIVE
 ---@param room Room
 ---@param physics PhysicsSettings
 ---@param onInteract function
+---@param closeInteract? function
 ---@param update? function
 ---@param customEnter? function
 ---@param customExit? function
 ---@return Interactive
 -- cria uma entidade interativa, podendo ter uma função de update customizada
-function Interactive.new(name, pos, hitboxes, room, physics, onInteract, update, customEnter, customExit)
+function Interactive.new(name, pos, hitboxes, room, physics, onInteract, closeInteract, update, customEnter, customExit)
 	---@type Interactive
 	local interactive = setmetatable({}, Interactive) ---@diagnostic disable-line
 	Entity.init(interactive, name, pos, hitboxes, room, physics)
 
 	interactive.onInteract = onInteract
+	interactive.customCloseInteract = closeInteract
 	interactive.customUpdate = update
 	interactive.customEnter = customEnter
 	interactive.customExit = customExit
@@ -67,6 +70,14 @@ function Interactive:update(dt)
 		self:customUpdate(dt)
 	end
 	self.animations[self.state]:update(dt)
+end
+
+---@param player Player
+-- função chamada quando o `player` fecha a interação com o objeto
+function Interactive:onCloseInteract(player)
+	if self.customCloseInteract then
+		self:customCloseInteract(player)
+	end
 end
 
 ---@param player Player

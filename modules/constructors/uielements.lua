@@ -33,8 +33,8 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	end
 	local itemEl = UIButtonElem.new(itemName, finalPos, size(96, 96), nil, onClick)
 	local animSettings = {}
-	animSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
-	animSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	animSettings[IDLE] = newAnimSetting(1, size(45, 45), 1, true, 1)
+	animSettings[SELECTED] = newAnimSetting(1, size(45, 45), 1, true, 1)
 	for state, settings in pairs(animSettings) do
 		local path = pngPathFormat({ "assets", "sprites", "recipes", itemName })
 		addAnimation(itemEl, path, state, settings)
@@ -46,10 +46,10 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	return itemEl
 end
 
-function newCraftingItemPreviewElement(itemName, coords, elSize, path)
+function newCraftingItemPreviewElement(itemName, coords, elSize, path, spriteDim)
 	local itemEl = setmetatable({}, UIElement)
 	itemEl:init("item preview image", UI_IMAGE_ELEM, coords, elSize, nil)
-	local settings = newAnimSetting(1, size(32, 32), 1, true, 1)
+	local settings = newAnimSetting(1, size(spriteDim, spriteDim), 1, true)
 	addAnimation(itemEl, path, IDLE, settings)
 
 	return itemEl
