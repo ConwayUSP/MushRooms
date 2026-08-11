@@ -175,6 +175,7 @@ function Attack:update(dt)
 				e.state = BREAKING
 				e.active = false
 				collisionManager:unregister(e)
+				globalVFXManager:playAnimation(PARTICLE_EXPLOSION, e.pos)
 			else
 				if e.state == BREAKING then
 					if not e.animations[BREAKING] or e.breakingFinished then

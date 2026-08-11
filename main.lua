@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
+require("modules.constructors.vfxs")
 require("modules.engine.animation")
 require("modules.engine.camera")
 require("modules.engine.collisionmanager")
@@ -145,6 +146,9 @@ function love.load()
 	-- carregando a biblioteca de UI
 	globalUIManager = initGlobalUIManager()
 
+	-- carregando o gerenciador de partículas
+	globalVFXManager = initGlobalVFXManager()
+
 	-- definindo a seed de aleatoriedade
 	math.randomseed(os.time())
 
@@ -191,6 +195,8 @@ function love.update(dt)
 	for _, r in activeRooms:iter() do
 		r:update(dt)
 	end
+	---------- Partículas ----------
+	globalVFXManager:update(dt)
 
 	-------------- UI -------------
 	::uiupdate::

@@ -231,6 +231,27 @@ function renderEntities(camera)
 		end
 	end
 
+	for particleType, particle in pairs(globalVFXManager.particles) do
+		local x, y = globalVFXManager:getPosition(particleType)
+		table.insert(drawList, {
+			it = particle,
+			y = y,
+			draw = function()
+				globalVFXManager:drawParticle(particleType, x, y)
+			end,
+		})
+	end
+
+	for _, instance in pairs(globalVFXManager.animInstances) do
+		table.insert(drawList, {
+			it = instance,
+			y = instance.pos.y,
+			draw = function()
+				globalVFXManager:drawAnimation(instance, camera)
+			end,
+		})
+	end
+
 	-- Ordena por posição Y
 	table.sort(drawList, function(a, b)
 		return a.y < b.y

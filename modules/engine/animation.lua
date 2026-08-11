@@ -15,6 +15,7 @@ require("table")
 ---@field frameDim Size
 ---@field currFrame number
 ---@field timer number
+---@field isFinished boolean
 ---@field onFinish? function
 ---@field update function
 ---@field offset Vec
@@ -40,6 +41,7 @@ function Animation.new(frames, frameDur, looping, loopFrame, frameDim, offset, o
 	animation.looping = looping -- se a animação é ciclica ou não
 	animation.loopFrame = loopFrame -- a partir de qual frame a animação é ciclica
 	animation.frameDim = frameDim -- dimensões de cada frame
+	animation.isFinished = false -- se a animação terminou ou não
 	animation.onFinish = onFinish -- callback chamado quando a animação não-loop termina
 	-- atributos fixos na instanciação
 	animation.currFrame = 1 -- frame atual
@@ -68,6 +70,7 @@ function Animation:update(dt)
 			else
 				-- trava no último frame e chama callback se existir
 				self.currFrame = #self.frames
+				self.isFinished = true
 				if self.onFinish then
 					self.onFinish(self)
 				end
