@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
+require("modules.constructors.vfxs")
 require("modules.engine.animation")
 require("modules.engine.camera")
 require("modules.engine.collisionmanager")
@@ -146,7 +147,7 @@ function love.load()
 	globalUIManager = initGlobalUIManager()
 
 	-- carregando o gerenciador de partículas
-	globalParticleManager = ParticleManager.new(nil)
+	globalVFXManager = initGlobalVFXManager()
 
 	-- definindo a seed de aleatoriedade
 	math.randomseed(os.time())
@@ -195,7 +196,7 @@ function love.update(dt)
 		r:update(dt)
 	end
 	---------- Partículas ----------
-	globalParticleManager:update(dt)
+	globalVFXManager:update(dt)
 
 	-------------- UI -------------
 	::uiupdate::

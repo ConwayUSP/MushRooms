@@ -5,7 +5,7 @@ require("modules.constructors.particles")
 require("modules.constructors.craftings")
 require("modules.engine.animation")
 require("modules.engine.audiomanager")
-require("modules.engine.particlemanager")
+require("modules.engine.vfxmanager")
 require("modules.entities.mortal")
 require("modules.entities.artifact")
 require("modules.systems.blessing")
@@ -64,7 +64,7 @@ local MAX_HP = 100
 ---@field audioManager AudioManager
 ---@field craftingManager CraftingManager
 ---@field blessingManager BlessingManager
----@field particleManager ParticleManager
+---@field vfxManager VFXManager
 ---@field building any
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
@@ -114,7 +114,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
 	player.audioManager = AudioManager.new({AUDIO_MOVEMENT, AUDIO_GET_HIT}, player) -- gerenciador de áudios do jogador
 	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
-	player.particleManager = ParticleManager.new(player) -- gerenciador de partículas do jogador
+	player.vfxManager = VFXManager.new(nil, player) -- gerenciador de partículas do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
 	player.defaultInvulnerableTime = 0.3
@@ -163,9 +163,9 @@ end
 -- associando-os aos seus estados respectivos
 function Player:addParticles()
 	-- Efeito de partícula do player se defendendo
-	self.particleManager:addParticle(PARTICLE_DEFENSE, newDefenseParticles(self.colors[1], self.colors[3]))
+	self.vfxManager:addParticle(PARTICLE_DEFENSE, newDefenseParticles(self.colors[1], self.colors[3]))
 	-- Efeito de partícula do player caminhando
-	self.particleManager:addParticle(PARTICLE_WALKING, newWalkingParticles())
+	self.vfxManager:addParticle(PARTICLE_WALKING, newWalkingParticles())
 end
 
 function Player:calcHitboxes()
@@ -306,10 +306,10 @@ function Player:updateState()
 
 	-- atualizando a situação do sistema de partículas de caminhada
 	if isMoving then
-		self.particleManager:setDirection(PARTICLE_WALKING, math.atan2(self.vel.y, self.vel.x) + math.pi)
-		self.particleManager:play(PARTICLE_WALKING)
+		self.vfxManager:setDirection(PARTICLE_WALKING, math.atan2(self.vel.y, self.vel.x) + math.pi)
+		self.vfxManager:playParticle(PARTICLE_WALKING)
 	else
-		self.particleManager:stop(PARTICLE_WALKING)
+		self.vfxManager:stopParticle(PARTICLE_WALKING)
 	end
 
 	-- situações que ocorrem em troca de estado
@@ -318,7 +318,7 @@ function Player:updateState()
 		self.animations[prevState]:reset()
 		-- parando efeito de partículas
 		if prevState == DEFENDING then
-			self.particleManager:stop(PARTICLE_DEFENSE)
+			self.vfxManager:stopParticle(PARTICLE_DEFENSE)
 		end
 		-- iniciando ou parando áudio de movimento
 		local wasMoving = isMovementState(prevState)
@@ -333,13 +333,13 @@ end
 ---@param dt number
 -- atualiza os efeitos de partícula do `Player`
 function Player:updateParticles(dt)
-	self.particleManager:update(dt)
+	self.vfxManager:update(dt)
 end
 
 -- atualiza as posições dos efeitos de partícula do `Player`
 function Player:updateParticlesPos()
-	self.particleManager:setPos(PARTICLE_DEFENSE, self.pos.x, self.pos.y)
-	self.particleManager:setPos(PARTICLE_WALKING, self.pos.x, self.pos.y + 24)
+	self.vfxManager:setPos(PARTICLE_DEFENSE, self.pos.x, self.pos.y)
+	self.vfxManager:setPos(PARTICLE_WALKING, self.pos.x, self.pos.y + 24)
 end
 
 -- faz com que a construção fique na direção aproximada em que o player está olhando (considera colisões)
@@ -489,7 +489,7 @@ function Player:checkAction2(key)
 			and not self.defendingDurationTimer.completed
 			and not self.defendingCooldownTimer.active
 		then
-			self.particleManager:play(PARTICLE_DEFENSE)
+			self.vfxManager:playParticle(PARTICLE_DEFENSE)
 			self.defendingDurationTimer:start()
 			self.defendingCooldownTimer.completed = false
 		end
@@ -743,7 +743,7 @@ function Player:draw(camera)
 		x = -camera.cx + camera.viewport.width / 2,
 		y = -camera.cy + camera.viewport.height / 2,
 	}
-	self.particleManager:draw(PARTICLE_WALKING, particles_offset.x, particles_offset.y)
+	self.vfxManager:drawParticle(PARTICLE_WALKING, particles_offset.x, particles_offset.y)
 
 	-- TODO: usar algum tipo de "vinheta" na tela para indicar que o player está com pouca vida (igual no Deadly Encounter)
 
@@ -777,7 +777,7 @@ function Player:draw(camera)
 	love.graphics.pop()
 
 	-- desenhando o efeito de partículas da defesa em cima do player
-	self.particleManager:draw(PARTICLE_DEFENSE, particles_offset.x, particles_offset.y)
+	self.vfxManager:drawParticle(PARTICLE_DEFENSE, particles_offset.x, particles_offset.y)
 	love.graphics.setShader()
 end
 
