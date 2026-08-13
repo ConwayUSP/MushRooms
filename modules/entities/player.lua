@@ -505,14 +505,15 @@ function Player:checkSpecialActions(key)
 
 	if key == "i" and love.keyboard.isDown(self.controls.act1) then
 		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
+		stopMovement(self)
 	end
 	if key == "c" and love.keyboard.isDown(self.controls.act1) then
 		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
+		stopMovement(self)
 	end
 	if key == "p" and love.keyboard.isDown(self.controls.act1) then
 		self.room:toggleDoors()
 	end
-	stopMovement(self)
 end
 
 ---@param weapon Weapon
