@@ -8,8 +8,8 @@ end
 -- Sala de Puzzle 2: contém pilares
 function newPuzzleRoom2()
 	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room 2", rgba8(12, 253, 255, 255))
-	local sp1 = SpawnPoint.new(vec(-150, 0))
-	local sp2 = SpawnPoint.new(vec(150, 0))
+	local sp1 = SpawnPoint.new(vec(-200, -100))
+	local sp2 = SpawnPoint.new(vec(200, -100))
 	local sp3 = SpawnPoint.new(vec(0, 0))
 	local pillarData1 = SpawnData.new(PILLAR, 1.0)
 	local pillarData2 = SpawnData.new(PILLAR, 1.0)

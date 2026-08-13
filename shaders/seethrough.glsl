@@ -21,7 +21,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
     dist = min(dist, correctedDistance(p3_uv, texture_coords));
     dist = min(dist, correctedDistance(p4_uv, texture_coords));
 
-    vec2 grid_xy = texture_coords * 8;
+    vec2 grid_xy = texture_coords * 16;
 
     float alpha_factor = step(radius, dist);
     alpha_factor = max(alpha_factor, min_alpha);

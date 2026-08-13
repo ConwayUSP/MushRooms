@@ -13,12 +13,12 @@ Obstacle = setmetatable({}, { __index = Entity })
 Obstacle.__index = Obstacle
 Obstacle.type = OBSTACLE
 
-function Obstacle.new(name, hbs, spawnPos, room, scale)
+function Obstacle.new(name, hbs, spawnPos, room)
 	---@type Obstacle
 	local ob = setmetatable({}, Obstacle) ---@diagnostic disable-line
 	local entityPhysics = physicsSettings(math.huge, 0, 1, nil, nil, nil, 0)
 	ob:init(name, spawnPos, hbs, room, entityPhysics)
-	ob.scale = scale or 1
+	ob.scale = 3
 	ob.animations = {}
 	ob.spriteSheets = {}
 	ob.transparent = false
@@ -43,7 +43,7 @@ end
 -- adiciona a animação do obstáculo (só possuem IDLE)
 function Obstacle:addAnimations(idleSettings)
 	----------------- IDLE -----------------
-	local path = pngPathFormat({ "assets", "animations", "obstacles", self.name, IDLE })
+	local path = pngPathFormat({ "assets", "animations", "obstacles", self.name })
 	addAnimation(self, path, IDLE, idleSettings)
 end
 
@@ -51,6 +51,13 @@ end
 -- atualiza a animação do obstáculo, se houver
 function Obstacle:update(dt)
 	self.animations[IDLE]:update(dt)
+end
+
+---@param glowRadius number
+-- faz o objeto emitir luz
+function Obstacle:makeGlow(glowRadius)
+	self.emitsLight = true
+	self.glowRadius = 600
 end
 
 function Obstacle:updateTransparentShaderUniforms(shader)

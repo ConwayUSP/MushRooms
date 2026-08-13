@@ -26,7 +26,7 @@ FLOOR = "floor"
 
 ---@type table<string, Anchor>
 -- tabela de âncoras indexada pelo nome da entidade.
--- **observação:** os valores aqui são referentes a posição relativa do 
+-- **observação:** os valores aqui são referentes a posição relativa do
 -- ÚLTIMO pixel do sprite (que possui algum conteudo) em relação ao centro.
 -- no futuro, outros tipos de âncora podem ser adicionados (head, hand, etc)
 ANCHORS = {
@@ -59,12 +59,12 @@ ANCHORS = {
 	glob = floorAnchor(16),
 
 	-- Obstáculos
-	pillar = floorAnchor(17),
 	wall_up = floorAnchor(31.2), -- desempate com a porta
 	wall_left_back = floorAnchor(130),
 	wall_left_front = floorAnchor(200),
 	wall_right_back = floorAnchor(130),
 	wall_right_front = floorAnchor(200),
+	pillar = floorAnchor(70),
 
 	-- Produtos
 	chest = floorAnchor(10),
@@ -88,7 +88,7 @@ ANCHORS = {
 function getAnchor(obj, anchorType, scale)
 	scale = scale or obj.scale or 3
 
-	local key =  obj.object and obj.object.name or obj.name
+	local key = obj.object and obj.object.name or obj.name
 	key = pathlizeName(string.lower(key))
 	local anchor = ANCHORS[key] and ANCHORS[key][anchorType] or nil
 

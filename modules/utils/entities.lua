@@ -87,8 +87,6 @@ CHONGO = registerEntity(RESOURCE, "chongo")
 WAMOLI = registerEntity(RESOURCE, "wamoli")
 ZUB = registerEntity(RESOURCE, "zub")
 
------------------ SALA -----------------
-
 ------------- OBSTÁCULO ----------------
 WALL_UP = registerEntity(OBSTACLE, "wall up")
 WALL_DOWN = registerEntity(OBSTACLE, "wall down")
