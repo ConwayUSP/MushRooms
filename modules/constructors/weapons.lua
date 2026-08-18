@@ -74,8 +74,8 @@ function newSkullShooter()
 	local attack = newSkullAttack(true, 10, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
 	local skullshooter = Weapon.new(SKULL_SHOOTER.name, math.huge, attack, vec(25, 20),  vec(30, -5))
-	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
+	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return skullshooter
 end
@@ -86,8 +86,8 @@ function newBlackholer()
 	local cooldown = constCooldown(1)
 	local attack = newBlackholeAttack(true, 10, cooldown, 1200, nil)
 	local blackhole = Weapon.new(BLACKHOLER.name, math.huge, attack, vec(25, 20), vec(30, -5))
-	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
+	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	blackhole:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return blackhole
 end
@@ -100,7 +100,7 @@ function newFlowergun()
 	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
 	local flowergun = Weapon.new(FLOWERGUN.name, math.huge, attack, vec(25, 20), vec(30, -5))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
+	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	flowergun:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return flowergun
 end
