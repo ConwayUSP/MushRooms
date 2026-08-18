@@ -60,12 +60,22 @@ function newWallRightFront(spawnPos, room)
 end
 
 function newPillar(spawnPos, room)
-	local solidHb = hitbox(Circle.new(46), vec(-90, 180))
+	-- local solidHb = hitbox(Circle.new(46), vec(-90, 180))
 	local triggerHb = hitbox(Rectangle.new(300, 360), vec(-90, -40))
-	local hbs = hitboxes({}, { solidHb }, { triggerHb })
+	local hbs = hitboxes({}, {}, { triggerHb })
 	local randPillar = tostring(math.random(4))
 	local obs = Obstacle.new(PILLAR.name .. randPillar, hbs, spawnPos, room)
 	obs:addAnimations(newAnimSetting(1, size(95, 155), 1000, true))
+
+	return obs
+end
+
+function newPillarBase(spawnPos, room)
+	local solidHb = hitbox(Rectangle.new(120, 70), vec(0, -10))
+	local hbs = hitboxes({}, { solidHb }, {})
+	local randPillar = tostring(math.random(4))
+	local obs = Obstacle.new(PILLAR_BASE.name .. randPillar, hbs, spawnPos, room)
+	obs:addAnimations(newAnimSetting(1, size(46, 46), 1000, false))
 
 	return obs
 end
@@ -76,6 +86,51 @@ function newCandle(spawnPos, room)
 	local obs = Obstacle.new(CANDLE.name .. randCandle, hbs, spawnPos, room, scale)
 	obs:addAnimations(newAnimSetting(2, size(20, 28), 0.35, true, 1, 0))
 	obs:makeGlow(600)
+
+	return obs
+end
+
+function newMoss(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local randMoss = tostring(math.random(12))
+	local obs = Obstacle.new(MOSS.name .. randMoss, hbs, spawnPos, room, scale)
+	obs:addAnimations(newAnimSetting(1, size(172, 115), 1000, false))
+
+	return obs
+end
+
+function newNegative(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local randNegative = tostring(math.random(17))
+	local obs = Obstacle.new(NEGATIVE.name .. randNegative, hbs, spawnPos, room, scale)
+	obs:addAnimations(newAnimSetting(1, size(41, 40), 1000, false))
+
+	return obs
+end
+
+function newSkeleton(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local randSkeleton = tostring(math.random(6))
+	local obs = Obstacle.new(SKELETON.name .. randSkeleton, hbs, spawnPos, room, scale)
+	obs:addAnimations(newAnimSetting(1, size(28, 24), 1000, false))
+
+	return obs
+end
+
+function newRubble(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local randRubble = tostring(math.random(16))
+	local obs = Obstacle.new(RUBBLE.name .. randRubble, hbs, spawnPos, room, scale)
+	obs:addAnimations(newAnimSetting(1, size(24, 36), 1000, false))
+
+	return obs
+end
+
+function newCracks(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local randCrack = tostring(math.random(6))
+	local obs = Obstacle.new(CRACKS.name .. randCrack, hbs, spawnPos, room, scale)
+	obs:addAnimations(newAnimSetting(1, size(43, 15), 1000, false))
 
 	return obs
 end

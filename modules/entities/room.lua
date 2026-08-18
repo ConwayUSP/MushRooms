@@ -8,28 +8,12 @@ require("modules.utils.utils")
 require("table")
 
 ----------------------------------------
--- Variáveis e enums
+-- Variáveis globais
 ----------------------------------------
 rooms = BiList.new()
 activeRooms = Set.new()
 doors = BiList.new()
 walls = BiList.new()
-
--- tipos de sala
-PUZZLE_ROOM = "puzzle room"
-NPC_ROOM = "npc room"
-RESOURCE_ROOM = "resource room"
-BATTLE_ROOM = "battle room"
-BOSS_ROOM = "boss room"
-EVENT_ROOM = "event room"
-
----@alias RoomType
----| `PUZZLE_ROOM`
----| `NPC_ROOM`
----| `RESOURCE_ROOM`
----| `BATTLE_ROOM`
----| `BOSS_ROOM`
----| `EVENT_ROOM`
 
 ---@class RoomLimits
 ---@field p1 Vec

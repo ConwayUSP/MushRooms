@@ -5,6 +5,19 @@ require("modules.constructors.rooms")
 require("modules.utils.types")
 
 ----------------------------------------
+-- Tabela de Salas
+----------------------------------------
+
+local BLUEPRINTS = {}
+
+BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2 }
+BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
+BLUEPRINTS[NPC_ROOM] = { newNPCRoom1 }
+BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
+BLUEPRINTS[BOSS_ROOM] = { newBossRoom1 }
+BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
+
+----------------------------------------
 -- Classe SpawnData
 ----------------------------------------
 
@@ -137,65 +150,6 @@ end
 ---@return Blueprint
 -- retorna um `Blueprint` de uma sala aleatória do tipo `roomType`
 function randRoomBlueprint(roomType)
-	if roomType == PUZZLE_ROOM then
-		return randPuzzleRoomBP()
-	elseif roomType == NPC_ROOM then
-		return randNPCRoomBP()
-	elseif roomType == RESOURCE_ROOM then
-		return randResourceRoomBP()
-	elseif roomType == BATTLE_ROOM then
-		return randBattleRoomBP()
-	elseif roomType == BOSS_ROOM then
-		return randBossRoomBP()
-	else
-		return randEventRoomBP()
-	end
-end
-
--- TODO: criar mais blueprints e tornar estas funções aleatórias
-
----@return Blueprint
--- retorna um `Blueprint` aleatório de sala de **Puzzle**
-function randPuzzleRoomBP()
-	local random = math.random()
-	-- if random < 0.5 then
-	-- 	return newPuzzleRoom1()
-	-- end
-
-	return newPuzzleRoom2()
-end
-
----@return Blueprint
--- retorna um `Blueprint` aleatório de sala de **NPC**
-function randNPCRoomBP()
-	return newNPCRoom1()
-end
-
----@return Blueprint
--- retorna um `Blueprint` aleatório de sala de **Recurso**
-function randResourceRoomBP()
-	local r = math.random()
-	if r < 0.8 then
-		return newResourceRoom2()
-	else
-		return newResourceRoom1()
-	end
-end
-
----@return Blueprint
--- retorna um `Blueprint` aleatório de sala de **Batalha**
-function randBattleRoomBP()
-	return newBattleRoom1()
-end
-
----@return Blueprint
--- retorna um `Blueprint` aleatório de sala de **Boss**
-function randBossRoomBP()
-	return newBossRoom1()
-end
-
----@return Blueprint
--- retorna um `Blueprint` aleatório de sala de **Evento**
-function randEventRoomBP()
-	return newEventRoom1()
+	local n = #BLUEPRINTS[roomType]
+	return BLUEPRINTS[roomType][math.random(n)]()
 end

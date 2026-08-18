@@ -95,9 +95,24 @@ WALL_LEFT_FRONT = registerEntity(OBSTACLE, "wall left front")
 WALL_RIGHT_BACK = registerEntity(OBSTACLE, "wall right back")
 WALL_RIGHT_FRONT = registerEntity(OBSTACLE, "wall right front")
 PILLAR = registerEntity(OBSTACLE, "pillar")
-CANDLE = registerEntity(OBSTACLE, "candle")
+PILLAR_BASE = registerEntity(OBSTACLE, "pillar base")
 
------------------- BUILDINGS -----------------
+------------- DECORAÇÕES ---------------
+CANDLE = registerEntity(OBSTACLE, "candle")
+TORCH = registerEntity(OBSTACLE, "torch")
+CRACKS = registerEntity(OBSTACLE, "cracks")
+FLOWERS = registerEntity(OBSTACLE, "flowers")
+MOSS = registerEntity(OBSTACLE, "moss")
+MOSS_LEFT = registerEntity(OBSTACLE, "moss left")
+MOSS_RIGHT = registerEntity(OBSTACLE, "moss right")
+MOSS_UP = registerEntity(OBSTACLE, "moss up")
+SKELETON = registerEntity(OBSTACLE, "skeleton")
+NEGATIVE = registerEntity(OBSTACLE, "negative")
+PAPER = registerEntity(OBSTACLE, "paper")
+RUBBLE = registerEntity(OBSTACLE, "rubble")
+TILES = registerEntity(OBSTACLE, "tiles")
+
+------------- CONSTRUÇÕES --------------
 FIRECAMP =
 	registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
 CHEST = registerEntity(BUILDING, "chest", "It's bigger on the inside than it looks... and it's made with love")
@@ -117,7 +132,7 @@ DOOR_RIGHT = registerEntity(INTERACTIVE, "door right")
 DOOR_DOWN = registerEntity(INTERACTIVE, "door down")
 TURTLE = registerEntity(INTERACTIVE, "turtle")
 
------------- BLESSINGS ---------------
+--------------- BÊNÇÃOS ----------------
 ARCHER_BLESSING = registerEntity(BLESSING, "archer blessing")
 FIRE_BLESSING = registerEntity(BLESSING, "fire blessing")
 PIGMEU_BLESSING = registerEntity(BLESSING, "pigmeu blessing")

@@ -20,7 +20,10 @@ function renderRooms(camera)
 			end
 
 			local roomViewPos = addVec(camera:viewPos(r.limits.p1), vec(Room.spacingH / 2, Room.spacingV / 2))
-			love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 3, 3)
+			-- love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 3, 3)
+			love.graphics.setColor(25 / 255, 21 / 255, 83 / 255, 1)
+			love.graphics.rectangle("fill", roomViewPos.x - 1000, roomViewPos.y - 1000, 2000, 2000)
+			love.graphics.setColor(1, 1, 1, 1)
 
 			::nextroom::
 		end
@@ -309,20 +312,20 @@ function renderPostProcessing(camera)
 	-- Player
 	for _, p in pairs(players) do
 		-- if p.emitsLight then
-			local viewPos = camera:viewPos(p.pos)
-			local glowRadius = p.glowRadius or 600
-			local lightLevels = p.lightLevels or 20
-			local drawFunc = function()
-				love.graphics.draw(
-					assetManager.emptyTex,
-					viewPos.x - glowRadius / 2,
-					viewPos.y - glowRadius / 2,
-					0,
-					glowRadius,
-					glowRadius
-				)
-			end
-			renderWithLight(drawFunc, { 0.7, 0.7, 0.9, 0.15 }, lightLevels, glowRadius / 5)
+		local viewPos = camera:viewPos(p.pos)
+		local glowRadius = p.glowRadius or 600
+		local lightLevels = p.lightLevels or 20
+		local drawFunc = function()
+			love.graphics.draw(
+				assetManager.emptyTex,
+				viewPos.x - glowRadius / 2,
+				viewPos.y - glowRadius / 2,
+				0,
+				glowRadius,
+				glowRadius
+			)
+		end
+		renderWithLight(drawFunc, { 0.7, 0.7, 0.9, 0.15 }, lightLevels, glowRadius / 5)
 		-- end
 	end
 end

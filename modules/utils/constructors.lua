@@ -61,7 +61,13 @@ CONSTRUCTORS[OBSTACLE] = {
 	[WALL_RIGHT_BACK.name] = newWallRightBack,
 	[WALL_RIGHT_FRONT.name] = newWallRightFront,
 	[PILLAR.name] = newPillar,
+	[PILLAR_BASE.name] = newPillarBase,
 	[CANDLE.name] = newCandle,
+	[MOSS.name] = newMoss,
+	[NEGATIVE.name] = newNegative,
+	[SKELETON.name] = newSkeleton,
+	[RUBBLE.name] = newRubble,
+	[CRACKS.name] = newCracks,
 }
 
 CONSTRUCTORS[INTERACTIVE] = {

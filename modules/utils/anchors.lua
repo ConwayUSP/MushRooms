@@ -64,7 +64,11 @@ ANCHORS = {
 	wall_left_front = floorAnchor(200),
 	wall_right_back = floorAnchor(130),
 	wall_right_front = floorAnchor(200),
-	pillar = floorAnchor(70),
+	pillar = floorAnchor(85),
+	pillar_base = floorAnchor(10),
+	negative = floorAnchor(-10000), -- basicamente a coisa que deve ser renderizada mais em baixo
+	cracks = floorAnchor(-9000), -- fica bem em baixo...
+	moss = floorAnchor(-1000), -- também muito em baixo, mas acima dos negativos
 
 	-- Produtos
 	chest = floorAnchor(10),

@@ -14,6 +14,22 @@ INTERACTIVE = "interactive"
 OBSTACLE = "obstacle"
 ARTIFACT = "artifact"
 
+----------- SALAS -----------
+PUZZLE_ROOM = "puzzle room"
+NPC_ROOM = "npc room"
+RESOURCE_ROOM = "resource room"
+BATTLE_ROOM = "battle room"
+BOSS_ROOM = "boss room"
+EVENT_ROOM = "event room"
+
+---@alias RoomType
+---| `PUZZLE_ROOM`
+---| `NPC_ROOM`
+---| `RESOURCE_ROOM`
+---| `BATTLE_ROOM`
+---| `BOSS_ROOM`
+---| `EVENT_ROOM`
+
 ---------- ATAQUES ----------
 ATTACK = "attack"
 MELEE_ATTACK = "melee attack"
