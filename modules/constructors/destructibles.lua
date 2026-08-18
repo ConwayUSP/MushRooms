@@ -5,7 +5,7 @@
 function newBarrel(pos, room)
 	local loot = Loot.new(newSlingShot(), 0.2, range(1, 1), false)
 	loot:insert(newKatana(), 0.2, range(1, 1), false)
-	loot:insert(COIN, 0.6, range(1, 5), true)
+	loot:insert(newCaskin(), 0.5, range(1, 3), true)
 	local hb = hitbox(Rectangle.new(40, 60))
 	local hbs = hitboxes({ hb })
 	local barrel = Destructible.new(BARREL.name, pos, room, loot, hbs)
@@ -24,7 +24,7 @@ end
 ---@return Destructible
 -- cria um destrutível do tipo Jarro
 function newJar(pos, room)
-	local loot = Loot.new(COIN, 0.8, range(1, 3), true)
+	local loot = Loot.new(newArduro(), 0.5, range(1, 2), true)
 	local hb = hitbox(Circle.new(10))
 	local hitboxes = hitboxes({ hb })
 	local jar = Destructible.new(JAR.name, pos, room, loot, hitboxes)
@@ -41,7 +41,7 @@ end
 ---@param pos Vec
 ---@param room Room
 ---@return Destructible
--- cria um destrutível do tipo Jarro
+-- cria um destrutível do tipo Grama Alta
 function newTallGrass(pos, room)
 	local loot = Loot.new(newCoseca(), 0.75, range(1, 2), true)
 	local hb = hitbox(Rectangle.new(40, 25))

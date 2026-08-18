@@ -42,14 +42,3 @@ function Loot:insert(object, chance, amountRange, autoPick)
 	self[self.len].autoPick = autoPick
 	return self
 end
-
-----------------------------------------
--- Tabela de loots do jogo
-----------------------------------------
-
----@type table<string, Loot>
--- tabela que associa o nome de objetos que contém loot com o `Loot` que eles contém
-LOOT_TABLE = {
-	barrel = Loot.new(COIN, 0.5, range(1, 4), true),
-	jar = Loot.new(COIN, 0.5, range(1, 4), true),
-}
