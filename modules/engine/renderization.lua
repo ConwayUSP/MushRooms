@@ -287,8 +287,8 @@ function renderWithLight(drawFunc, color, lightLevels, gridSize)
 end
 
 ---@param camera Camera
--- renderiza pós processamentos como por exemplo iluminação
-function renderPostProcessing(camera)
+-- renderiza iluminações, como as de tochas ou dos players
+function renderLighting(camera)
 	for _, r in activeRooms:iter() do
 		-- Iluminações de obstáculos
 		for _, obs in pairs(r.obstacles) do
@@ -311,7 +311,6 @@ function renderPostProcessing(camera)
 
 	-- Player
 	for _, p in pairs(players) do
-		-- if p.emitsLight then
 		local viewPos = camera:viewPos(p.pos)
 		local glowRadius = p.glowRadius or 600
 		local lightLevels = p.lightLevels or 20
@@ -326,8 +325,14 @@ function renderPostProcessing(camera)
 			)
 		end
 		renderWithLight(drawFunc, { 0.7, 0.7, 0.9, 0.15 }, lightLevels, glowRadius / 5)
-		-- end
 	end
+end
+
+function renderVignette(camera)
+	-- renderizando a vinheta escura nas bordas da câmera
+	love.graphics.setShader(darkVignetteShader)
+	love.graphics.draw(assetManager.emptyTex, 0, 0, 0, camera.viewport.width, camera.viewport.height)
+	love.graphics.setShader()
 end
 
 function renderPlayerUIs(camera)

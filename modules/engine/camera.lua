@@ -226,12 +226,14 @@ function Camera:draw()
 	-- renderiza as hitboxes ativas (debug)
 	renderHitboxes(self)
 	-- renderiza pós-processamento
-	renderPostProcessing(self)
+	renderLighting(self)
 	-- renderiza caixas de diálogo por cima de tudo
 	renderDialogues(self)
 
 	love.graphics.pop()
 
+	-- renderiza o degradê escuro na borda da câmera
+	renderVignette(self)
 	-- barras pretas em espaço de tela (fora do canvas/zoom)
 	renderBlackBars(self)
 	-- renderiza a UI do jogador associado
