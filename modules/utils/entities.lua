@@ -109,7 +109,8 @@ MOSS_UP = registerEntity(OBSTACLE, "moss up")
 SKELETON = registerEntity(OBSTACLE, "skeleton")
 NEGATIVE = registerEntity(OBSTACLE, "negative")
 PAPER = registerEntity(OBSTACLE, "paper")
-RUBBLE = registerEntity(OBSTACLE, "rubble")
+RUBBLE_SMALL = registerEntity(OBSTACLE, "rubble small")
+RUBBLE_BIG = registerEntity(OBSTACLE, "rubble big")
 TILES = registerEntity(OBSTACLE, "tiles")
 
 ------------- CONSTRUÇÕES --------------

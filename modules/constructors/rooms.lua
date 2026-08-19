@@ -126,7 +126,8 @@ function insertGeneralDecorations(blueprint)
 	insertRandomly(blueprint, MOSS, 18)
 	insertRandomly(blueprint, CRACKS, 16)
 	insertRandomly(blueprint, SKELETON, 4)
-	insertIntoGrid(blueprint, RUBBLE, 0.4, 6, true)
+	insertIntoGrid(blueprint, RUBBLE_BIG, 0.1, 6, true)
+	insertIntoGrid(blueprint, RUBBLE_SMALL, 0.3, 8, true)
 end
 
 ---@param blueprint Blueprint

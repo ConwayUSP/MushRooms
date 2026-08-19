@@ -69,6 +69,8 @@ ANCHORS = {
 	negative = floorAnchor(-10000), -- basicamente a coisa que deve ser renderizada mais em baixo
 	cracks = floorAnchor(-9000), -- fica bem em baixo...
 	moss = floorAnchor(-1000), -- também muito em baixo, mas acima dos negativos
+	rubble_small = floorAnchor(0.3),
+	rubble_big = floorAnchor(-6),
 
 	-- Produtos
 	chest = floorAnchor(10),

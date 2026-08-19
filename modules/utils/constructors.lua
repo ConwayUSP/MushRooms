@@ -66,7 +66,8 @@ CONSTRUCTORS[OBSTACLE] = {
 	[MOSS.name] = newMoss,
 	[NEGATIVE.name] = newNegative,
 	[SKELETON.name] = newSkeleton,
-	[RUBBLE.name] = newRubble,
+	[RUBBLE_SMALL.name] = newRubbleSmall,
+	[RUBBLE_BIG.name] = newRubbleBig,
 	[CRACKS.name] = newCracks,
 }
 
