@@ -105,12 +105,12 @@ function Link:update(dt)
 end
 
 function Link:draw(camera)
-  local a = camera:viewPos(self.entityA.pos)
-  local b = camera:viewPos(self.entityB.pos)
+  local aX, aY = camera:viewPos(self.entityA.pos)
+  local bX, bY = camera:viewPos(self.entityB.pos)
 
   love.graphics.push()
   love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setLineWidth(4)
-  love.graphics.line(a.x, a.y, b.x, b.y)
+  love.graphics.line(aX, aY, bX, bY)
   love.graphics.pop()
 end
