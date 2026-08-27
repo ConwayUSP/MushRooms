@@ -44,7 +44,7 @@ function Interactive.new(name, pos, hitboxes, room, physics, onInteract, closeIn
 	interactive.customUpdate = update
 	interactive.customEnter = customEnter
 	interactive.customExit = customExit
-	interactive.state = IDLE -- define o estado atual do objeto, pode ser usado de formas criativas em interagiveis
+	interactive.state = IDLE   -- define o estado atual do objeto, pode ser usado de formas criativas em interagiveis
 	interactive.spriteSheets = {} -- no tipo imagem do love
 	interactive.animations = {} -- as chaves são estados e os valores são Animações
 
@@ -99,26 +99,25 @@ end
 ---@param camera Camera
 -- função de renderização do `Interactive`
 function Interactive:draw(camera)
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local anim = self.animations[self.state]
-	local quad = anim.frames[anim.currFrame]
-	local offset = {
-		x = anim.frameDim.width / 2,
-		y = anim.frameDim.height / 2,
-	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+	local offsetX = anim.frameDim.width / 2
+	local offsetY = anim.frameDim.height / 2
+
+	love.graphics.draw(
+		self.spriteSheets[self.state],
+		anim.frames[anim.currFrame],
+		viewX,
+		viewY,
+		0,
+		3,
+		3,
+		offsetX,
+		offsetY
+	)
 
 	-- DEBUG -------------------------------
 	if debugMode and self.name:sub(1, 4) == "door" then
-		love.graphics.print(
-			tostring(self.arrPos.x) .. ", " .. tostring(self.arrPos.y),
-			viewPos.x,
-			viewPos.y,
-			0,
-			3,
-			3,
-			10,
-			10
-		)
+		love.graphics.print(tostring(self.arrPos.x) .. ", " .. tostring(self.arrPos.y), viewX, viewY, 0, 3, 3, 10, 10)
 	end
 end

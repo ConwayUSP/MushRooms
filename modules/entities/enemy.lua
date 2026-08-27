@@ -334,19 +334,27 @@ end
 function Enemy:draw(camera)
 	self:drawShaders()
 
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
-	local quad = animation.frames[animation.currFrame]
 	local p = (self.invulnerableTimer > 0 and self.state ~= DYING)
 		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local scaleX = self.scale - 0.6 * math.sin(2 * math.pi * p)
 	local scaleY = self.scale + 0.6 * math.sin(2 * math.pi * p)
-	local offset = {
-		x = animation.offset.x,
-		y = (animation.frameDim.height * scaleY - animation.offset.y * self.scale) / scaleY,
-	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
+	local offsetX = animation.offset.x
+	local offsetY = (animation.frameDim.height * scaleY - animation.offset.y * self.scale) / scaleY
+
+	love.graphics.draw(
+		self.spriteSheets[self.state],
+		animation.frames[animation.currFrame],
+		viewX,
+		viewY,
+		0,
+		scaleX,
+		scaleY,
+		offsetX,
+		offsetY
+	)
 
 	love.graphics.setShader()
 	love.graphics.setColor(1, 1, 1, 1)

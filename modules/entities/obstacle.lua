@@ -98,13 +98,10 @@ function Obstacle:updateTransparentShaderUniforms(shader)
 end
 
 function Obstacle:draw(camera)
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local anim = self.animations[IDLE] -- obstáculos só possuem a animação IDLE
-	local quad = anim.frames[anim.currFrame]
-	local offset = {
-		x = anim.frameDim.width / 2,
-		y = anim.frameDim.height / 2,
-	}
+	local offsetX = anim.frameDim.width / 2
+	local offsetY = anim.frameDim.height / 2
 
 	if self.transparent then
 		love.graphics.setShader(seeThroughShader)
@@ -115,14 +112,14 @@ function Obstacle:draw(camera)
 
 	love.graphics.draw(
 		self.spriteSheets[IDLE],
-		quad,
-		viewPos.x,
-		viewPos.y,
+		anim.frames[anim.currFrame],
+		viewX,
+		viewY,
 		0,
 		self.scale * flip,
 		self.scale,
-		offset.x,
-		offset.y
+		offsetX,
+		offsetY
 	)
 
 	if self.transparent or self.emitsLight then

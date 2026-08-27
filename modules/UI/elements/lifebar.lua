@@ -3,7 +3,6 @@
 ----------------------------------------
 require("modules.UI.uielement")
 
-
 ---------------------------------------
 --- LifeBarBg
 ---------------------------------------
@@ -22,24 +21,34 @@ function LifeBarBg.new(pos, size, name)
 	bg.size = size
 
 	local path = pngPathFormat({ "assets", "animations", "UI", name, "back" })
-  addAnimation(bg, path, IDLE, newAnimSetting(1, size, 0.1, false))
+	addAnimation(bg, path, IDLE, newAnimSetting(1, size, 0.1, false))
 
 	return bg
 end
 
 function LifeBarBg:update(dt)
-  self.animations[IDLE]:update(dt)
+	self.animations[IDLE]:update(dt)
 end
 
 function LifeBarBg:draw(camera)
-	local viewPos = self.pos
+	local viewX = self.pos.x
+	local viewY = self.pos.y
 	if camera then
-		viewPos = camera:viewPos(self.pos)
+		viewX, viewY = camera:viewPos(self.pos)
 	end
 	local anim = self.animations[IDLE]
-	local quad = anim.frames[anim.currFrame]
 	local scale = self.size.width / anim.frameDim.width
-	love.graphics.draw(self.spriteSheets[IDLE], quad, viewPos.x, viewPos.y, 0, scale, scale, anim.offset.x, anim.offset.y)
+	love.graphics.draw(
+		self.spriteSheets[IDLE],
+		anim.frames[anim.currFrame],
+		viewX,
+		viewY,
+		0,
+		scale,
+		scale,
+		anim.offset.x,
+		anim.offset.y
+	)
 end
 
 --------------------------------------
@@ -59,64 +68,73 @@ LifeBarFront.__index = LifeBarFront
 
 function LifeBarFront.new(pos, size, name)
 	local front = setmetatable({}, LifeBarFront)
-  front.pos = vec(pos.x, pos.y)
+	front.pos = vec(pos.x, pos.y)
 	front.size = size
-  front.frontTarget = 1
-  front.backTarget = 1
-  front.percent = 1
-	
-  local path = pngPathFormat({ "assets", "animations", "UI", name, "front" })
-  addAnimation(front, path, IDLE, newAnimSetting(1, size, 0.1, false))
+	front.frontTarget = 1
+	front.backTarget = 1
+	front.percent = 1
 
-  return front
+	local path = pngPathFormat({ "assets", "animations", "UI", name, "front" })
+	addAnimation(front, path, IDLE, newAnimSetting(1, size, 0.1, false))
+
+	return front
 end
 
 function LifeBarFront:update(dt, lifeCalc)
-  local oldPercent = self.percent
+	local oldPercent = self.percent
 	local hp, maxHp = lifeCalc()
-  self.percent = math.max(0, (hp / maxHp))
+	self.percent = math.max(0, (hp / maxHp))
 
-  if oldPercent ~= self.percent then
-    if self.percent < oldPercent  then
-      self.frontTarget = self.percent
-    else
-      self.backTarget = self.percent
-    end
-  end
+	if oldPercent ~= self.percent then
+		if self.percent < oldPercent then
+			self.frontTarget = self.percent
+		else
+			self.backTarget = self.percent
+		end
+	end
 
-  if math.abs(self.frontTarget - self.percent) > 0.00005 then
-    self.frontTarget = lerp(self.frontTarget, self.percent, 4 * dt)
-  end
+	if math.abs(self.frontTarget - self.percent) > 0.00005 then
+		self.frontTarget = lerp(self.frontTarget, self.percent, 4 * dt)
+	end
 
-  if math.abs(self.backTarget - self.percent) > 0.00005 then
-    self.backTarget = lerp(self.backTarget, self.percent, 4 * dt)
-  end
-
+	if math.abs(self.backTarget - self.percent) > 0.00005 then
+		self.backTarget = lerp(self.backTarget, self.percent, 4 * dt)
+	end
 end
 
 function LifeBarFront:draw(camera)
-	local viewPos = self.pos
+	local viewX = self.pos.x
+	local viewY = self.pos.y
 	if camera then
-		viewPos = camera:viewPos(self.pos)
+		viewX, viewY = camera:viewPos(self.pos)
 	end
-  local anim = self.animations[IDLE]
-	local quad = anim.frames[anim.currFrame]
+	local anim = self.animations[IDLE]
 
-  local drawFunc = function () 
-    love.graphics.draw(self.spriteSheets[IDLE], quad, viewPos.x, viewPos.y, 0, 1, 1, anim.offset.x, anim.offset.y) 
-  end
+	local drawFunc = function()
+		love.graphics.draw(
+			self.spriteSheets[IDLE],
+			anim.frames[anim.currFrame],
+			viewX,
+			viewY,
+			0,
+			1,
+			1,
+			anim.offset.x,
+			anim.offset.y
+		)
+	end
 
-  local startX = viewPos.x - anim.offset.x
-  local endX = startX + anim.frameDim.width
-  local width = endX - startX
-  
-  love.graphics.setScissor(startX, 0, self.backTarget * width, window.height)
-  drawWithColorShader(drawFunc)
-  love.graphics.setScissor()
+	local startX = viewX - anim.offset.x
+	local endX = startX + anim.frameDim.width
+	local width = endX - startX
 
-  love.graphics.setScissor(startX, 0, self.frontTarget * width, window.height)
-  drawFunc()
-  love.graphics.setScissor()
+	love.graphics.setScissor(startX, 0, self.backTarget * width, window.height)
+	drawWithColorShader(drawFunc)
+	love.graphics.setScissor()
+
+	love.graphics.setScissor(startX, 0, self.frontTarget * width, window.height)
+	drawFunc()
+	love.graphics.setScissor()
 end
 
 ----------------------------------------
@@ -149,14 +167,14 @@ function UILifeBarElem:update(dt)
 end
 
 function UILifeBarElem:draw(camera)
-  if self.front.frontTarget <= 0 or self.front.backTarget <= 0 then
-    return
-  end
+	if self.front.frontTarget <= 0 or self.front.backTarget <= 0 then
+		return
+	end
 
-  love.graphics.setColor(1, 1, 1, 0.5)
+	love.graphics.setColor(1, 1, 1, 0.5)
 
-  self.back:draw(camera)
-  self.front:draw(camera)
+	self.back:draw(camera)
+	self.front:draw(camera)
 
-  love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.setColor(1, 1, 1, 1)
 end

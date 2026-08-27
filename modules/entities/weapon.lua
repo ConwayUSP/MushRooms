@@ -43,20 +43,20 @@ function Weapon.new(name, ammo, attack, gunOffset, shotOffset)
 	weapon:init(name)
 
 	-- atributos que variam
-	weapon.ammo = ammo -- número de munições
-	weapon.atk = attack -- instância de Attack associada à arma
+	weapon.ammo = ammo                       -- número de munições
+	weapon.atk = attack                      -- instância de Attack associada à arma
 	weapon.gunOffset = gunOffset or vec(0, 0) -- deslocamento da arma em relação ao centro do jogador
 	weapon.shotOffset = shotOffset or vec(0, 0) -- deslocamento do ponto de origem do ataque em relação ao centro da arma
-	weapon.atk:setWeapon(weapon) -- associa a arma ao ataque
+	weapon.atk:setWeapon(weapon)             -- associa a arma ao ataque
 	-- atributos fixos na instanciação
 	weapon.rotateOffset = vec(-10, 0)
 	weapon.canShoot = false
 	weapon.visible = true
 	weapon.atkTargeting = TargetManager.new(weapon) -- gerenciador de alvo da arma
-	weapon.rotation = 0 -- rotação da arma em radianos
-	weapon.state = IDLE -- estado atual da arma
-	weapon.spriteSheets = {} -- no tipo imagem do love
-	weapon.animations = {} -- as chaves são estados e os valores são Animações
+	weapon.rotation = 0                          -- rotação da arma em radianos
+	weapon.state = IDLE                          -- estado atual da arma
+	weapon.spriteSheets = {}                     -- no tipo imagem do love
+	weapon.animations = {}                       -- as chaves são estados e os valores são Animações
 	return weapon
 end
 
@@ -148,32 +148,30 @@ function Weapon:draw(camera)
 		whiteShader:send("fillColor", { 1, 1, 1, 1.0 })
 	end
 
-	local viewPos = camera:viewPos(self.owner.pos)
+	local viewX, viewY = camera:viewPos(self.owner.pos)
 	local animation = self.animations[self.state]
-	local quad = animation.frames[animation.currFrame]
 
 	local p = self.owner.invulnerableTimer > 0
-			and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
+		and (self.owner.defaultInvulnerableTime - self.owner.invulnerableTimer) / self.owner.defaultInvulnerableTime
 		or 0
 	local defaultScale = 3
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
 	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
-	local offset = {
-		x = animation.frameDim.width / 2 + self.rotateOffset.x,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
-	}
+	local offsetX = animation.frameDim.width / 2 + self.rotateOffset.x
+	local offsetY = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY
+
 	local flip = invertSecondAndThirdQuadrants(self.rotation)
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
-		quad,
-		viewPos.x + self.gunOffset.x * flip,
-		viewPos.y + self.gunOffset.y,
+		animation.frames[animation.currFrame],
+		viewX + self.gunOffset.x * flip,
+		viewY + self.gunOffset.y,
 		self.rotation,
 		scaleX,
 		scaleY * flip,
-		offset.x,
-		offset.y
+		offsetX,
+		offsetY
 	)
 
 	if self.owner.invulnerableTimer > 0 then

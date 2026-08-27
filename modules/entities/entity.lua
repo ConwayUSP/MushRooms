@@ -105,13 +105,21 @@ end
 -- função de renderização padrão das entidades
 function Entity:draw(camera)
 	---@diagnostic disable
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local anim = self.animations[self.state]
-	local quad = anim.frames[anim.currFrame]
-	local offset = {
-		x = anim.frameDim.width / 2,
-		y = anim.frameDim.height / 2,
-	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+	local offsetX = anim.frameDim.width / 2
+	local offsetY = anim.frameDim.height / 2
+
+	love.graphics.draw(
+		self.spriteSheets[self.state],
+		anim.frames[anim.currFrame],
+		viewX,
+		viewY,
+		0,
+		3,
+		3,
+		offsetX,
+		offsetY
+	)
 	---@diagnostic enable
 end

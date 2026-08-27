@@ -9,7 +9,7 @@ require("modules.utils.vec")
 ----------------------------------------
 
 local VFX_ANIMATIONS_TABLE = {
-	[PARTICLE_EXPLOSION] = newAnimSetting(10, {width = 32, height = 32}, 0.01, false, 0, 0, vec(0, 0), nil),
+	[PARTICLE_EXPLOSION] = newAnimSetting(10, { width = 32, height = 32 }, 0.01, false, 0, 0, vec(0, 0), nil),
 }
 
 ----------------------------------------
@@ -38,8 +38,8 @@ function VFXManager.new(animTypes, owner)
 	if animTypes then
 		for _, type in pairs(animTypes) do
 			local table = {}
-			local path = pngPathFormat({"assets", "animations", "vfxs", type})
-			
+			local path = pngPathFormat({ "assets", "animations", "vfxs", type })
+
 			table.spriteSheet = assetManager:getImage(path)
 			table.setting = VFX_ANIMATIONS_TABLE[type]
 			table.path = path
@@ -122,16 +122,24 @@ end
 ---@param y number
 function VFXManager:drawParticle(vfxType, x, y)
 	love.graphics.draw(self.particles[vfxType], x, y)
-
 end
 
 ---@param instance table
 ---@param camera Camera
 function VFXManager:drawAnimation(instance, camera)
-	local viewPos = camera:viewPos(instance.pos)
+	local viewX, viewY = camera:viewPos(instance.pos)
 	local animation = instance.animation
-	local quad = animation.frames[animation.currFrame]
-	love.graphics.draw(instance.spriteSheet, quad, viewPos.x, viewPos.y, 0, 3, 3, animation.frameDim.width / 2, animation.frameDim.height / 2)
+	love.graphics.draw(
+		instance.spriteSheet,
+		animation.frames[animation.currFrame],
+		viewX,
+		viewY,
+		0,
+		3,
+		3,
+		animation.frameDim.width / 2,
+		animation.frameDim.height / 2
+	)
 end
 
 ---@param vfxType string

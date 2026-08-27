@@ -9,9 +9,9 @@ require("modules.systems.shaders")
 ----------------------------------------
 
 -- comportamento dos NPCs após interagirem com o jogador
-NOMAD = "nomad" -- desaparece
+NOMAD = "nomad"         -- desaparece
 SEDENTARY = "sedentary" -- fica na sala onde spawnou indefinidamente
-LOYAL = "loyal" -- vai para a base do jogador, caso ela exista
+LOYAL = "loyal"         -- vai para a base do jogador, caso ela exista
 
 ----------------------------------------
 -- Classe Non-Playable Character
@@ -46,18 +46,18 @@ function Npc.new(description, spawnPos, hitboxes, room)
 
 	npc:init(description.name, spawnPos, hitboxes, room)
 	-- atributos que variam
-	npc.job = description.job -- define a profissão do npc
+	npc.job = description.job              -- define a profissão do npc
 	npc.personality = description.personality -- define a personalidade do npc
-	npc.lifestyle = description.lifestyle -- define o inventário do npc
+	npc.lifestyle = description.lifestyle  -- define o inventário do npc
 	-- atributos fixos na instanciação
-	npc.inventory = {} -- define o inventário do npc
-	npc.state = IDLE -- define o estado atual do npc, estreitamente relacionado às animações
-	npc.spriteSheets = {} -- no tipo imagem do love
-	npc.animations = {} -- as chaves são estados e os valores são Animações
-	npc.dialogue = nil -- diálogo do npc
-	npc.inDialogue = false -- se o npc está em diálogo
-	npc.reachable = false -- indica se algum player está perto o suficiente para falar com o NPC
-	npc.playersInReach = {} -- tabela para rastrear quais players estão ao alcance do NPC
+	npc.inventory = {}                     -- define o inventário do npc
+	npc.state = IDLE                       -- define o estado atual do npc, estreitamente relacionado às animações
+	npc.spriteSheets = {}                  -- no tipo imagem do love
+	npc.animations = {}                    -- as chaves são estados e os valores são Animações
+	npc.dialogue = nil                     -- diálogo do npc
+	npc.inDialogue = false                 -- se o npc está em diálogo
+	npc.reachable = false                  -- indica se algum player está perto o suficiente para falar com o NPC
+	npc.playersInReach = {}                -- tabela para rastrear quais players estão ao alcance do NPC
 	npc.hasShadow = true
 	npc.shadowWidth = 15
 
@@ -120,16 +120,33 @@ end
 ---@param camera Camera
 -- função de renderização de `Npc`
 function Npc:draw(camera)
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
-	local quad = animation.frames[animation.currFrame]
-	local offset = {
-		x = animation.frameDim.width / 2,
-		y = animation.frameDim.height / 2,
-	}
+	local offsetX = animation.frameDim.width / 2
+	local offsetY = animation.frameDim.height / 2
+
 	if self.reachable and not self.inDialogue then
-		drawFrameWithOutline(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 3, offset, 0.5, { 1, 1, 1, 1 })
+		drawFrameWithOutline(
+			self.spriteSheets[self.state],
+			animation.frames[animation.currFrame],
+			viewX,
+			viewY,
+			3,
+			vec(offsetX, offsetY),
+			0.5,
+			{ 1, 1, 1, 1 }
+		)
 	else
-		love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+		love.graphics.draw(
+			self.spriteSheets[self.state],
+			animation.frames[animation.currFrame],
+			viewX,
+			viewY,
+			0,
+			3,
+			3,
+			offsetX,
+			offsetY
+		)
 	end
 end

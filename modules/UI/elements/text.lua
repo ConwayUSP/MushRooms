@@ -20,11 +20,12 @@ function UITextElem.new(name, pos, size, scale, hitboxes, color, text)
 end
 
 function UITextElem:draw(camera)
-	local viewPos = self.pos
+	local viewX = self.pos.x
+	local viewY = self.pos.y
 	if camera then
-		viewPos = camera:viewPos(self.pos)
+		viewX, viewY = camera:viewPos(self.pos)
 	end
 	love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a)
-	love.graphics.printf(self.text, viewPos.x, viewPos.y, self.size.width, "center", 0, self.scale, self.scale)
+	love.graphics.printf(self.text, viewX, viewY, self.size.width, "center", 0, self.scale, self.scale)
 	love.graphics.setColor(1, 1, 1, 1)
 end

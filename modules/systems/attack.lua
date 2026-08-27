@@ -389,9 +389,8 @@ function AttackEvent:draw(camera)
 		return
 	end
 
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
-	local quad = animation.frames[animation.currFrame]
 
 	local rotation
 	if self.rotationFunc then
@@ -402,9 +401,9 @@ function AttackEvent:draw(camera)
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
-		quad,
-		viewPos.x,
-		viewPos.y,
+		animation.frames[animation.currFrame],
+		viewX,
+		viewY,
 		rotation,
 		3,
 		3,

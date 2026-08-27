@@ -129,15 +129,15 @@ function Dialogue:draw(camera)
 	local text = self.activeSequence.text[self.activeSequence.idx]
 
 	if self.speaker and self.speaker.pos then
-		local viewPos = camera:viewPos(vec(self.speaker.pos.x, self.speaker.pos.y - 120))
+		local viewX, viewY = camera:viewPos(vec(self.speaker.pos.x, self.speaker.pos.y - 120))
 		local dialogueBoxImg = love.graphics.newImage("assets/sprites/UI/dialogue/dialogue_box.png")
 		local width = dialogueBoxImg:getWidth()
 		local padding = 20
-		love.graphics.draw(dialogueBoxImg, viewPos.x, viewPos.y, 0, 3, 3, width / 2, 12)
+		love.graphics.draw(dialogueBoxImg, viewX, viewY, 0, 3, 3, width / 2, 12)
 		love.graphics.setFont(mushFont)
-		local textX = viewPos.x + padding - width * 1.5
+		local textX = viewX + padding - width * 1.5
 		local textWidth = width * 3 - 2 * padding
-		love.graphics.printf(text, textX, viewPos.y, textWidth, "center")
+		love.graphics.printf(text, textX, viewY, textWidth, "center")
 	else
 		love.graphics.print(text, 50, love.graphics.getHeight() - 120)
 	end
@@ -203,65 +203,65 @@ end
 ----------------------------------------
 
 function parseDialogueBlocks(path)
-  assert(love.filesystem.getInfo(path), "Diálogo inexistente ou caminho incorreto: " .. path)
+	assert(love.filesystem.getInfo(path), "Diálogo inexistente ou caminho incorreto: " .. path)
 
-  local blocks = {}
-  local current = {}
+	local blocks = {}
+	local current = {}
 
-  for line in love.filesystem.lines(path) do
-    -- linha vazia = próximo bloco
-    if line == "" then
-      if #current > 0 then
-        table.insert(blocks, current)
-        current = {}
-      end
-    else
-      table.insert(current, line)
-    end
-  end
+	for line in love.filesystem.lines(path) do
+		-- linha vazia = próximo bloco
+		if line == "" then
+			if #current > 0 then
+				table.insert(blocks, current)
+				current = {}
+			end
+		else
+			table.insert(current, line)
+		end
+	end
 
-  -- último bloco
-  if #current > 0 then
-    table.insert(blocks, current)
-    current = {}
-  end
+	-- último bloco
+	if #current > 0 then
+		table.insert(blocks, current)
+		current = {}
+	end
 
-  return blocks
+	return blocks
 end
 
 function newSequence(text, condition)
-  return {
-    text = text,
-    idx = -1,
-    triggered = false,
-    condition = condition or nil,
-  }
+	return {
+		text = text,
+		idx = -1,
+		triggered = false,
+		condition = condition or nil,
+	}
 end
 
 function buildDialogueData(blocks)
-  local data = {
-    intro = nil,
-    loop = nil,
-    event = {},
-  }
+	local data = {
+		intro = nil,
+		loop = nil,
+		event = {},
+	}
 
-  if blocks[1] then
-    data.intro = newSequence(blocks[1])
-  end
+	if blocks[1] then
+		data.intro = newSequence(blocks[1])
+	end
 
-  if blocks[2] then
-    data.loop = newSequence(blocks[2])
-  end
+	if blocks[2] then
+		data.loop = newSequence(blocks[2])
+	end
 
-  for i = 3, #blocks do
-    local block = blocks[i]
-    local key = block[1]
+	for i = 3, #blocks do
+		local block = blocks[i]
+		local key = block[1]
 
-    local condition = getCondition(key)
-    local text = { unpack(blocks[i], 2) }
+		local condition = getCondition(key)
+		local text = { unpack(blocks[i], 2) }
 
-    table.insert(data.event, newSequence(text, condition))
-  end
+		table.insert(data.event, newSequence(text, condition))
+	end
 
-  return data
+	return data
 end

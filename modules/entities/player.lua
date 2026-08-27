@@ -741,28 +741,23 @@ end
 -- renderiza o `Player` na perspectiva da `camera`
 function Player:draw(camera)
 	-- desenhando o efeito de partículas de caminhada atrás do player
-	local particles_offset = {
-		x = -camera.cx + camera.viewport.width / 2,
-		y = -camera.cy + camera.viewport.height / 2,
-	}
-	self.vfxManager:drawParticle(PARTICLE_WALKING, particles_offset.x, particles_offset.y)
+	local particleOffX = -camera.cx + camera.viewport.width / 2
+	local particleOffY = -camera.cy + camera.viewport.height / 2
+	self.vfxManager:drawParticle(PARTICLE_WALKING, particleOffX, particleOffY)
 
 	-- TODO: usar algum tipo de "vinheta" na tela para indicar que o player está com pouca vida (igual no Deadly Encounter)
 
 	-- desenhando o player em si
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
-	local quad = animation.frames[animation.currFrame]
 	local p = self.invulnerableTimer > 0
 			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local defaultScale = self.scale
 	local scaleX = defaultScale - 0.8 * math.sin(2 * math.pi * p)
 	local scaleY = defaultScale + 0.8 * math.sin(2 * math.pi * p)
-	local offset = {
-		x = animation.frameDim.width / 2,
-		y = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY,
-	}
+	local offsetX = animation.frameDim.width / 2
+	local offsetY = (animation.frameDim.height * scaleY - (animation.frameDim.height / 2) * defaultScale) / scaleY
 
 	self:drawShaders()
 
@@ -770,16 +765,16 @@ function Player:draw(camera)
 
 	-- rotaciona o player em torno de um ponto de rotação (offset) para dar o efeito de "tremor" ao defender
 	love.graphics.push()
-	love.graphics.translate(viewPos.x + rotateOffset.x, viewPos.y + rotateOffset.y)
+	love.graphics.translate(viewX + rotateOffset.x, viewY + rotateOffset.y)
 	love.graphics.rotate(angle)
-	love.graphics.translate(-viewPos.x - rotateOffset.x, -viewPos.y - rotateOffset.y)
+	love.graphics.translate(-viewX - rotateOffset.x, -viewY - rotateOffset.y)
 
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scaleX, scaleY, offset.x, offset.y)
+	love.graphics.draw(self.spriteSheets[self.state], animation.frames[animation.currFrame], viewX, viewY, 0, scaleX, scaleY, offsetX, offsetY)
 
 	love.graphics.pop()
 
 	-- desenhando o efeito de partículas da defesa em cima do player
-	self.vfxManager:drawParticle(PARTICLE_DEFENSE, particles_offset.x, particles_offset.y)
+	self.vfxManager:drawParticle(PARTICLE_DEFENSE, particleOffX, particleOffY)
 	love.graphics.setShader()
 end
 

@@ -73,19 +73,28 @@ end
 ---@param camera Camera
 -- renderiza o elemento de UI
 function UIElement:draw(camera)
-	local viewPos = self.pos
+	local viewX = self.pos.x
+	local viewY = self.pos.y
 	if camera then
-		viewPos = camera:viewPos(self.pos)
+		viewX, viewY = camera:viewPos(self.pos)
 	end
 	local anim = self.animations[self.state]
 	if not anim then
 		return
 	end
-	local quad = anim.frames[anim.currFrame]
 	local scale = self.size.width / anim.frameDim.width
-	local offset = {
-		x = anim.frameDim.width / 2,
-		y = anim.frameDim.height / 2,
-	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, scale, scale, offset.x, offset.y)
+	local offsetX = anim.frameDim.width / 2
+	local offsetY = anim.frameDim.height / 2
+
+	love.graphics.draw(
+		self.spriteSheets[self.state],
+		anim.frames[anim.currFrame],
+		viewX,
+		viewY,
+		0,
+		scale,
+		scale,
+		offsetX,
+		offsetY
+	)
 end

@@ -15,9 +15,9 @@ require("table")
 -- Enums
 ----------------------------------------
 -- opções do que acontece se o player toca no destrutível
-FRAGILE = "fragile" -- quebra quando player toca
+FRAGILE = "fragile"   -- quebra quando player toca
 UNSTABLE = "unstable" -- se move mas não quebra
-STABLE = "stable" -- não se move e nem quebra
+STABLE = "stable"     -- não se move e nem quebra
 
 ----------------------------------------
 -- Classe Destructible
@@ -126,14 +126,22 @@ end
 ---@param camera Camera
 -- função de renderização do `Destructible`
 function Destructible:draw(camera)
-	local viewPos = camera:viewPos(self.pos)
+	local viewX, viewY = camera:viewPos(self.pos)
 	local anim = self.animations[self.state]
-	local quad = anim.frames[anim.currFrame]
-	local offset = {
-		x = anim.frameDim.width / 2,
-		y = anim.frameDim.height / 2,
-	}
-	love.graphics.draw(self.spriteSheets[self.state], quad, viewPos.x, viewPos.y, 0, 3, 3, offset.x, offset.y)
+	local offsetX = anim.frameDim.width / 2
+	local offsetY = anim.frameDim.height / 2
+
+	love.graphics.draw(
+		self.spriteSheets[self.state],
+		anim.frames[anim.currFrame],
+		viewX,
+		viewY,
+		0,
+		3,
+		3,
+		offsetX,
+		offsetY
+	)
 end
 
 -- spawna todo o `loot` contido no `Destructible` de forma aleatória,
