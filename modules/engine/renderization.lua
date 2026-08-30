@@ -195,9 +195,11 @@ function renderEntities(camera)
 	end
 
 	-- adicionando os VFX
-	for particleType, particle in pairs(globalVFXManager.particles) do
-		local _, y = globalVFXManager:getPosition(particleType)
-		addEntityToDrawList(particle, y, false, true)
+	for _, particles in pairs(globalVFXManager.particlesInst) do
+		for _, instance in pairs(particles) do
+			local _, y = instance.particle:getPosition()
+			addEntityToDrawList(instance, y, false, true)
+		end
 	end
 	for _, anim in pairs(globalVFXManager.animInstances) do
 		addEntityToDrawList(anim, anim.pos.y, true, false)
@@ -230,7 +232,7 @@ function renderEntities(camera)
 		if obj.isAnimVFX then
 			globalVFXManager:drawAnimation(obj.it, camera)
 		elseif obj.isParticleVFX then
-			globalVFXManager:drawParticle(particleType, x, y)
+			globalVFXManager:drawParticleInstance(obj.it, camera)
 		else
 			obj.it:draw(camera)
 		end

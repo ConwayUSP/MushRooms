@@ -6,7 +6,7 @@
 -- cria um sistema de partículas que emite muitos círculos que sobem.
 -- `c1` e `c2` são as cores do efeito
 function newDefenseParticles(c1, c2)
-	local particleImg = love.graphics.newImage("assets/sprites/circle.png")
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
 	local defParticles = love.graphics.newParticleSystem(particleImg, 250)
 	defParticles:setPosition(0, 0)
 	defParticles:setParticleLifetime(1, 2.25)
@@ -28,7 +28,7 @@ end
 ---@return ParticleSystem
 -- cria um sistema de partículas que emite circulos de poeira a uma curta distância
 function newWalkingParticles()
-	local particleImg = love.graphics.newImage("assets/sprites/circle.png")
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
 	local defParticles = love.graphics.newParticleSystem(particleImg, 250)
 	defParticles:setPosition(0, 24)
 	defParticles:setParticleLifetime(0.3, 0.6)

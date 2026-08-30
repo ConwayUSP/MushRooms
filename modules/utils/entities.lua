@@ -51,9 +51,6 @@ JAR = registerEntity(DESTRUCTIBLE, "jar")
 BARREL = registerEntity(DESTRUCTIBLE, "barrel")
 TALL_GRASS = registerEntity(DESTRUCTIBLE, "tall grass")
 
------------------ DROP -----------------
-COIN = registerEntity(DROP, "coin")
-
 -------------- RECURSOS ----------------
 CASKIN = registerEntity(RESOURCE, "caskin")
 PEDACITO = registerEntity(RESOURCE, "pedacito")
