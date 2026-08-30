@@ -100,6 +100,7 @@ AUDIO_COLLIDE = "collision audio"
 ---------- PARTICLES ----------
 PARTICLE_WALKING = "walking particle"
 PARTICLE_HIT = "hit particle"
+PARTICLE_BREAKING = "breaking particle"
 PARTICLE_DEFENSE = "defense particle"
 PARTICLE_EXPLOSION = "explosion particle"
 

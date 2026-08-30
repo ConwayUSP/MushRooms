@@ -17,13 +17,24 @@ require("modules.utils.utils")
 ----------------------------------------------------------------------
 
 local PARTICLES_SETTINGS = {
-  [PARTICLE_DEFENSE] = function(color1, color2)
-    return newDefenseParticles(color1, color2)
-  end,
+  [PARTICLE_DEFENSE] = {
+    constructor = function(color1, color2)
+      return newDefenseParticles(color1, color2)
+    end
+  },
 
-  [PARTICLE_WALKING] = function()
-    return newWalkingParticles()
-  end,
+  [PARTICLE_WALKING] = {
+    constructor = function()
+      return newWalkingParticles()
+    end
+  },
+
+  [PARTICLE_BREAKING] = {
+    constructor = function()
+      return newBreakingParticles()
+    end,
+    blendMode = "add"
+  },
 }
 
 local VFX_ANIMATIONS_TABLE = {
@@ -52,8 +63,8 @@ function VFXManager.new()
   vfx.animVFX = {}
   vfx.animInstances = {}
 
-  for type, constructor in pairs(PARTICLES_SETTINGS) do
-    vfx.particlesSettings[type] = constructor
+  for type, setting in pairs(PARTICLES_SETTINGS) do
+    vfx.particlesSettings[type] = setting
   end
 
   for type, setting in pairs(VFX_ANIMATIONS_TABLE) do
@@ -98,14 +109,15 @@ function VFXManager:playParticle(particleType, entity, offset, follow, ...)
     return instance.particle
   end
 
-  local particle = setting(...)
+  local particle = setting.constructor(...)
 
   instance = {
     particle = particle,
     entity = entity,
     offset = offset or vec(0, 0),
     follow = follow or false,
-    started = false
+    started = false,
+    blendMode = setting.blendMode or "alpha",
   }
 
   self.particlesInst[entity][particleType] = instance
@@ -204,8 +216,12 @@ function VFXManager:drawParticleInstance(particleInstance, camera)
   local particleOffX = -camera.cx + camera.viewport.width / 2
 	local particleOffY = -camera.cy + camera.viewport.height / 2
 
+  local blendMode = particleInstance.blendMode
   local particle = particleInstance.particle
+
+  love.graphics.setBlendMode(blendMode)
   love.graphics.draw(particle, particleOffX, particleOffY)
+  love.graphics.setBlendMode("alpha")
 end
 
 ----------------------------------------

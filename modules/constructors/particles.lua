@@ -45,3 +45,32 @@ function newWalkingParticles()
 	defParticles:stop()
 	return defParticles
 end
+
+---@return ParticleSystem
+function newBreakingParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 36)
+
+	ps:setColors(1, 1, 1, 0, 1, 1, 1, 1, 1, 0.92716944217682, 0.64393937587738, 0.93181818723679, 1, 0.92716944217682, 0.64393937587738, 0.81818181276321, 1, 0.92716944217682, 0.64393937587738, 0.70075756311417)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 6.5320539474487, 6.5320539474487, 0, true)
+	ps:setEmissionRate(464.14953613281)
+	ps:setEmitterLifetime(0.07192774116993)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, 1728.9719238281, 0, 1728.9719238281)
+	ps:setLinearDamping(0, 0)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(0.16063083708286, 0.75396627187729)
+	ps:setRadialAcceleration(0, 0)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0.098682641983032, 0)
+	ps:setSizeVariation(0)
+	ps:setSpeed(399.54382324219, 1125.3389892578)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(0)
+	ps:setTangentialAcceleration(0, 0)
+	ps:stop()
+
+end
