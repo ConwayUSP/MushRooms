@@ -13,6 +13,8 @@ local drawList = {}
 local drawListPool = {}
 local shadows = {}
 local shadowsPool = {}
+local bgList = {}
+local bgListPool = {}
 
 ----------------------------------------
 -- Funções locais
@@ -20,8 +22,8 @@ local shadowsPool = {}
 
 ---@param entity Entity
 ---@param yPos number
----@param animVFX? boolean
----@param particleVFX? boolean
+---@param isAnimVFX? boolean
+---@param isParticleVFX? boolean
 -- tira uma tabela do pool para colocar na lista de draw
 -- se não tiver mais nenhuma tabela livre no pool, cria uma nova (caso em que aloca memória)
 local function addEntityToDrawList(entity, yPos, isAnimVFX, isParticleVFX)
@@ -54,6 +56,24 @@ local function addShadow(sx, sy, rx, ry)
 	s.sx, s.sy = sx, sy
 	s.rx, s.ry = rx, ry
 	shadows[#shadows + 1] = s
+end
+
+--- @param entity Entity
+--- @param yPos number
+-- tira uma tabela do pool para colocar na lista de draw do background
+-- se não tiver mais nenhuma tabela livre no pool, cria uma nova (caso em que aloca memória)
+local function addEntityToBgList(entity, yPos)
+  local item = bgListPool[#bgListPool]
+  if item then
+    bgListPool[#bgListPool] = nil
+  else
+    item = {}
+  end
+
+  item.it = entity
+  item.y = yPos
+
+  bgList[#bgList + 1] = item
 end
 
 ----------------------------------------
@@ -99,6 +119,10 @@ function renderEntities(camera)
 	for i = #drawList, 1, -1 do
 		drawListPool[#drawListPool + 1] = drawList[i]
 		drawList[i] = nil
+	end
+	for i = #bgList, 1, -1 do
+		bgListPool[#bgListPool + 1] = bgList[i]
+		bgList[i] = nil
 	end
 	for i = #shadows, 1, -1 do
 		shadowsPool[#shadowsPool + 1] = shadows[i]
@@ -146,7 +170,13 @@ function renderEntities(camera)
 		end
 		-- adiciona obstáculos
 		for _, o in pairs(r.obstacles) do
-			addEntityToDrawList(o, o.pos.y + getAnchor(o, FLOOR))
+			local y =  o.pos.y + getAnchor(o, FLOOR)
+
+			if o.isBg then
+				addEntityToBgList(o, y)
+			else
+				addEntityToDrawList(o, y)
+			end
 		end
 	end
 
@@ -205,10 +235,20 @@ function renderEntities(camera)
 		addEntityToDrawList(anim, anim.pos.y, true, false)
 	end
 
+	-- ordena os obstáculos de background por posição Y
+	table.sort(bgList, function(a, b)
+		return a.y < b.y
+	end)
+
 	-- ordena por posição Y
 	table.sort(drawList, function(a, b)
 		return a.y < b.y
 	end)
+
+	-- desenha os obstáculos de background
+	for _, obj in ipairs(bgList) do
+		obj.it:draw(camera)
+	end
 
 	-- desenha as sombras das entidades
 	love.graphics.setColor(0, 0, 0.1, 1.0)

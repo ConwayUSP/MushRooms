@@ -9,6 +9,7 @@
 ---@field scale number?
 ---@field transparent boolean
 ---@field mirrored boolean?
+---@field isBg boolean
 ---@field addAnimations fun(self: Obstacle, idleSettings: AnimSettings): nil
 
 Obstacle = setmetatable({}, { __index = Entity })
@@ -20,9 +21,10 @@ Obstacle.type = OBSTACLE
 ---@param spawnPos Vec
 ---@param room Room
 ---@param canMirror? boolean
+---@param isBg? boolean
 ---@return Obstacle
 -- cria um obstáculo (como paredes ou decorações)
-function Obstacle.new(name, hbs, spawnPos, room, canMirror)
+function Obstacle.new(name, hbs, spawnPos, room, canMirror, isBg)
 	---@type Obstacle
 	local ob = setmetatable({}, Obstacle) ---@diagnostic disable-line
 	local entityPhysics = physicsSettings(math.huge, 0, 1, nil, nil, nil, 0)
@@ -32,6 +34,7 @@ function Obstacle.new(name, hbs, spawnPos, room, canMirror)
 	ob.spriteSheets = {}
 	ob.transparent = false
 	ob.mirrored = canMirror and math.random() < 0.5
+	ob.isBg = isBg or false
 
 	if name:sub(1, 4) ~= "wall" then
 		table.insert(room.obstacles, ob)
