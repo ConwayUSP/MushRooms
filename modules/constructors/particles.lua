@@ -110,3 +110,35 @@ function newSeedParticles()
 
 	return ps
 end
+
+---@return ParticleSystem
+function newKatanaParticles()
+	-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.
+	-- Blend mode: "add"
+	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg1, 33)
+
+	ps:setColors(0.59765625, 0.94342041015625, 1, 0, 0.6015625, 0.97198486328125, 1, 1, 0.81640625, 0.96987915039063, 1, 0.93181818723679, 0.64393937587738, 0.94158381223679, 1, 0.81818181276321, 0.64393937587738, 0.908203125, 1, 0.70075756311417)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 50.286659240723, 50.286659240723, 0, true)
+	ps:setEmissionRate(424.49346923828)
+	ps:setEmitterLifetime(0.07192774116993)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, -18.424196243286, 0, 8.6251773834229)
+	ps:setLinearDamping(4.0161485671997, 4.5562109947205)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(0.17245730757713, 0.2662082016468)
+	ps:setRadialAcceleration(-5541.4467773438, -6637.3037109375)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0.018888473510742, 0.038547907024622, 0)
+	ps:setSizeVariation(0)
+	ps:setSpeed(862.86358642578, 1033.9801025391)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(0)
+	ps:setTangentialAcceleration(-2846.716796875, -2205.6977539063)
+	ps:stop()
+
+	return ps
+end

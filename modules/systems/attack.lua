@@ -304,6 +304,10 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 		atkEvent:addAnimation(attackState.animIntactSettings, attackState.animBreakingSettings)
 	end
 
+	if attackState.subtype == MELEE_ATTACK then
+		globalVFXManager:playParticle(attackState.particle, atkEvent, nil, true)
+	end
+
 	return atkEvent
 end
 

@@ -14,11 +14,7 @@ function newKatana()
 
 		atkEvent.pos = origin
 	end
-	local onHitFunc = function(atkEvent, target)
-		-- print("Katana acertou um " .. target.type .. " por " .. atkEvent.dmg .. " de dano!")
-	end
-	local rotationFunc = function (e)
-		return e.dire
+	local onHitFunc = function(e, target)
 	end
 	local hb = hitbox(Circle.new(100))
 	local hbs = hitboxes({ hb })
@@ -32,7 +28,7 @@ function newKatana()
 		cooldown = cooldown
 	})
 	local atkAnimSettings = newAnimSetting(12, { width = 64, height = 64 }, 0.03, false, 1)
-	local attack = Attack.new("Katana Slice", atkSettings, updateFunc, onHitFunc)
+	local attack = Attack.new("Katana Slice", atkSettings, updateFunc, onHitFunc, nil, nil, nil, PARTICLE_KATANA)
 	attack:addAnimations(atkAnimSettings, atkAnimSettings)
 
 	-- Inicialicação da arma em si

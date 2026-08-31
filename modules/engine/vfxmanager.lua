@@ -42,6 +42,13 @@ local PARTICLES_SETTINGS = {
     end,
     blendMode = "add"
   },
+
+  [PARTICLE_KATANA] = {
+    constructor = function()
+      return newKatanaParticles()
+    end,
+    blendMode = "add"
+  },
 }
 
 local VFX_ANIMATIONS_TABLE = {
