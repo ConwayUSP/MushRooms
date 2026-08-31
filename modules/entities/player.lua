@@ -1,7 +1,6 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.particles")
 require("modules.constructors.craftings")
 require("modules.engine.animation")
 require("modules.engine.audiomanager")

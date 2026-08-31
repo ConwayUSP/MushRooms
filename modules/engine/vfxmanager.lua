@@ -1,7 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-
+require("modules.constructors.particles")
 require("modules.utils.types")
 require("modules.utils.vec")
 require("modules.utils.utils")
@@ -32,6 +32,13 @@ local PARTICLES_SETTINGS = {
   [PARTICLE_BREAKING] = {
     constructor = function()
       return newBreakingParticles()
+    end,
+    blendMode = "add"
+  },
+
+  [PARTICLE_SEED] = {
+    constructor = function()
+      return newSeedParticles()
     end,
     blendMode = "add"
   },

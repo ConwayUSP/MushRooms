@@ -46,31 +46,67 @@ function newWalkingParticles()
 	return defParticles
 end
 
+
 ---@return ParticleSystem
 function newBreakingParticles()
-	local particleImg = assetManager:getImage("assets/sprites/circle.png")
-	local ps = love.graphics.newParticleSystem(particleImg, 36)
+	-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.
+	-- Blend mode: "add"
+	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg1, 12)
 
 	ps:setColors(1, 1, 1, 0, 1, 1, 1, 1, 1, 0.92716944217682, 0.64393937587738, 0.93181818723679, 1, 0.92716944217682, 0.64393937587738, 0.81818181276321, 1, 0.92716944217682, 0.64393937587738, 0.70075756311417)
 	ps:setDirection(0)
 	ps:setEmissionArea("borderellipse", 6.5320539474487, 6.5320539474487, 0, true)
-	ps:setEmissionRate(464.14953613281)
+	ps:setEmissionRate(149.26387023926)
 	ps:setEmitterLifetime(0.07192774116993)
 	ps:setInsertMode("top")
 	ps:setLinearAcceleration(0, 1728.9719238281, 0, 1728.9719238281)
-	ps:setLinearDamping(0, 0)
+	ps:setLinearDamping(2.6003096103668, 4.091215133667)
 	ps:setOffset(50, 50)
-	ps:setParticleLifetime(0.16063083708286, 0.75396627187729)
+	ps:setParticleLifetime(0.16063083708286, 0.31359833478928)
 	ps:setRadialAcceleration(0, 0)
 	ps:setRelativeRotation(false)
 	ps:setRotation(0, 0)
-	ps:setSizes(0.098682641983032, 0)
+	ps:setSizes(0.04, 0)
 	ps:setSizeVariation(0)
-	ps:setSpeed(399.54382324219, 1125.3389892578)
+	ps:setSpeed(250.17938232422, 652.8349609375)
 	ps:setSpin(0, 0)
 	ps:setSpinVariation(0)
 	ps:setSpread(0)
 	ps:setTangentialAcceleration(0, 0)
 	ps:stop()
 
+	return ps
+end
+
+---@return ParticleSystem
+function newSeedParticles()
+	-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.
+	-- Blend mode: "add"
+	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg1, 36)
+
+	ps:setColors(0.26953125, 0.21162414550781, 0.10107421875, 0, 0.3515625, 0.30886563658714, 0.142822265625, 1, 0.3359375, 0.29648035764694, 0.14303588867188, 0.93181818723679, 1, 0.88813918828964, 0.453125, 0.81818181276321, 1, 0.92716944217682, 0.64393937587738, 0.70075756311417)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 6.5320539474487, 6.5320539474487, 0, true)
+	ps:setEmissionRate(120)
+	ps:setEmitterLifetime(0.07192774116993)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, 500.2092590332, 0, 520.62384033203)
+	ps:setLinearDamping(5.5612688064575, 6.3807458877563)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(0.16063083708286, 0.75396627187729)
+	ps:setRadialAcceleration(0, 0)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0.038547907024622, 0)
+	ps:setSizeVariation(0)
+	ps:setSpeed(250.17938232422, 333.07907104492)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(0)
+	ps:setTangentialAcceleration(0, 0)
+	ps:stop()
+
+	return ps
 end
