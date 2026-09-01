@@ -5,55 +5,7 @@ require("modules.constructors.particles")
 require("modules.utils.types")
 require("modules.utils.vec")
 require("modules.utils.utils")
-
-----------------------------------------
--- Configurações
-----------------------------------------
-
-----------------------------------------------------------------------
---- Todas as configurações de partículas do jogo
---- devem ser definidas aqui. Cada tipo de partícula deve 
---- ter uma função que retorna um sistema de partículas configurado.
-----------------------------------------------------------------------
-
-local PARTICLES_SETTINGS = {
-  [PARTICLE_DEFENSE] = {
-    constructor = function(color1, color2)
-      return newDefenseParticles(color1, color2)
-    end
-  },
-
-  [PARTICLE_WALKING] = {
-    constructor = function()
-      return newWalkingParticles()
-    end
-  },
-
-  [PARTICLE_BREAKING] = {
-    constructor = function()
-      return newBreakingParticles()
-    end,
-    blendMode = "add"
-  },
-
-  [PARTICLE_SEED] = {
-    constructor = function()
-      return newSeedParticles()
-    end,
-    blendMode = "add"
-  },
-
-  [PARTICLE_KATANA] = {
-    constructor = function()
-      return newKatanaParticles()
-    end,
-    blendMode = "add"
-  },
-}
-
-local VFX_ANIMATIONS_TABLE = {
-  [PARTICLE_EXPLOSION] = newAnimSetting(10, { width = 32, height = 32 }, 0.01, false, 0, 0, vec(0, 0), nil),
-}
+require("modules.utils.vfxs")
 
 ----------------------------------------
 -- Gerenciador de VFX
@@ -117,7 +69,6 @@ function VFXManager:playParticle(particleType, entity, offset, follow, ...)
     if instance.particle:isStopped() then
       instance.particle:start()
     end
-
     return instance.particle
   end
 

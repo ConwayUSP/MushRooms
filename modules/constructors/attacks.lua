@@ -5,6 +5,7 @@ require("modules.constructors.targetstrats")
 require("modules.systems.movement")
 require("modules.systems.attack")
 require("modules.utils.types")
+require("modules.utils.vfxs")
 
 ----------------------------------------
 -- Construtores de Ataques
@@ -201,9 +202,9 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local onHitFunc = function(e, t)
 		-- print(SKULL_SHOT.name .. " acertou um alvo")
 	end
-	local particle = PARTICLE_BREAKING
+	local particles = atkParticles(nil, PARTICLE_WALKING, PARTICLE_BREAKING)
 
-	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particle)
+	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -259,8 +260,10 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		print(BLACKHOLE_SHOT.name .. " acertou um alvo")
 	end
 
+	local particles = atkParticles(nil, PARTICLE_BLACK_HOLE, nil)
+
 	local attack =
-		Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+		Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 20
@@ -292,9 +295,9 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local onHitFunc = function(e, t)
 		-- print(SEED_SHOT.name .. " acertou um alvo")
 	end
-	local particle = PARTICLE_SEED
+	local particles = atkParticles(nil, nil, PARTICLE_SEED)
 
-	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, onShot, trajectoryFuncBuilder, nil, particle)
+	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, onShot, trajectoryFuncBuilder, nil, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 8

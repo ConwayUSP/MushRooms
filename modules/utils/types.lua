@@ -99,12 +99,13 @@ AUDIO_COLLIDE = "collision audio"
 
 ---------- PARTICLES ----------
 PARTICLE_WALKING = "walking particle"
+PARTICLE_DEFENSE = "defense particle"
 PARTICLE_HIT = "hit particle"
 PARTICLE_BREAKING = "breaking particle"
 PARTICLE_SEED = "seed particle"
 PARTICLE_KATANA = "katana particle"
-PARTICLE_DEFENSE = "defense particle"
 PARTICLE_EXPLOSION = "explosion particle"
+PARTICLE_BLACK_HOLE = "black hole particle"
 
 ---------- OUTROS ----------
 COLOR = "color"

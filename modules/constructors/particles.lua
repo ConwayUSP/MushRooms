@@ -46,15 +46,33 @@ function newWalkingParticles()
 	return defParticles
 end
 
-
 ---@return ParticleSystem
 function newBreakingParticles()
-	-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.
-	-- Blend mode: "add"
 	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
 	local ps = love.graphics.newParticleSystem(particleImg1, 12)
 
-	ps:setColors(1, 1, 1, 0, 1, 1, 1, 1, 1, 0.92716944217682, 0.64393937587738, 0.93181818723679, 1, 0.92716944217682, 0.64393937587738, 0.81818181276321, 1, 0.92716944217682, 0.64393937587738, 0.70075756311417)
+	ps:setColors(
+		1,
+		1,
+		1,
+		0,
+		1,
+		1,
+		1,
+		1,
+		1,
+		0.92716944217682,
+		0.64393937587738,
+		0.93181818723679,
+		1,
+		0.92716944217682,
+		0.64393937587738,
+		0.81818181276321,
+		1,
+		0.92716944217682,
+		0.64393937587738,
+		0.70075756311417
+	)
 	ps:setDirection(0)
 	ps:setEmissionArea("borderellipse", 6.5320539474487, 6.5320539474487, 0, true)
 	ps:setEmissionRate(149.26387023926)
@@ -81,12 +99,31 @@ end
 
 ---@return ParticleSystem
 function newSeedParticles()
-	-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.
-	-- Blend mode: "add"
 	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
 	local ps = love.graphics.newParticleSystem(particleImg1, 36)
 
-	ps:setColors(0.26953125, 0.21162414550781, 0.10107421875, 0, 0.3515625, 0.30886563658714, 0.142822265625, 1, 0.3359375, 0.29648035764694, 0.14303588867188, 0.93181818723679, 1, 0.88813918828964, 0.453125, 0.81818181276321, 1, 0.92716944217682, 0.64393937587738, 0.70075756311417)
+	ps:setColors(
+		0.26953125,
+		0.21162414550781,
+		0.10107421875,
+		0,
+		0.3515625,
+		0.30886563658714,
+		0.142822265625,
+		1,
+		0.3359375,
+		0.29648035764694,
+		0.14303588867188,
+		0.93181818723679,
+		1,
+		0.88813918828964,
+		0.453125,
+		0.81818181276321,
+		1,
+		0.92716944217682,
+		0.64393937587738,
+		0.70075756311417
+	)
 	ps:setDirection(0)
 	ps:setEmissionArea("borderellipse", 6.5320539474487, 6.5320539474487, 0, true)
 	ps:setEmissionRate(120)
@@ -113,12 +150,31 @@ end
 
 ---@return ParticleSystem
 function newKatanaParticles()
-	-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.
-	-- Blend mode: "add"
 	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
 	local ps = love.graphics.newParticleSystem(particleImg1, 33)
 
-	ps:setColors(0.59765625, 0.94342041015625, 1, 0, 0.6015625, 0.97198486328125, 1, 1, 0.81640625, 0.96987915039063, 1, 0.93181818723679, 0.64393937587738, 0.94158381223679, 1, 0.81818181276321, 0.64393937587738, 0.908203125, 1, 0.70075756311417)
+	ps:setColors(
+		0.59765625,
+		0.94342041015625,
+		1,
+		0,
+		0.6015625,
+		0.97198486328125,
+		1,
+		1,
+		0.81640625,
+		0.96987915039063,
+		1,
+		0.93181818723679,
+		0.64393937587738,
+		0.94158381223679,
+		1,
+		0.81818181276321,
+		0.64393937587738,
+		0.908203125,
+		1,
+		0.70075756311417
+	)
 	ps:setDirection(0)
 	ps:setEmissionArea("borderellipse", 50.286659240723, 50.286659240723, 0, true)
 	ps:setEmissionRate(424.49346923828)
@@ -138,6 +194,49 @@ function newKatanaParticles()
 	ps:setSpinVariation(0)
 	ps:setSpread(0)
 	ps:setTangentialAcceleration(2205.6977539063, 2846.716796875)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+function newBlackHoleParticles()
+	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg1, 41)
+
+	ps:setColors(
+		0.99691772460938,
+		1,
+		0.60546875,
+		1,
+		1,
+		0.2734375,
+		0.2734375,
+		1,
+		0.4609375,
+		0.099029541015625,
+		0.33653163909912,
+		1
+	)
+	ps:setDirection(-1.5707963705063)
+	ps:setEmissionArea("normal", 11.814744949341, 11.814744949341, -1.5707963705063, false)
+	ps:setEmissionRate(12.041033744812)
+	ps:setEmitterLifetime(-1)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, 8.6251773834229, 0, 8.6251773834229)
+	ps:setLinearDamping(0.1961845010519, 0.1961845010519)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(2.2740254402161, 2.5111618041992)
+	ps:setRadialAcceleration(-122.9664478302, -331.63552856445)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0, 0.07, 0)
+	ps:setSizeVariation(0.02)
+	ps:setSpeed(86.251770019531, 289.09146118164)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(6.2831854820251)
+	ps:setTangentialAcceleration(0, 0)
 	ps:stop()
 
 	return ps
