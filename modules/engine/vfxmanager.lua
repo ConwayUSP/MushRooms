@@ -77,9 +77,7 @@ function VFXManager.new()
   vfx.animVFX = {}
   vfx.animInstances = {}
 
-  for type, setting in pairs(PARTICLES_SETTINGS) do
-    vfx.particlesSettings[type] = setting
-  end
+  vfx.particlesSettings = PARTICLES_SETTINGS
 
   for type, setting in pairs(VFX_ANIMATIONS_TABLE) do
     local path = pngPathFormat({ "assets", "animations", "vfxs", type })
@@ -103,7 +101,7 @@ end
 --- @param offset Vec?
 --- @param follow boolean?
 --- @param ... any
--- Toca uma partícula para uma entidade. Se a partícula já estiver sendo tocada, ela não será reiniciada.
+-- toca uma partícula para uma entidade. Se a partícula já estiver sendo tocada, ela não será reiniciada.
 function VFXManager:playParticle(particleType, entity, offset, follow, ...)
   local setting = self.particlesSettings[particleType]
 
@@ -145,7 +143,7 @@ end
 
 --- @param particleType string
 --- @param entity Entity
--- Para de tocar uma partícula para uma entidade.
+-- para de tocar uma partícula para uma entidade.
 function VFXManager:stopParticle(particleType, entity)
   local entityParticles = self.particlesInst[entity]
 
@@ -165,7 +163,7 @@ end
 --- @param particleType string
 --- @param entity Entity
 --- @param direction number
--- Define a direção de uma partícula para uma entidade.
+-- define a direção de uma partícula para uma entidade.
 function VFXManager:setParticleDirection(particleType, entity, direction)
   local entityParticles = self.particlesInst[entity]
 
@@ -183,7 +181,7 @@ function VFXManager:setParticleDirection(particleType, entity, direction)
 end
 
 --- @param dt number
--- Atualiza todas as partículas e animações. Se uma partícula ou animação terminar (não há mais partículas ou animação isFinished), ela será removida da lista de instâncias.
+-- atualiza todas as partículas e animações. Se uma partícula ou animação terminar (não há mais partículas ou animação isFinished), ela será removida da lista de instâncias.
 function VFXManager:update(dt)
   for entity, particles in pairs(self.particlesInst) do
     for particleType, instance in pairs(particles) do
@@ -225,7 +223,7 @@ end
 
 --- @param particleInstance table
 --- @param camera Camera
--- Desenha uma instância de partícula na tela, considerando a posição da câmera.
+-- desenha uma instância de partícula na tela, considerando a posição da câmera.
 function VFXManager:drawParticleInstance(particleInstance, camera)
   local particleOffX = -camera.cx + camera.viewport.width / 2
 	local particleOffY = -camera.cy + camera.viewport.height / 2

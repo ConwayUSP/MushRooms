@@ -137,7 +137,7 @@ function newKatanaParticles()
 	ps:setSpin(0, 0)
 	ps:setSpinVariation(0)
 	ps:setSpread(0)
-	ps:setTangentialAcceleration(-2846.716796875, -2205.6977539063)
+	ps:setTangentialAcceleration(2205.6977539063, 2846.716796875)
 	ps:stop()
 
 	return ps

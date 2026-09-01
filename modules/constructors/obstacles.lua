@@ -101,7 +101,7 @@ end
 function newNegative(spawnPos, room)
 	local hbs = hitboxes({}, {}, {})
 	local randNegative = tostring(math.random(17))
-	local obs = Obstacle.new(NEGATIVE.name .. randNegative, hbs, spawnPos, room, true)
+	local obs = Obstacle.new(NEGATIVE.name .. randNegative, hbs, spawnPos, room, true, true)
 	obs:addAnimations(newAnimSetting(1, size(41, 40), 1000, false))
 
 	return obs

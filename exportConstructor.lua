@@ -23,7 +23,7 @@ for _, ps in ipairs(exported.particleSystems) do
 		if ps.texturePath == "" then
 			Text"local " Text(imageIdent) Text" = ? -- Preset: " Text(ps.texturePreset) Text"\n"
 		else
-			Text"local " Text(imageIdent) Text" = assetManager:getImage(" Lua(ps.texturePath) Text")\n"
+			Text"local " Text(imageIdent) Text" = assetManager:getImage(\"assets/sprites/" Lua(ps.texturePath) Text"\")\n"
 		end
 
 		if exported.pixelateTextures then
@@ -41,7 +41,6 @@ for _, ps in ipairs(exported.particleSystems) do
 	Text"\n"
 	Text"---@return ParticleSystem\n"
 	Text"function new" Text(ps.title ~= "" and ps.title or "Particle") Text"Particles()\n"
-	Text"\t-- Remember to define the blend mode for this particle in PARTICLES_SETTINGS.\n"
 	Text"\t-- Blend mode: " 			  LuaCsv(ps.blendMode) 				Text"\n"
 	Text"\tlocal ps = love.graphics.newParticleSystem(" Text(imageIdentBySystem[ps]) Text", " Lua(ps.bufferSize) Text")\n\n"
 
