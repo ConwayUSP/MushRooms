@@ -1,7 +1,5 @@
 function initGlobalVFXManager()
-  local vm = VFXManager.new({
-    PARTICLE_EXPLOSION
-  }, nil)
+  local vm = VFXManager.new()
 
   return vm
 end

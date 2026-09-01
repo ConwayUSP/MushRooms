@@ -92,7 +92,7 @@ end
 function newMoss(spawnPos, room)
 	local hbs = hitboxes({}, {}, {})
 	local randMoss = tostring(math.random(12))
-	local obs = Obstacle.new(MOSS.name .. randMoss, hbs, spawnPos, room, true)
+	local obs = Obstacle.new(MOSS.name .. randMoss, hbs, spawnPos, room, true, true)
 	obs:addAnimations(newAnimSetting(1, size(172, 115), 1000, false))
 
 	return obs
@@ -101,7 +101,7 @@ end
 function newNegative(spawnPos, room)
 	local hbs = hitboxes({}, {}, {})
 	local randNegative = tostring(math.random(17))
-	local obs = Obstacle.new(NEGATIVE.name .. randNegative, hbs, spawnPos, room, true)
+	local obs = Obstacle.new(NEGATIVE.name .. randNegative, hbs, spawnPos, room, true, true)
 	obs:addAnimations(newAnimSetting(1, size(41, 40), 1000, false))
 
 	return obs
@@ -137,7 +137,7 @@ end
 function newCracks(spawnPos, room)
 	local hbs = hitboxes({}, {}, {})
 	local randCrack = tostring(math.random(6))
-	local obs = Obstacle.new(CRACKS.name .. randCrack, hbs, spawnPos, room, true)
+	local obs = Obstacle.new(CRACKS.name .. randCrack, hbs, spawnPos, room, true, true)
 	obs:addAnimations(newAnimSetting(1, size(43, 15), 1000, false))
 
 	return obs

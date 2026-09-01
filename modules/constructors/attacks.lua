@@ -201,9 +201,9 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local onHitFunc = function(e, t)
 		-- print(SKULL_SHOT.name .. " acertou um alvo")
 	end
+	local particle = PARTICLE_BREAKING
 
-	local attack =
-		Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particle)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -292,8 +292,9 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local onHitFunc = function(e, t)
 		-- print(SEED_SHOT.name .. " acertou um alvo")
 	end
+	local particle = PARTICLE_SEED
 
-	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, onShot, trajectoryFuncBuilder, nil)
+	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, onShot, trajectoryFuncBuilder, nil, particle)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 8

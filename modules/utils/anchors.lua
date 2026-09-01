@@ -33,7 +33,6 @@ ANCHORS = {
 	-- Items
 	katana = floorAnchor(11),
 	sling_shot = floorAnchor(8),
-	coin = floorAnchor(8),
 
 	-- Destrutíveis
 	barrel = floorAnchor(10),

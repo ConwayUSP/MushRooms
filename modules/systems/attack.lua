@@ -66,6 +66,7 @@ end
 ---@field weapon? Weapon
 ---@field hasShadow boolean
 ---@field shadowWidth number
+---@field particle? string
 ---@field addAnimations fun(self: Attack, intactSettings: AnimSettings, breakingSettings?: AnimSettings)
 Attack = {}
 Attack.__index = Attack
@@ -78,11 +79,12 @@ Attack.type = ATTACK
 ---@param onShot? function
 ---@param trajectoryFuncBuilder? function
 ---@param rotationFunc? function
+---@param particle? string
 ---@return Attack
 -- `Attacks` agem como emissores de `AttackEvents`;
 -- eles armazenam as configurações, dados iniciais
 -- de um ataque e informações de controle (como o cooldown)
-function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFuncBuilder, rotationFunc)
+function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFuncBuilder, rotationFunc, particle)
 	local attack = setmetatable({}, Attack)
 	attack.name = name -- nome do tipo de ataque
 	attack.subtype = atkSettings.subtype -- indica se o ataque é melee, ranged ou outro tipo
@@ -107,7 +109,7 @@ function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFunc
 	attack.onShot = onShot or function() end -- função executada quando um ataque é disparado
 	attack.trajectoryFuncBuilder = trajectoryFuncBuilder -- função que define a trajetória do ataque/projétil
 	attack.rotationFunc = rotationFunc -- função que define a rotação do ataque/projétil
-
+	attack.particle = particle -- partícula a ser usada no ataque
 	-- Atributos fixos na instanciação
 	attack.events = {}
 	return attack
@@ -175,7 +177,7 @@ function Attack:update(dt)
 				e.state = BREAKING
 				e.active = false
 				collisionManager:unregister(e)
-				globalVFXManager:playAnimation(PARTICLE_EXPLOSION, e.pos)
+				globalVFXManager:playParticle(e.atk.particle, e, nil, false)
 			else
 				if e.state == BREAKING then
 					if not e.animations[BREAKING] or e.breakingFinished then
@@ -300,6 +302,10 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	table.insert(attackState.events, atkEvent)
 	if attackState.animIntactSettings then
 		atkEvent:addAnimation(attackState.animIntactSettings, attackState.animBreakingSettings)
+	end
+
+	if attackState.subtype == MELEE_ATTACK then
+		globalVFXManager:playParticle(attackState.particle, atkEvent, nil, true)
 	end
 
 	return atkEvent
