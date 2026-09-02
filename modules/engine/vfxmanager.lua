@@ -56,23 +56,22 @@ end
 -- toca uma partícula para uma entidade. Se a partícula já estiver sendo tocada, ela não será reiniciada.
 function VFXManager:playParticle(particleType, entity, offset, follow, ...)
   local setting = self.particlesSettings[particleType]
-
   if not setting then
     return
   end
 
   self.particlesInst[entity] = self.particlesInst[entity] or {}
-
   local instance = self.particlesInst[entity][particleType]
 
   if instance then
     if instance.particle:isStopped() then
-      instance.particle:start()
+      self:startParticle(instance, particleType, entity)
     end
     return instance.particle
   end
 
   local particle = setting.constructor(...)
+  local offset = offset or self.particlesSettings[particleType].offset
 
   instance = {
     particle = particle,
@@ -84,12 +83,40 @@ function VFXManager:playParticle(particleType, entity, offset, follow, ...)
   }
 
   self.particlesInst[entity][particleType] = instance
-
-  local x, y = entity.pos.x + instance.offset.x, entity.pos.y + instance.offset.y
-  particle:setPosition(x, y)
-  particle:start()
+  self:startParticle(instance, particleType, entity, true)
 
   return particle
+end
+
+---@param instance ParticleSystem
+---@param particleType string
+---@param entity Entity
+---@param newInstance? boolean
+-- inicia a emissão de partículas e cuida da direção e velocidade iniciais da emissão
+function VFXManager:startParticle(instance, particleType, entity, newInstance)
+  instance.particle:start()
+  local partDir = self:updateParticleDirection(instance, particleType, entity)
+
+  if newInstance then
+    -- a posição do sistema de partículas deve começar na entidade (com possível offset)
+    local x, y = entity.pos.x + instance.offset.x, entity.pos.y + instance.offset.y
+    instance.particle:setPosition(x, y)
+
+    if self.particlesSettings[particleType].ownerInertia then
+      -- usando a inércia da entidade para afetar a velocidade das partículas
+      local speedMin, speedMax = instance.particle:getSpeed()
+      local ownerDir = math.atan2(entity.attacker.vel.y, entity.attacker.vel.x)
+      local f = 0.5 - math.atan2(math.sin(ownerDir - partDir), math.cos(ownerDir - partDir)) / (2 * math.pi) -- diferença normalizada entre as direções
+      local speedChange = f * (math.abs(entity.attacker.vel.x) + math.abs(entity.attacker.vel.y))
+      instance.particle:setSpeed(speedMin + speedChange, speedMax + speedChange)
+    end
+
+    -- burst de emissão inicial
+    local emitAtStart = self.particlesSettings[particleType].emitAtStart
+    if emitAtStart then
+      instance.particle:emit(emitAtStart)
+    end
+  end
 end
 
 --- @param particleType string
@@ -111,24 +138,22 @@ function VFXManager:stopParticle(particleType, entity)
   instance.particle:stop()
 end
 
---- @param particleType string
---- @param entity Entity
---- @param direction number
+---@param instance ParticleSystem
+---@param particleType string
+---@param entity Entity | AtkEvent
 -- define a direção de uma partícula para uma entidade.
-function VFXManager:setParticleDirection(particleType, entity, direction)
-  local entityParticles = self.particlesInst[entity]
-
-  if not entityParticles then
+function VFXManager:updateParticleDirection(instance, particleType, entity)
+  if not self.particlesSettings[particleType].directed then
     return
   end
 
-  local instance = entityParticles[particleType]
-
-  if not instance then
-    return
+  local direction = entity.direction or math.atan2(entity.vel.y, entity.vel.x)
+  if self.particlesSettings[particleType].invDirection then
+    direction = direction + math.pi
   end
 
   instance.particle:setDirection(direction)
+  return direction
 end
 
 --- @param dt number
@@ -138,6 +163,7 @@ function VFXManager:update(dt)
     for particleType, instance in pairs(particles) do
       local particle = instance.particle
 
+      self:updateParticleDirection(instance, particleType, entity)
       particle:update(dt)
 
       if instance.follow then

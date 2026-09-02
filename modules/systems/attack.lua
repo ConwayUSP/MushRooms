@@ -301,7 +301,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 
 	-- adicionando à respectiva lista de hitboxes
 	collisionManager:register(atkEvent)
-	
+
 	table.insert(attackState.events, atkEvent)
 	if attackState.animIntactSettings then
 		atkEvent:addAnimation(attackState.animIntactSettings, attackState.animBreakingSettings)

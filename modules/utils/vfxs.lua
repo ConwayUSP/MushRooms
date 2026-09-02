@@ -43,6 +43,8 @@ PARTICLES_SETTINGS = {
 		constructor = function()
 			return newWalkingParticles()
 		end,
+		directed = true, -- a direção da emissão importa
+		invDirection = true, -- a direção da partícula vai em oposição à entidade
 	},
 	[PARTICLE_BREAKING] = {
 		constructor = function()
@@ -66,6 +68,15 @@ PARTICLES_SETTINGS = {
 		constructor = function()
 			return newBlackHoleParticles()
 		end,
+	},
+	[PARTICLE_FLOWER_SHOT] = {
+		constructor = function()
+			return newFlowerShotParticles()
+		end,
+		emitAtStart = 10, -- emite 40 particulas de uma vez no início
+		directed = true,
+		ownerInertia = true, -- considera a velocidade do owner na velocidade das partículas (exclusivo para ataques)
+		offset = vec(0, 5),
 	},
 }
 

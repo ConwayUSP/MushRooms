@@ -106,6 +106,7 @@ PARTICLE_SEED = "seed particle"
 PARTICLE_KATANA = "katana particle"
 PARTICLE_EXPLOSION = "explosion particle"
 PARTICLE_BLACK_HOLE = "black hole particle"
+PARTICLE_FLOWER_SHOT = "flower shot particle"
 
 ---------- OUTROS ----------
 COLOR = "color"

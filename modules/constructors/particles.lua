@@ -48,8 +48,8 @@ end
 
 ---@return ParticleSystem
 function newBreakingParticles()
-	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
-	local ps = love.graphics.newParticleSystem(particleImg1, 12)
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 12)
 
 	ps:setColors(
 		1,
@@ -99,8 +99,8 @@ end
 
 ---@return ParticleSystem
 function newSeedParticles()
-	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
-	local ps = love.graphics.newParticleSystem(particleImg1, 36)
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 36)
 
 	ps:setColors(
 		0.26953125,
@@ -150,8 +150,8 @@ end
 
 ---@return ParticleSystem
 function newKatanaParticles()
-	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
-	local ps = love.graphics.newParticleSystem(particleImg1, 33)
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 33)
 
 	ps:setColors(
 		0.59765625,
@@ -201,8 +201,8 @@ end
 
 ---@return ParticleSystem
 function newBlackHoleParticles()
-	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
-	local ps = love.graphics.newParticleSystem(particleImg1, 41)
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 41)
 
 	ps:setColors(
 		0.99691772460938,
@@ -236,6 +236,36 @@ function newBlackHoleParticles()
 	ps:setSpin(0, 0)
 	ps:setSpinVariation(0)
 	ps:setSpread(6.2831854820251)
+	ps:setTangentialAcceleration(0, 0)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+function newFlowerShotParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 20)
+
+	ps:setColors(0.734375, 0, 1, 0.65390625, 1, 0.13671875, 0.7032470703125, 0.0)
+	ps:setDirection(-1.5707963705063)
+	ps:setEmissionArea("none", 0, 0, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(0.01)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(-3.95, -3.95)
+	ps:setLinearDamping(4.4, 4.4)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(0.6, 4.3)
+	ps:setRadialAcceleration(0, 0)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0.07, 0.03)
+	ps:setSizeVariation(0.08)
+	ps:setSpeed(65, 596)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(0.8771174430847)
 	ps:setTangentialAcceleration(0, 0)
 	ps:stop()
 

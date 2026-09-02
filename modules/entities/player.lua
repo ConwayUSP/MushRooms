@@ -292,9 +292,7 @@ function Player:updateState()
 
 	-- atualizando a situação do sistema de partículas de caminhada
 	if isMoving then
-		globalVFXManager:setParticleDirection(PARTICLE_WALKING, self, math.atan2(self.vel.y, self.vel.x) + math.pi)
 		globalVFXManager:playParticle(PARTICLE_WALKING, self, vec(0, 24), true)
-
 	else
 		globalVFXManager:stopParticle(PARTICLE_WALKING, self)
 	end
@@ -730,10 +728,20 @@ function Player:draw(camera)
 	love.graphics.rotate(angle)
 	love.graphics.translate(-viewX - rotateOffset.x, -viewY - rotateOffset.y)
 
-	love.graphics.draw(self.spriteSheets[self.state], animation.frames[animation.currFrame], viewX, viewY, 0, scaleX, scaleY, offsetX, offsetY)
+	love.graphics.draw(
+		self.spriteSheets[self.state],
+		animation.frames[animation.currFrame],
+		viewX,
+		viewY,
+		0,
+		scaleX,
+		scaleY,
+		offsetX,
+		offsetY
+	)
 
 	love.graphics.pop()
-	
+
 	love.graphics.setShader()
 end
 

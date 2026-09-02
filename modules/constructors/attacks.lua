@@ -295,7 +295,8 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local onHitFunc = function(e, t)
 		-- print(SEED_SHOT.name .. " acertou um alvo")
 	end
-	local particles = atkParticles(nil, nil, PARTICLE_SEED)
+
+	local particles = atkParticles(PARTICLE_FLOWER_SHOT, nil, PARTICLE_SEED)
 
 	local attack = Attack.new(SEED_SHOT.name, settings, updateFunc, onHitFunc, onShot, trajectoryFuncBuilder, nil, particles)
 	attack:addAnimations(animIntact, animBreaking)
