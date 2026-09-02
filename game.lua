@@ -14,12 +14,16 @@ MENU_CTX = "Menu Context"
 GAMEPLAY_CTX = "In-game Context"
 QUITTING_CTX = "Quitting Context"
 
+respawnRoom = vec(0, 0)
+respawnPos = vec(0, 0)
+
 ----------------------------------------
 -- Funções globais
 ----------------------------------------
 
 function startGame()
 	createInitialRooms()
+	respawnPos = vec(rooms[0][0].pos.x, rooms[0][0].pos.y)
 	collisionManager = CollisionManager.init()
 	newPlayer()
 	-- debug -------------------------------------------------

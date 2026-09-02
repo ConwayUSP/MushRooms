@@ -168,6 +168,7 @@ function Player:update(dt)
 	if self.state == DYING then
 		self.candidateInteractives = {}
 		self.interactiveObj = nil
+		self:tryRespawn()
 	else
 		self:move(dt)
 		self.inputBuffer:update(dt)
@@ -341,10 +342,14 @@ end
 -- posiciona a construção e
 function Player:build()
 	-- timer necessário para não bugar e construir imediatamente ao comprar
-	if self.building and self.buildingModeTimer > 0.5 then
+	if self.building and self.buildingModeTimer > 0.3 then
 		-- !TODO: consumir recursos do player
 		self.building.actualized = true
 		self.room:addBuilding(self.building)
+		if self.building.name == FIRECAMP.name then
+			respawnRoom = self.room.arrPos
+			respawnPos = self.building.pos
+		end
 		self.building = nil
 	end
 end
@@ -658,6 +663,24 @@ function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
 	cameras[self.id]:shake(damage / 5, 0.5)
 	self.audioManager:play(AUDIO_GET_HIT)
+end
+
+-- tenta reespawnar quando está morto
+function Player:tryRespawn()
+	if self.deathTimer < 2 then
+		return
+	end
+	-- movendo player de uma sala para a outra
+	self.pos = respawnPos
+	collisionManager:onPlayerRoom(self, rooms[respawnRoom.y][respawnRoom.x])
+	-- resetando os estados e
+	collisionManager:register(self)
+	if #self.weapons > 0 then
+		self:equipWeapon(self.weapons[1].name)
+	end
+	self.state = IDLE
+	self.hp = MAX_HP
+	self.deathTimer = 0
 end
 
 ---@param chest Interactive
