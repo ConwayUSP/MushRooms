@@ -78,10 +78,6 @@ function Weapon:update(dt)
 	self.atk:update(dt)
 
 	-- self.rotation = math.atan2(love.mouse.getX() - viewPos.x, -(love.mouse.getY() - viewPos.y)) - math.pi * 0.5
-
-	if self.atk.canAttack then
-		self.state = IDLE
-	end
 end
 
 ---@return boolean
@@ -126,6 +122,9 @@ function Weapon:addAnimations(idleSettings, weaponAtkSettings)
 		-- animação da arma ao atacar
 		path = pngPathFormat({ "assets", "animations", "weapons", self.name, ATTACKING })
 		addAnimation(self, path, ATTACKING, weaponAtkSettings)
+		self.animations[ATTACKING].onFinish = function()
+			self.state = IDLE
+		end
 	end
 end
 

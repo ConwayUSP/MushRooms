@@ -407,14 +407,17 @@ function AttackEvent:draw(camera)
 		rotation = self.direction
 	end
 
+	local scale = 3
+	local flip = self.subtype == MELEE_ATTACK and invertSecondAndThirdQuadrants(rotation) or 1
+
 	love.graphics.draw(
 		self.spriteSheets[self.state],
 		animation.frames[animation.currFrame],
 		viewX,
 		viewY,
 		rotation,
-		3,
-		3,
+		scale,
+		scale * flip,
 		animation.frameDim.width / 2,
 		animation.frameDim.height / 2
 	)
