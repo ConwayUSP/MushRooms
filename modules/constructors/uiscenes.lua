@@ -17,14 +17,10 @@ function initMenuScene()
 	-- ELEMENTOS
 	local menuBg = UIImageElem.new("menu bg", vec(640, 360), size(1280, 720))
 	local startBtn = UIButtonElem.new("menu play btn", vec(280, 400), size(120, 120), nil, function()
-		print("Botão clicado -> Start")
 		startGame()
 	end)
-	local settingsBtn = UIButtonElem.new("menu opt btn", vec(620, 400), size(120, 120), nil, function()
-		print("Botão clicado -> Settings")
-	end)
+	local settingsBtn = UIButtonElem.new("menu opt btn", vec(620, 400), size(120, 120), nil, function() end)
 	local quitBtn = UIButtonElem.new("menu quit btn", vec(960, 400), size(120, 120), nil, function()
-		print("Botão clicado -> Quit")
 		quitGame()
 	end)
 
@@ -132,12 +128,8 @@ function newCraftingScene(canvasSize, player)
 	local arrowUpY = topMargin - (sizeSlot.height / 2) - (arrowSize.height / 2) - 8
 	local lastRowY = topMargin + (ROWS - 1) * slotOffset.y + (sizeSlot.height / 2) + (arrowSize.height / 2) + 8
 
-	local arrowUp = UIButtonElem.new("crafting arrow up", vec(secondColX, arrowUpY), arrowSize, nil, function()
-		print("Botão clicado -> Arrow Up")
-	end)
-	local arrowDown = UIButtonElem.new("crafting arrow down", vec(secondColX, lastRowY), arrowSize, nil, function()
-		print("Botão clicado -> Arrow Down")
-	end)
+	local arrowUp = UIButtonElem.new("crafting arrow up", vec(secondColX, arrowUpY), arrowSize, nil, function() end)
+	local arrowDown = UIButtonElem.new("crafting arrow down", vec(secondColX, lastRowY), arrowSize, nil, function() end)
 	arrowUp:addAnimations(animSettings)
 	arrowDown:addAnimations(animSettings)
 
@@ -203,7 +195,8 @@ function newCraftingScene(canvasSize, player)
 			-- adiciona o preview do item (grande)
 			self:addSelectedItemPreviewSlot()
 			local spritePath = pngPathFormat({ "assets", "sprites", "recipes", recipe.output.name })
-			local previewImg = newCraftingItemPreviewElement(recipe.output.name, previewPos, size(128, 128), spritePath, 45)
+			local previewImg =
+				newCraftingItemPreviewElement(recipe.output.name, previewPos, size(128, 128), spritePath, 45)
 			self:addElement(previewImg, VISUAL_LAYER_2, vec(1, 1))
 
 			-- textos

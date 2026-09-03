@@ -270,7 +270,6 @@ function dirPathFormat(parts)
 	for i = 2, #parts, 1 do
 		path = path .. "/" .. pathlizeName(parts[i])
 	end
-	print(path)
 	return path
 end
 
@@ -324,7 +323,11 @@ end
 ----------------------------------------
 
 function isMovementState(state)
-	return state == MOVING or state == WALKING_LEFT or state == WALKING_DOWN or state == WALKING_RIGHT or state == WALKING_UP
+	return state == MOVING
+		or state == WALKING_LEFT
+		or state == WALKING_DOWN
+		or state == WALKING_RIGHT
+		or state == WALKING_UP
 end
 
 ----------------------------------------
@@ -364,4 +367,3 @@ end
 function string:startsWith(prefix)
 	return self:sub(1, #prefix) == prefix
 end
-

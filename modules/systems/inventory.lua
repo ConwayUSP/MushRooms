@@ -44,14 +44,12 @@ function Inventory:addItem(item)
 		local invItem = self.items[item.type][index]
 
 		if invItem.quantity >= 99 then
-			print("Quantidade máxima de " .. item.name .. " atingida.")
 			return false
 		end
 
 		invItem.quantity = invItem.quantity + 1
 	end
 
-	print("Item " .. item.name .. " adicionado ao inventário de " .. self.owner.name)
 	return true
 end
 

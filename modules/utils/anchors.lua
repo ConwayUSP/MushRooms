@@ -96,7 +96,6 @@ function getAnchor(obj, anchorType, scale)
 
 	local key = obj.object and obj.object.name or obj.name
 	key = pathlizeName(string.lower(key))
-	print(key)
 	local anchor = ANCHORS[key] and ANCHORS[key][anchorType] or nil
 
 	-- caso a string tenha um sufixo numérico
