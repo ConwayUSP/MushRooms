@@ -289,36 +289,34 @@ end
 ----------------------------------------
 
 function Enemy:updateState(dt)
-	if self.state == DYING then
-		return
-	end
+	if self.state ~= DYING then
+		if self.atk[self.selectedAtk] and self.isAttacking then
+			local dirVec = subVec(self.atkTargeting.targetPos, self.pos)
 
-	if self.atk[self.selectedAtk] and self.isAttacking then
-		local dirVec = subVec(self.atkTargeting.targetPos, self.pos)
-
-		local prefix = ATTACKING .. " " .. self.atk[self.selectedAtk].name .. " "
-		local isVerticalAttack = math.abs(dirVec.y) > math.abs(dirVec.x)
-		if isVerticalAttack and dirVec.y < 0 then
-			self.state = prefix .. UP
-		elseif isVerticalAttack and dirVec.y > 0 then
-			self.state = prefix .. DOWN
-		elseif not isVerticalAttack and dirVec.x > 0 then
-			self.state = prefix .. RIGHT
-		elseif not isVerticalAttack and dirVec.x < 0 then
-			self.state = prefix .. LEFT
-		end
-	elseif self.move then
-		local isVerticalMovement = math.abs(self.vel.y) > math.abs(self.vel.x)
-		if self.vel.y < 0 and isVerticalMovement then
-			self.state = WALKING_UP
-		elseif self.vel.y > 0 and isVerticalMovement then
-			self.state = WALKING_DOWN
-		elseif self.vel.x > 0 then
-			self.state = WALKING_RIGHT
-		elseif self.vel.x < 0 then
-			self.state = WALKING_LEFT
-		else
-			self.state = IDLE
+			local prefix = ATTACKING .. " " .. self.atk[self.selectedAtk].name .. " "
+			local isVerticalAttack = math.abs(dirVec.y) > math.abs(dirVec.x)
+			if isVerticalAttack and dirVec.y < 0 then
+				self.state = prefix .. UP
+			elseif isVerticalAttack and dirVec.y > 0 then
+				self.state = prefix .. DOWN
+			elseif not isVerticalAttack and dirVec.x > 0 then
+				self.state = prefix .. RIGHT
+			elseif not isVerticalAttack and dirVec.x < 0 then
+				self.state = prefix .. LEFT
+			end
+		elseif self.move then
+			local isVerticalMovement = math.abs(self.vel.y) > math.abs(self.vel.x)
+			if self.vel.y < 0 and isVerticalMovement then
+				self.state = WALKING_UP
+			elseif self.vel.y > 0 and isVerticalMovement then
+				self.state = WALKING_DOWN
+			elseif self.vel.x > 0 then
+				self.state = WALKING_RIGHT
+			elseif self.vel.x < 0 then
+				self.state = WALKING_LEFT
+			else
+				self.state = IDLE
+			end
 		end
 	end
 

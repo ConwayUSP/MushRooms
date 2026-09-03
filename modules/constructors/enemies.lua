@@ -33,7 +33,7 @@ function newNuclearCat(spawnPos, room)
 	local enemy = Enemy.new(NUCLEAR_CAT.name, 30, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames)
 	local idleAnimSettings = newAnimSetting(15, { width = 32, height = 32 }, 0.15, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
-	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
+	local dyingAnimSettings = newAnimSetting(33, { width = 32, height = 32 }, 0.1, false, 1)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, dyingAnimSettings, attackAnimSettings)
 	enemy.shadowWidth = 30
 	enemy.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
