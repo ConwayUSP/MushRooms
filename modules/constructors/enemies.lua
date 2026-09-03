@@ -99,11 +99,16 @@ function newDemonBall(spawnPos, room)
 	-- o movimento de ataque kamikaze
 	local movements = {
 		[jumpAtk.name] = function()
-			local dashMove = dashToTargetMovement(jumpDur, 0, Easing.outCubic, 0, 2)
+			local dashMove = dashToTargetMovement(jumpDur - 0.4, 0, Easing.outCubic, 0, 1.5)
 			local time = 0
+			local hasStopped = false
 			return function(entity, dt)
 				time = time + dt
-				if time >= 0.3 then
+				if not hasStopped then
+					entity.friction = 4
+					hasStopped = true
+				end
+				if time >= 0.4 then
 					dashMove(entity, dt)
 				end
 
