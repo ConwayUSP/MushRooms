@@ -218,8 +218,6 @@ function Camera:draw()
 
 	-- renderiza mundo
 	renderRooms(self)
-	-- renderiza links de todas as salas
-	renderLinks(self)
 	-- renderiza entidades com Y-sorting
 	renderEntities(self)
 	-- renderiza as hitboxes ativas (debug)

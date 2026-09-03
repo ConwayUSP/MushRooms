@@ -250,6 +250,9 @@ function renderEntities(camera)
 		obj.it:draw(camera)
 	end
 
+	-- renderiza links de todas as salas
+	renderLinks(camera)
+
 	-- desenha as sombras das entidades
 	love.graphics.setColor(0, 0, 0.1, 1.0)
 	love.graphics.setShader(ditherShadowShader)

@@ -18,6 +18,10 @@ function LinkManager.new()
 end
 
 function LinkManager:addLink(entityA, entityB, maxDistance, duration)
+  if entityA.hp <= 0 or entityB.hp <= 0 then
+    return nil
+  end
+
   self.linksMap[entityA] = self.linksMap[entityA] or {}
   self.linksMap[entityB] = self.linksMap[entityB] or {}
 
