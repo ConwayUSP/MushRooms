@@ -1,5 +1,5 @@
 ---@return Blueprint
--- Sala de Puzzle 1: contém nada de mais
+-- sala de puzzle 1: contém nada de mais
 function newPuzzleRoom1()
 	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room", rgba8(12, 253, 255, 255))
 	insertGeneralDecorations(bp)
@@ -7,7 +7,7 @@ function newPuzzleRoom1()
 end
 
 ---@return Blueprint
--- Sala de Puzzle 2: contém uma vela (?)
+-- sala de puzzle 2: contém uma vela (?)
 function newPuzzleRoom2()
 	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room 2", rgba8(12, 253, 255, 255))
 	local spCenter = SpawnPoint.new(vec(0, 0))
@@ -19,7 +19,7 @@ function newPuzzleRoom2()
 end
 
 ---@return Blueprint
--- Sala de NPC 1: contém barrís e jarros
+-- sala de NPC 1: contém barrís e jarros
 function newNPCRoom1()
 	local bp = Blueprint.new(NPC_ROOM, "Test NPC Room", rgba8(120, 58, 242, 255))
 	local sp1 = SpawnPoint.new(vec(250, 0))
@@ -32,7 +32,7 @@ function newNPCRoom1()
 end
 
 ---@return Blueprint
--- Sala de Recurso 1: contém barrís e jarros
+-- sala de recurso 1: contém barrís e jarros
 function newResourceRoom1()
 	local bp = Blueprint.new(RESOURCE_ROOM, "Test Resource Room", rgba8(255, 248, 122, 255))
 	local sp1 = SpawnPoint.new(vec(100, 0))
@@ -51,7 +51,7 @@ function newResourceRoom1()
 end
 
 ---@return Blueprint
--- Sala de Recurso 2: contém grama alta pra caralho
+-- sala de recurso 2: contém grama alta pra caralho
 function newResourceRoom2()
 	local bp = Blueprint.new(RESOURCE_ROOM, "Test Resource Room 2", rgba8(255, 248, 122, 255))
 	local grassData = SpawnData.new(TALL_GRASS, 1.0)
@@ -67,26 +67,27 @@ function newResourceRoom2()
 end
 
 ---@return Blueprint
--- Sala de Batalha 1: contém Gatos Nucleares e Patos Aranhas
+-- sala de batalha 1: contém Gatos Nucleares e Patos Aranhas
 function newBattleRoom1()
 	local bp = Blueprint.new(BATTLE_ROOM, "Test Battle Room", rgba8(255, 255, 255, 255))
 	local sp1 = SpawnPoint.new(vec(100, -100))
 	local sp2 = SpawnPoint.new(vec(-100, 100))
 	local sp3 = SpawnPoint.new(vec(100, 100))
 	local sp4 = SpawnPoint.new(vec(-100, -100))
-	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.5)
-	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 1.0)
-	sp1:insert(enemyData1):insert(enemyData2)
-	sp2:insert(enemyData1):insert(enemyData2)
-	sp3:insert(enemyData1):insert(enemyData2)
-	sp4:insert(enemyData1):insert(enemyData2)
+	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.2)
+	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 0.4)
+	local enemyData3 = SpawnData.new(DEMON_BALL, 1.0)
+	sp1:insert(enemyData1):insert(enemyData2):insert(enemyData3)
+	sp2:insert(enemyData1):insert(enemyData2):insert(enemyData3)
+	sp3:insert(enemyData1):insert(enemyData2):insert(enemyData3)
+	sp4:insert(enemyData1):insert(enemyData2):insert(enemyData3)
 	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
 	insertGeneralDecorations(bp)
 	return bp
 end
 
 ---@return Blueprint
--- Sala de Boss 1: contém 1 Gato Nuclear ou 1 Pato Aranha no centro
+-- sala de boss 1: contém 1 Gato Nuclear ou 1 Pato Aranha no centro
 function newBossRoom1()
 	local bp = Blueprint.new(BOSS_ROOM, "Test Boss Room", rgba8(255, 41, 41, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
@@ -98,7 +99,7 @@ function newBossRoom1()
 end
 
 ---@return Blueprint
--- Sala de Evento 1: contém barrís, jarros ou inimigos
+-- sala de evento 1: contém barrís, jarros ou inimigos
 function newEventRoom1()
 	local bp = Blueprint.new(EVENT_ROOM, "Test Event Room", rgba8(104, 237, 102, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))

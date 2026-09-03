@@ -63,17 +63,17 @@ end
 -- tira uma tabela do pool para colocar na lista de draw do background
 -- se não tiver mais nenhuma tabela livre no pool, cria uma nova (caso em que aloca memória)
 local function addEntityToBgList(entity, yPos)
-  local item = bgListPool[#bgListPool]
-  if item then
-    bgListPool[#bgListPool] = nil
-  else
-    item = {}
-  end
+	local item = bgListPool[#bgListPool]
+	if item then
+		bgListPool[#bgListPool] = nil
+	else
+		item = {}
+	end
 
-  item.it = entity
-  item.y = yPos
+	item.it = entity
+	item.y = yPos
 
-  bgList[#bgList + 1] = item
+	bgList[#bgList + 1] = item
 end
 
 ----------------------------------------
@@ -160,7 +160,7 @@ function renderEntities(camera)
 			-- adiciona ataques de inimigos
 			for _, a in pairs(e.atk) do
 				for _, ev in pairs(a.events) do
-					addEntityToDrawList(ev, ev.pos.y + getAnchor(e, FLOOR))
+					addEntityToDrawList(ev, ev.pos.y + getAnchor(ev, FLOOR))
 				end
 			end
 		end
@@ -170,7 +170,7 @@ function renderEntities(camera)
 		end
 		-- adiciona obstáculos
 		for _, o in pairs(r.obstacles) do
-			local y =  o.pos.y + getAnchor(o, FLOOR)
+			local y = o.pos.y + getAnchor(o, FLOOR)
 
 			if o.isBg then
 				addEntityToBgList(o, y)

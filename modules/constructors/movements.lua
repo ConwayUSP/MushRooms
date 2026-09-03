@@ -62,7 +62,7 @@ end
 ---@return MovementFunc
 -- um movimento em linha reta, mas com uma oscilação quadratica, criando um efeito de "square wave"
 function squaredMovement(frequency)
-	local period = (1/frequency) or 0.1
+	local period = (1 / frequency) or 0.1
 	local time = 0
 
 	return function(entity, dt)
@@ -71,8 +71,8 @@ function squaredMovement(frequency)
 		local forward = polarToVec(entity.direction or 0, entity.speed)
 		local tangent = tangentVec(forward)
 
-		local vy = math.cos( math.pi/2 * math.floor(time/period + 1/2) )
-		local vx = (math.cos( math.pi * math.floor(time/period + 3/2) ) + 1) / 2
+		local vy = math.cos(math.pi / 2 * math.floor(time / period + 1 / 2))
+		local vx = (math.cos(math.pi * math.floor(time / period + 3 / 2)) + 1) / 2
 		local desiredVel = addVec(scaleVec(forward, vx), scaleVec(tangent, vy))
 
 		applySteering(entity, desiredVel, 30)
@@ -121,7 +121,7 @@ end
 -- um movimento em espiral, onde a entidade orbita em torno de um ponto enquanto se afasta dele
 function spiralMovement(radius, angularSpeed)
 	local angle = 0
-	local r = radius/4
+	local r = radius / 4
 
 	return function(entity, dt)
 		angle = angle + angularSpeed * dt
@@ -211,15 +211,17 @@ end
 
 ---@param duration number
 ---@param baseCooldown number
----@param angleVariance? rad
 ---@param easingFunc easingFunc
+---@param angleVariance? rad
+---@param forceFactor? number
 ---@return MovementFunc
-function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
+function dashToTargetMovement(duration, baseCooldown, easingFunc, angleVariance, forceFactor)
 	local angleVar = angleVariance or 0
 	local timer = 0
 	local cooldown = baseCooldown
 	local dur = duration or 1.0
 	local dashDir = nil
+	local force = forceFactor or 1
 
 	return function(entity, dt)
 		if cooldown > 0 then
@@ -238,7 +240,7 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 			timer = timer + dt
 			-- o easing controla o multiplicador da força
 			local t = math.min(timer / dur, 1)
-			local intensity = easingFunc(1 - t)
+			local intensity = easingFunc(1 - t) * force
 			local forceMag = entity.speed * entity.friction * entity.mass * 10 * intensity
 
 			applyForce(entity, scaleVec(dashDir, forceMag))
@@ -246,6 +248,52 @@ function dashToTargetMovement(duration, baseCooldown, angleVariance, easingFunc)
 			if t >= 1 then
 				dashDir = nil
 				cooldown = baseCooldown + math.random()
+			end
+		end
+	end
+end
+
+---@param jumpDuration number
+---@param restDuration number
+---@param jumpForce number
+---@param easingFunc function
+---@param sync number
+---@return MovementFunc
+function jumpToTargetMovement(jumpDuration, restDuration, jumpForce, easingFunc, sync)
+	local timer = sync or 0.0
+	local isJumping = false
+	local jumpDir = nil
+
+	return function(entity, dt)
+		if not entity.moveTargeting or not entity.moveTargeting.validTarget then
+			return
+		end
+
+		timer = timer + dt
+
+		if isJumping then
+			-- fase do pulo
+			local t = math.min(timer / jumpDuration, 1)
+			local intensity = easingFunc(1 - t)
+			local forceMag = entity.speed * entity.friction * entity.mass * jumpForce * intensity
+
+			if jumpDir then
+				applyForce(entity, scaleVec(jumpDir, forceMag))
+			end
+
+			-- verifica se o pulo acabou
+			if t >= 1 then
+				isJumping = false
+				timer = 0
+				jumpDir = nil
+			end
+		else
+			-- fase de preparo para o próximo pulo
+			if timer >= restDuration then
+				isJumping = true
+				timer = 0
+				-- trava a direção do pulo no exato momento em que ele sai do chão
+				jumpDir = normalize(subVec(entity.moveTargeting.targetPos, entity.pos))
 			end
 		end
 	end

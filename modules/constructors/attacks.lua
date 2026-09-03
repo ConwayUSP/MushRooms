@@ -213,7 +213,7 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 end
 
 function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
-	local hb = hitbox(Circle.new(50))
+	local hb = hitbox(Circle.new(30))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
@@ -331,9 +331,63 @@ function newRotatoryAttack(ally, duration, cooldown, hb)
 		-- print("Rotatory Attack acertou um alvo")
 	end
 
-	local attack = Attack.new(ROTATORY.name, settings, updateFunc, onHitFunc, nil)
+	local attack = Attack.new(ROTATORY_ATK.name, settings, updateFunc, onHitFunc, nil)
 	attack.hasShadow = false
 
+	return attack
+end
+
+---@param ally boolean
+---@return Attack
+-- um ataque que fica estácionário no chão com uma marca de brasa quente
+function newEmberMarkAttack(ally)
+	local hb = hitbox(Circle.new(20), vec(0, -40))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = MELEE_ATTACK,
+		ally = ally,
+		dmg = 10,
+		dur = 3.0, -- a brasa fica no chão por 3 segundos
+		hb = hbs,
+		cooldown = constCooldown(0),
+		tick = 0.8,
+	})
+
+	local updateFunc = function(e, dt)
+		e:baseUpdate(dt)
+	end
+
+	local attack = Attack.new(EMBER_MARK.name, settings, updateFunc, nil, nil)
+	local animIntact = newAnimSetting(12, { width = 26, height = 42 }, 0.1, true, 1)
+	local animBreaking = newAnimSetting(1, { width = 1, height = 1 }, 0.1, false, 1)
+	attack:addAnimations(animIntact, animBreaking)
+	attack.hasShadow = false
+
+	return attack
+end
+
+---@param duration number
+---@return Attack
+-- ataque de dano por contato quando a bolota do demônio pula em direção ao player
+function newDemonJumpAttack(duration)
+	local hb = hitbox(Circle.new(25))
+	local hbs = hitboxes({ hb })
+	local settings = newAtkSetting({
+		subtype = MELEE_ATTACK,
+		ally = false,
+		dmg = 15,
+		dur = duration,
+		hb = hbs,
+		cooldown = constCooldown(9999), -- uso único
+	})
+
+	-- faz a hitbox do ataque acompanhar o demonio
+	local updateFunc = function(e, dt)
+		e:baseUpdate(dt)
+		e.pos = e.attacker.pos
+	end
+
+	local attack = Attack.new(DEMON_JUMP.name, settings, updateFunc, nil, nil)
 	return attack
 end
 
