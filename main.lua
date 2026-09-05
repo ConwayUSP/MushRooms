@@ -98,12 +98,6 @@ function love.keypressed(key, scancode, isrepeat)
 	end
 
 	-------- FIM DEBUG --------
-
-	if not isrepeat then
-		for _, p in pairs(players) do
-			p:processKeyInput(key)
-		end
-	end
 end
 
 function love.keyreleased(key, scancode)

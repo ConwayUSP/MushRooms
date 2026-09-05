@@ -12,6 +12,7 @@ require("modules.systems.blessing")
 require("modules.systems.collision")
 require("modules.systems.inventory")
 require("modules.systems.inputbuffer")
+require("modules.systems.control")
 require("modules.utils.colors")
 require("modules.utils.constructors")
 require("modules.utils.shapes")
@@ -39,7 +40,7 @@ local MAX_HP = 100
 ---@field maxHp number
 ---@field size number
 ---@field scale number
----@field controls table<string, string>
+---@field controls Controls
 ---@field colors Color[]
 ---@field speed number
 ---@field movementVec Vec
@@ -79,12 +80,12 @@ Player.type = PLAYER
 
 ---@param name string
 ---@param spawnPos Vec
----@param controls table<string, string>
+---@param controls Controls
 ---@param colors Color[]
 ---@param room Room
 ---@return Player
 -- cria uma instância de `Player` e o adiciona à lista global de `players`
-function Player.new(name, spawnPos, controls, colors, room)
+function Player.new(name, spawnPos, keybind, colors, room)
 	---@type Player
 	local player = setmetatable({}, Player) ---@diagnostic disable-line
 
@@ -94,7 +95,7 @@ function Player.new(name, spawnPos, controls, colors, room)
 
 	-- atributos que variam
 	player.id = #players + 1 -- número do jogador
-	player.controls = controls -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.controls = Controls.new(player, keybind) -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
 	player.colors = colors -- paleta de cores do jogador
 	-- atributos fixos na instanciação
 	player.movementVec = { x = 0, y = 0 } -- vetor de direção e magnitude do movimento do jogador
@@ -184,18 +185,17 @@ function Player:update(dt)
 		self:move(dt)
 		self.inputBuffer:update(dt)
 		self:updateBuildingMode(dt)
-		self:updateDefense(dt)
 		self:updateState()
 		self:resolveInteractive()
 		self.uiManager:update(dt)
 	end
 
+	self:processInput()
+	self:checkEndDefense(dt)
 	Mortal.update(self, dt)
 	self.age = self.age + dt
 	self.animations[self.state]:update(dt)
 	self:updateParticles(dt)
-	self.defendingCooldownTimer:update(dt)
-	self.defendingDurationTimer:update(dt)
 
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
@@ -221,16 +221,16 @@ function Player:move(dt)
 	if self.state == DEFENDING or self.inDialogue then
 		return
 	end
-	if love.keyboard.isDown(self.controls.up) then
+	if self.controls:checkAction(ACT_MU) then
 		movementDir.y = -1
 	end
-	if love.keyboard.isDown(self.controls.down) then
+	if self.controls:checkAction(ACT_MD) then
 		movementDir.y = 1
 	end
-	if love.keyboard.isDown(self.controls.left) then
+	if self.controls:checkAction(ACT_ML) then
 		movementDir.x = -1
 	end
-	if love.keyboard.isDown(self.controls.right) then
+	if self.controls:checkAction(ACT_MR) then
 		movementDir.x = 1
 	end
 
@@ -264,20 +264,11 @@ function Player:move(dt)
 	end
 end
 
-function Player:updateDefense(dt)
-	if love.keyboard.isDown(self.controls.act2) then
-		self.keyPressing = self.controls.act2
-		-- só defende se está completamente parado, não está interagindo e não está em cooldown
-	else
-		if
-			self.keyPressing == self.controls.act2
-			and not self.defendingCooldownTimer.active
-			and not self.defendingCooldownTimer.completed
-		then
-			self.keyPressing = nil
-			self.defendingCooldownTimer:start()
-			self.defendingDurationTimer:stop()
-		end
+function Player:checkEndDefense(dt)
+	self.defendingCooldownTimer:update(dt)
+	self.defendingDurationTimer:update(dt)
+	if not self.controls:checkAction(ACT_DEF) or self.state == DYING then
+		self.defendingDurationTimer:stop()
 	end
 end
 
@@ -386,81 +377,39 @@ end
 
 ---@param key any
 -- trata inputs de teclado. Se `key` não fizer parte dos controles do player, é ignorado
-function Player:processKeyInput(key)
+function Player:processInput()
 	-- DEBUG -------------
 	if key == "i" and self.artifact then
 		self.artifact:use()
 	end
+	self:checkSpecialActions()
 	----------------------
-	self:checkSpecialActions(key)
-	self:checkAction1(key, false)
-	self:checkAction2(key)
-end
-
----@param key string
----@param isBuffered boolean
--- verifica se o `Player` está pressionando a tecla de ação 1, e então
--- realiza a ação correta de acordo com o contexto
-function Player:checkAction1(key, isBuffered)
-	-- casos em que ignoramos o input
-	if key ~= self.controls.act1 or self.uiManager.activeScene or self.state == DYING then
+	
+	if self.state == DYING then
 		return
 	end
 
-	if self.building then
-		self:build()
-		return
-	end
-
-	-- daqui pra frente APENAS ações que não podem ser feitas
-	-- quando defendendo
-	if self.state == DEFENDING then
-		return
-	end
-
-	-- imagino que não queremos que o buffer afete o diálogo
-	if self.inDialogue and not isBuffered then
-		DialogueManager:getDialogueByPlayer(self):advance()
-		return
-	end
-
-	-- controlará se iremos bufferizar o input atual ou não
-	local shouldBuffer = false
-
-	if self.weapon then
-		if not isBuffered then
-			shouldBuffer = not self.weapon:attack()
-		else
-			if self.weapon:attack() then
-				self.inputBuffer:pop(self.controls.act1)
+	if self.uiManager.activeScene then
+		if self.controls:checkAction(ACT_EXT) then
+			self.uiManager:deactivateAllScenes()
+			if self.activeInteraction then
+				self.activeInteraction:onCloseInteract(self)
+				self.activeInteraction = nil
 			end
 		end
-	end
-
-	if shouldBuffer then
-		self.inputBuffer:buffer(key)
-	end
-end
-
----@param key string
--- verifica se o `Player` está pressionando a tecla de ação 2
--- caso positivo, executa a ação correta dependendo do contexto
-function Player:checkAction2(key)
-	if key ~= self.controls.act2 or self.state == DYING then
 		return
 	end
-	if self.uiManager.activeScene then
-		self.uiManager:deactivateAllScenes()
-		if self.activeInteraction then
-			self.activeInteraction:onCloseInteract(self)
-			self.activeInteraction = nil
+
+	if self.building then 
+		if self.controls:checkAction(ACT_CON) then
+			self:build()
+			return
+		elseif self.controls:checkAction(ACT_EXT) then
+			self:endBuildingMode()
 		end
-		return
 	end
-
-	if self.building then
-		self:endBuildingMode()
-	elseif self.interactiveObj then
+	
+	if self.interactiveObj and self.controls:checkAction(ACT_INT) then
 		if self.interactiveObj.type == NPC then
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
 		elseif self.interactiveObj.type == INTERACTIVE then
@@ -468,51 +417,39 @@ function Player:checkAction2(key)
 			self.activeInteraction = self.interactiveObj.onInteract(self.interactiveObj, self)
 		end
 		stopMovement(self)
-	elseif self.vel.x ~= 0 then
-		local len = #self.weapons
-		if len <= 1 then
-			return
-		end
-		local indexWeapon = tableIndexOf(self.weapons, self.weapon)
-		local nextIndex = indexWeapon
-		-- caminha ciclicamente entre as armas
-		if self.vel.x > 0 then
-			nextIndex = (indexWeapon % len) + 1
-		else
-			nextIndex = ((indexWeapon - 2 + len) % len) + 1
-		end
+	end
 
-		self:equipWeapon(self.weapons[nextIndex].name)
-	else
-		if
-			not self.defendingDurationTimer.active
-			and not self.defendingDurationTimer.completed
-			and not self.defendingCooldownTimer.active
-		then
+	if self.inDialogue and self.controls:checkAction(ACT_CON) then 
+		DialogueManager:getDialogueByPlayer(self):advance()
+		return
+	end
+
+	if self.controls:checkAction(ACT_ATK) then
+		self.weapon:attack()
+	end
+
+	if self.controls:checkAction(ACT_DEF) then
+		if not self.defendingDurationTimer.active and not self.defendingDurationTimer.completed and not self.defendingCooldownTimer.active then
 			self.vfxManager:playParticle(PARTICLE_DEFENSE)
 			self.defendingDurationTimer:start()
-			self.defendingCooldownTimer.completed = false
+			self.defendingCooldownTimer:stop()
+		elseif not self.defendingCooldownTimer.active and not self.defendingCooldownTimer.completed and self.defendingDurationTimer.completed then
+			self.defendingCooldownTimer:start()
+			self.defendingDurationTimer:stop()
 		end
 	end
 end
 
 ---@param key string
 -- verifica se o `Player` está pressionando a combinação de teclas para abrir o inventário
-function Player:checkSpecialActions(key)
+function Player:checkSpecialActions()
 	if self.state == DYING then
 		return
 	end
 
-	if key == "i" and love.keyboard.isDown(self.controls.act1) then
-		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
-		stopMovement(self)
-	end
-	if key == "c" and love.keyboard.isDown(self.controls.act1) then
+	if self.controls:checkAction(ACT_OUI) then
 		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
 		stopMovement(self)
-	end
-	if key == "p" and love.keyboard.isDown(self.controls.act1) then
-		self.room:toggleDoors()
 	end
 end
 

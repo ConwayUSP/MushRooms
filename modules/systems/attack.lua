@@ -23,6 +23,7 @@ require("modules.utils.utils")
 ---@field bounces number
 ---@field pierces number
 ---@field tick number
+---@field holdTime function
 
 ---@param config table
 ---@return AtkSetting
@@ -44,6 +45,7 @@ function newAtkSetting(config)
 		pierces = config.pierces or math.huge,
 		restitution = config.restitution or 0.2,
 		tick = config.tick or math.huge,
+		holdTime = config.holdTime
 	}
 end
 
@@ -107,6 +109,7 @@ function Attack.new(name, atkSettings, updateFunc, onHit, onShot, trajectoryFunc
 	attack.onShot = onShot or function() end -- função executada quando um ataque é disparado
 	attack.trajectoryFuncBuilder = trajectoryFuncBuilder -- função que define a trajetória do ataque/projétil
 	attack.rotationFunc = rotationFunc -- função que define a rotação do ataque/projétil
+	attack.holdTime = atkSettings.holdTime -- tempo que o botão de ataque deve ser segurado
 
 	-- Atributos fixos na instanciação
 	attack.events = {}

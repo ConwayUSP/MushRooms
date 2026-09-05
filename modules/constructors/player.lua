@@ -1,3 +1,5 @@
+require("modules.systems.control")
+
 ---@return AnimSettings, AnimSettings, AnimSettings, AnimSettings
 -- retorna as configurações das animações de `Player`
 function getPlayersAnimSettings()
@@ -9,13 +11,15 @@ function getPlayersAnimSettings()
 	return idleAnimSettings, defAnimSettings, walkAnimSettings, dyingAnimSettings
 end
 
+
 -- inicializa o jogador 1 - Mush
 function initPlayer1()
 	local firstSpawnPoint = { x = rooms[0][0].pos.x, y = rooms[0][0].pos.y }
+	local keybinds = newKeybind("a", "d", "w", "s", "mouse1", "mouse2", "q", "mousewheel", "r", "i", "tab", "e", "mouse1", "escape", "lshift", "escape")
 	player1 = Player.new(
 		"Mush",
 		firstSpawnPoint,
-		{ up = "w", left = "a", down = "s", right = "d", act1 = "space", act2 = "lshift" },
+		keybinds,
 		getP1ColorPalette(),
 		rooms[0][0]
 	)

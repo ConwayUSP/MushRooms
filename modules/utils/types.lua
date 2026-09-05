@@ -53,6 +53,7 @@ DIALOGUE = "dialogue"
 INVENTORY = "inventory"
 TARGET_MANAGER = "target manager"
 TARGET = "target"
+CONTROLS = "controls"
 
 ---------- CONSTRUÇÃO ----------
 CRAFTING_MANAGER = "crafting manager"
@@ -102,6 +103,24 @@ PARTICLE_WALKING = "walking particle"
 PARTICLE_HIT = "hit particle"
 PARTICLE_DEFENSE = "defense particle"
 PARTICLE_EXPLOSION = "explosion particle"
+
+---------- ACTIONS ----------
+ACT_ML = "action move left"
+ACT_MR = "action move right"
+ACT_MD = "action move down"
+ACT_MU = "action move up"
+ACT_ATK = "action attack"
+ACT_DEF = "action defend"
+ACT_UA = "action use artifact"
+ACT_CW = "action change weapon"
+ACT_CA = "action change artifact"
+ACT_OUI = "action open UI"
+ACT_MAP = "action open map"
+ACT_INT = "action interact"
+ACT_CON = "action confirm"
+ACT_EXT = "action exit"
+ACT_QA = "action quick action"
+ACT_PA = "action pause"
 
 ---------- OUTROS ----------
 COLOR = "color"
