@@ -231,7 +231,11 @@ function newEquipmentScene(player)
 		end
 		element.equipment = equipment
 
-		-- TODO: botar animação certinha
+		local path = equipmentType == BLESSING
+			and pngPathFormat({ "assets", "sprites", "blessings", equipment.name })
+			or pngPathFormat({ "assets", "sprites", "icons", equipmentType.."s", equipment.name })
+		addAnimation(element, path, IDLE, slotSettings[IDLE])
+		addAnimation(element, path, SELECTED, slotSettings[SELECTED])
 
 		return element
 	end
