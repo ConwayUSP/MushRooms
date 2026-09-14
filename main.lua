@@ -79,6 +79,10 @@ function love.keypressed(key, scancode, isrepeat)
 	if key == "z" then
 		cameras[1].targetZoom = 2
 	end
+	-- x tira vida do player 1 (teste)
+	if key == "x" then
+		players[1]:takeDamage(10)
+	end
 
 	if _roomCondition() then
 		_roomDebugHandler(key)

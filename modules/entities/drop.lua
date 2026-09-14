@@ -69,7 +69,7 @@ function Drop.new(object, pos, room, autoPick, floorY)
 	if object.image then
 		drop.image = object.image
 	else
-		local sprite_path = pngPathFormat({ "assets", "sprites", "drops", object.name })
+		local sprite_path = pngPathFormat({ "assets", "sprites", "icons", object.type.."s", object.name })
 		drop.image = love.graphics.newImage(sprite_path)
 		drop.image:setFilter("nearest", "nearest")
 	end

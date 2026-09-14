@@ -176,7 +176,7 @@ function UIScene:handleInput(key)
 	if self.controls:checkAction(ACT_CON) then
 		for _, l in pairs(interactionLayers) do
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
-			if el and el.subtype == UI_BUTTON_ELEM then
+			if el and el.subtype == UI_BUTTON_ELEM and el.onClick then
 				el:onClick()
 			end
 		end

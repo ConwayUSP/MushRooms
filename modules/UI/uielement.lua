@@ -10,6 +10,7 @@
 ---@field hb Hitboxes
 ---@field state string
 ---@field selected boolean
+---@field inUse boolean
 ---@field spriteSheets table
 ---@field animations table
 
@@ -31,6 +32,7 @@ function UIElement:init(name, elementType, pos, size, hitboxes)
 	self.hb = hitboxes
 	self.state = IDLE
 	self.selected = false
+	self.inUse = false
 	self.spriteSheets = {}
 	self.animations = {}
 	return self
@@ -70,6 +72,11 @@ function UIElement:deselect()
 	self.state = IDLE
 end
 
+-- define se o elemento representa algo que está em uso, sem alterar seu estado visual.
+function UIElement:setInUse(inUse)
+	self.inUse = inUse
+end
+
 ---@param camera Camera
 -- renderiza o elemento de UI
 function UIElement:draw(camera)
@@ -85,6 +92,10 @@ function UIElement:draw(camera)
 	local scale = self.size.width / anim.frameDim.width
 	local offsetX = anim.frameDim.width / 2
 	local offsetY = anim.frameDim.height / 2
+	if self.inUse then
+		love.graphics.setShader(brightnessShader)
+		brightnessShader:send("brightness", 1.75)
+	end
 
 	love.graphics.draw(
 		self.spriteSheets[self.state],
@@ -97,4 +108,5 @@ function UIElement:draw(camera)
 		offsetX,
 		offsetY
 	)
+	love.graphics.setShader()
 end

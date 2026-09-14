@@ -103,6 +103,206 @@ function newResourceInventoryScene()
 	return invScene
 end
 
+function newEquipmentScene(player)
+	local equipScene = UIScene.new(UI_EQUIPMENT_SCENE, player)
+	local canvasCenter = vec(640, 360)
+
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
+
+	local signatureSettings = {}
+	signatureSettings[IDLE] = newAnimSetting(1, size(56, 56), 1, true, 1)
+
+	local slotSettings = {}
+	slotSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	slotSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+
+	local decorationSettings = {}
+	decorationSettings[IDLE] = newAnimSetting(1, size(15, 39), 1, true, 1)
+
+	-- local ref = UIImageElem.new("equip ref", canvasCenter, size(768, 768))
+	-- ref:addAnimations(bgAnimSettings)
+	-- equipScene:addElement(ref, BG_LAYER_1, vec(1, 1))
+
+	-- BACKGROUND
+	local bg = UIImageElem.new("equip bg", canvasCenter, size(768, 768))
+	bg:addAnimations(bgAnimSettings)
+	equipScene:addElement(bg, BG_LAYER_1, vec(1, 2))
+
+	-- ASSINATURA PLAYER
+	local signature = UIImageElem.new("equip signature " .. player.name, vec(canvasCenter.x, canvasCenter.y + 90), size(168, 168))
+	signature:addAnimations(signatureSettings)
+	equipScene:addElement(signature, BG_LAYER_1, vec(1, 3))
+
+	---------------
+	-- ARMAS
+	---------------
+
+	-- SLOTS DE ARMAS
+	local weaponCenter = vec(canvasCenter.x - 240, canvasCenter.y)
+	local padding = 60
+	local artifactCenter = vec(canvasCenter.x, canvasCenter.y - 65)
+	local blessingCenter = vec(canvasCenter.x + 240, canvasCenter.y)
+
+	-- retorna a posição visual e a posição nas camadas da UI de acordo com o tipo de equipamento
+	function equipScene:getEquipmentSlotPosition(equipmentType, idx)
+		if equipmentType == WEAPON then
+			local col = (idx - 1) % 2
+			local row = math.floor((idx - 1) / 2)
+
+			return vec(weaponCenter.x + (-1 + col * 2) * padding, weaponCenter.y + (row - 1) * padding * 2), vec(col, row + 1)
+
+		elseif equipmentType == ARTIFACT then
+			local col = idx - 1
+
+			return vec(artifactCenter.x + (-1 + col * 2) * 65, artifactCenter.y), vec(col + 2, 1)
+
+		elseif equipmentType == BLESSING then
+			local row = idx - 1
+			local col = row % 2 == 0 and 1 or -1
+
+			return vec(blessingCenter.x + col * 40, blessingCenter.y + (row - 2) * 60), vec((col + 1) / 2 + 4, idx)
+
+		end
+	end
+
+	for idx = 1, 6 do
+		local pos, layerPos = equipScene:getEquipmentSlotPosition(WEAPON, idx)
+		local slot = UIImageElem.new("equip slot weapon", pos, size(96, 96))
+		slot:addAnimations(slotSettings)
+		equipScene:addElement(slot, ELEM_LAYER_1, layerPos)
+	end
+
+	---------------
+	-- ARTEFATOS
+	---------------
+
+	-- DECORAÇÃO DE ARTEFATO
+	local decorationArtifact = UIImageElem.new("equip decoration artifact", vec(canvasCenter.x, canvasCenter.y - 75), size(15*3, 39*3))
+	decorationArtifact:addAnimations(decorationSettings)
+	equipScene:addElement(decorationArtifact, BG_LAYER_1, vec(1, 4))
+
+	-- SLOTS DE ARTEFATOS
+	for idx = 1, 2 do
+		local pos, layerPos = equipScene:getEquipmentSlotPosition(ARTIFACT, idx)
+		local slot = UIImageElem.new("equip slot artifact", pos, size(96, 96))
+		slot:addAnimations(slotSettings)
+		equipScene:addElement(slot, ELEM_LAYER_1, layerPos)
+	end
+
+	---------------
+	-- BENÇÃOS
+	---------------
+
+	-- SLOTS DE BENÇÃOS
+	for idx = 1, 5 do
+		local pos, layerPos = equipScene:getEquipmentSlotPosition(BLESSING, idx)
+		local slot = UIImageElem.new("equip slot blessing", pos, size(96, 96))
+		slot:addAnimations(slotSettings)
+		equipScene:addElement(slot, ELEM_LAYER_1, layerPos)
+	end
+
+	---------------
+	-- LIFE BAR
+	---------------
+	
+	local calcFunc = function()
+		return player.hp, player.maxHp
+	end
+	local offset = { l = 11, r = 3 }
+
+	local lifebar = UILifeBarElem.new("equip player lifebar", vec(canvasCenter.x, canvasCenter.y - 170), size(74, 14), calcFunc, offset, 3)
+	equipScene:addElement(lifebar, ELEM_LAYER_1, vec(1, 5))
+
+	-- cria os UIElements de fato (armas e artefatos são interagíveis)
+	function equipScene:newEquipmentElement(equipmentType, equipment, pos)
+		local element
+		if equipmentType == BLESSING then
+			element = UIImageElem.new("equip " .. equipment.name, pos, size(96, 96))
+		else
+			element = UIButtonElem.new("equip " .. equipment.name, pos, size(96, 96), nil, function()
+				if equipmentType == WEAPON then
+					player:equipWeapon(equipment.name)
+				elseif equipmentType == ARTIFACT then
+					player:equipArtifact(equipment.name)
+				end
+				equipScene:setEquipmentInUse(equipmentType, equipment)
+			end)
+		end
+		element.equipment = equipment
+
+		local path = equipmentType == BLESSING
+			and pngPathFormat({ "assets", "sprites", "blessings", equipment.name })
+			or pngPathFormat({ "assets", "sprites", "icons", equipmentType.."s", equipment.name })
+		addAnimation(element, path, IDLE, slotSettings[IDLE])
+		addAnimation(element, path, SELECTED, slotSettings[SELECTED])
+
+		return element
+	end
+
+	-- coloca em uso o elemento equipado e retira todos os outros
+	function equipScene:setEquipmentInUse(equipmentType, equippedEquipment)
+		local equipmentList = equipmentType == WEAPON and player.weapons or player.artifacts
+
+		for idx, equipment in ipairs(equipmentList) do
+			local _, layerPos = self:getEquipmentSlotPosition(equipmentType, idx)
+			local element = self.layers[ELEM_LAYER_2][layerPos.y] and self.layers[ELEM_LAYER_2][layerPos.y][layerPos.x]
+			local slot = self.layers[ELEM_LAYER_1][layerPos.y] and self.layers[ELEM_LAYER_1][layerPos.y][layerPos.x]
+
+			-- equipa o elemento em si
+			if element then
+				element:setInUse(equipment == equippedEquipment)
+			end
+
+			-- equipa o slot
+			if slot then
+				slot:setInUse(equipment == equippedEquipment)
+			end
+		end
+	end
+
+	-- sincroniza os equipamentos do player com o que é visto na UI
+	function equipScene:syncEquipment(equipmentType, equipmentList)
+		-- varre os equipamentos atuais e vê se já foram criados na UI
+		for idx, equipment in ipairs(equipmentList) do
+			local pos, layerPos = self:getEquipmentSlotPosition(equipmentType, idx)
+			local current = self.layers[ELEM_LAYER_2][layerPos.y] and self.layers[ELEM_LAYER_2][layerPos.y][layerPos.x]
+
+			if not current or current.equipment ~= equipment then
+				if current then
+					self:removeElement(ELEM_LAYER_2, layerPos)
+				end
+				self:addElement(self:newEquipmentElement(equipmentType, equipment, pos), ELEM_LAYER_2, layerPos)
+			end
+		end
+
+		-- remove reminscências de equipamentos antigos
+		local idx = #equipmentList + 1
+		while true do
+			local _, layerPos = self:getEquipmentSlotPosition(equipmentType, idx)
+			local current = self.layers[ELEM_LAYER_2][layerPos.y] and self.layers[ELEM_LAYER_2][layerPos.y][layerPos.x]
+
+			-- se não achou mais, removeu todos os antigos já
+			if not current then
+				break
+			end
+
+			self:removeElement(ELEM_LAYER_2, layerPos)
+			idx = idx + 1
+		end
+	end
+
+	equipScene.onActive = function(self)
+		self:syncEquipment(WEAPON, self.player.weapons)
+		self:syncEquipment(ARTIFACT, self.player.artifacts)
+		self:syncEquipment(BLESSING, self.player.blessingManager.equipped)
+		self:setEquipmentInUse(WEAPON, self.player.weapon)
+		self:setEquipmentInUse(ARTIFACT, self.player.artifact)
+	end
+
+	return equipScene
+end
+
 function newCraftingScene(player)
 	local invScene = UIScene.new(UI_CRAFTING_SCENE, player)
 	local canvasCenter = vec(640, 360)
@@ -357,7 +557,7 @@ function newBossLifeBarScene(room)
 		return hp, maxHp
 	end
 
-	local lifeBarEl = UILifeBarElem.new("boss lifebar", vec(640, 50), size(640, 64), vec(1280, 720), lifeCalc)
+	local lifeBarEl = UILifeBarElem.new("boss lifebar", vec(640, 50), size(640, 64), lifeCalc)
 
 	-- SETUP DA CENA
 	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))

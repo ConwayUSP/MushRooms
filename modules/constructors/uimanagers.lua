@@ -12,6 +12,7 @@ function initGlobalUIManager()
 	local menuScene = initMenuScene()
 	globalManager:addScene(menuScene)
 	globalManager:activateScene(UI_MENU_SCENE)
+
 	return globalManager
 end
 
@@ -20,9 +21,11 @@ function newPlayerUIManager(player)
 	local inventoryScene = newResourceInventoryScene()
 	local craftingScene = newCraftingScene(player)
 	local openChestScene = newChestScene()
+	local equipScene = newEquipmentScene(player)
 	playerManager:addScene(inventoryScene)
 	playerManager:addScene(craftingScene)
 	playerManager:addScene(openChestScene)
+	playerManager:addScene(equipScene)
 
 	return playerManager
 end
@@ -31,5 +34,6 @@ function newRoomUIManager(room)
 	local roomManager = UIManager.new()
 	local lifeBar = newBossLifeBarScene(room)
 	roomManager:addScene(lifeBar)
+	
 	return roomManager
 end

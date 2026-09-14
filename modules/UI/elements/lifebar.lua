@@ -10,15 +10,17 @@ require("modules.UI.uielement")
 ---@class LifeBarBg
 ---@field pos Vec
 ---@field size Size
+---@field scale integer
 ---@field animations table<string, Animation>
 ---@field spriteSheets table<string, table>
 local LifeBarBg = {}
 LifeBarBg.__index = LifeBarBg
 
-function LifeBarBg.new(pos, size, name)
+function LifeBarBg.new(pos, size, name, scale)
 	local bg = setmetatable({}, LifeBarBg)
 	bg.pos = vec(pos.x, pos.y)
 	bg.size = size
+	bg.scale = scale or 1
 
 	local path = pngPathFormat({ "assets", "animations", "UI", name, "back" })
 	addAnimation(bg, path, IDLE, newAnimSetting(1, size, 0.1, false))
@@ -37,15 +39,14 @@ function LifeBarBg:draw(camera)
 		viewX, viewY = camera:viewPos(self.pos)
 	end
 	local anim = self.animations[IDLE]
-	local scale = self.size.width / anim.frameDim.width
 	love.graphics.draw(
 		self.spriteSheets[IDLE],
 		anim.frames[anim.currFrame],
 		viewX,
 		viewY,
 		0,
-		scale,
-		scale,
+		self.scale,
+		self.scale,
 		anim.offset.x,
 		anim.offset.y
 	)
@@ -58,6 +59,9 @@ end
 ---@class LifeBarFront
 ---@field pos Vec
 ---@field size Size
+---@field scale integer
+---@field name string
+---@field scissorOffset? table
 ---@field frontTarget number
 ---@field backTarget number
 ---@field percent number
@@ -66,10 +70,12 @@ end
 local LifeBarFront = {}
 LifeBarFront.__index = LifeBarFront
 
-function LifeBarFront.new(pos, size, name)
+function LifeBarFront.new(pos, size, name, scissorOffset, scale)
 	local front = setmetatable({}, LifeBarFront)
 	front.pos = vec(pos.x, pos.y)
+	front.scissorOffset = scissorOffset or { l = 0, r = 0 }
 	front.size = size
+	front.scale = scale or 1
 	front.frontTarget = 1
 	front.backTarget = 1
 	front.percent = 1
@@ -117,22 +123,24 @@ function LifeBarFront:draw(camera)
 			viewX,
 			viewY,
 			0,
-			1,
-			1,
+			self.scale,
+			self.scale,
 			anim.offset.x,
 			anim.offset.y
 		)
 	end
 
-	local startX = viewX - anim.offset.x
-	local endX = startX + anim.frameDim.width
-	local width = endX - startX
+	local startX = viewX - (anim.offset.x) * self.scale
+	local endX = startX + (anim.frameDim.width) * self.scale
+	local finalStartX = startX + self.scissorOffset.l * self.scale
+	local finalEndX = endX - self.scissorOffset.r * self.scale
+	local width = (finalEndX - finalStartX)
 
-	love.graphics.setScissor(startX, 0, self.backTarget * width, window.height)
+	love.graphics.setScissor(finalStartX, 0, self.backTarget * width, window.height)
 	drawWithColorShader(drawFunc)
 	love.graphics.setScissor()
 
-	love.graphics.setScissor(startX, 0, self.frontTarget * width, window.height)
+	love.graphics.setScissor(finalStartX, 0, self.frontTarget * width, window.height)
 	drawFunc()
 	love.graphics.setScissor()
 end
@@ -145,18 +153,16 @@ end
 ---@field lifeCalc fun()
 ---@field front LifeBarFront
 ---@field back LifeBarBg
----@field canvasSize Size
 UILifeBarElem = setmetatable({}, { __index = UIElement })
 UILifeBarElem.__index = UILifeBarElem
 
-function UILifeBarElem.new(name, pos, size, canvasSize, lifeCalc)
+function UILifeBarElem.new(name, pos, size, lifeCalc, scissorOffset, scale)
 	local lifeBar = setmetatable({}, UILifeBarElem)
 	---@diagnostic disable-next-line
 	lifeBar:init(name, UI_BUTTON_ELEM, pos, size)
 	lifeBar.lifeCalc = lifeCalc or function() end
-	lifeBar.front = LifeBarFront.new(pos, size, name)
-	lifeBar.back = LifeBarBg.new(pos, size, name)
-	lifeBar.canvasSize = canvasSize
+	lifeBar.front = LifeBarFront.new(pos, size, name, scissorOffset, scale)
+	lifeBar.back = LifeBarBg.new(pos, size, name, scale)
 
 	return lifeBar
 end

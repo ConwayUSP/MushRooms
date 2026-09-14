@@ -429,8 +429,13 @@ function Player:checkSpecialActions()
 		return
 	end
 
-	if self.controls:checkAction(ACT_OUI) then
+	if self.controls:checkAction(ACT_INT) then
 		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
+		stopMovement(self)
+	end
+
+	if self.controls:checkAction(ACT_OUI) then
+		self.uiManager:toggleScene(UI_EQUIPMENT_SCENE)
 		stopMovement(self)
 	end
 end
