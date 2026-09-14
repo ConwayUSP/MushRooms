@@ -87,10 +87,17 @@ function UIManager:toggleScene(sceneType)
 
 	if newState then
 		self.activeScene = sceneType
+		self:onSceneActivaded(sceneType)
 	else
 		if self.activeScene == sceneType then
 			self.activeScene = nil
 		end
+	end
+end
+
+function UIManager:onSceneActivaded(sceneType)
+	if self.scenes[sceneType].onActive then
+		self.scenes[sceneType]:onActive()
 	end
 end
 
