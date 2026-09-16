@@ -15,6 +15,7 @@ require("modules.utils.vec")
 ---@field solids table<Entity, Hitbox[]>
 ---@field roomsDirty boolean
 ---@field activeRoomsCopy Set<Room>
+---@field spatialGrids table<Entity, SpatialGrid>
 
 CollisionManager = {}
 CollisionManager.__index = CollisionManager
@@ -28,6 +29,7 @@ function CollisionManager.init()
 	cm.solids = {}                -- tabela que liga entidades com seus hitboxes sólidos
 	cm.solidList = {}             -- lista com índices numéricos de hitboxes sólidas
 	cm.solidIndices = {}          -- mapa de entidade para índice da lista `solids`
+	cm.spatialGrids = {}          -- grid onde cada entidade registrada está indexada
 
 	-- otimização: manter uma cópia das salas ativas
 	-- para minimizar o número de colisões checadas
@@ -232,6 +234,7 @@ function CollisionManager:register(entity)
 
 	self.registry[entityKey(entity)] = self.registry[entityKey(entity)] or {}
 	self.registry[entityKey(entity)][entity] = entity.hb
+	self:updateSpatialIndex(entity)
 end
 
 ---@param entity Entity | Room
@@ -260,6 +263,61 @@ function CollisionManager:unregister(entity)
 	end
 
 	self.registry[entityKey(entity)][entity] = nil
+	local grid = self.spatialGrids[entity]
+	if grid then
+		grid:removeEntity(entity)
+		self.spatialGrids[entity] = nil
+	end
+end
+
+---@param entity Entity | Room
+-- sincroniza uma entidade já registrada com o grid da sala à qual ela pertence
+function CollisionManager:updateSpatialIndex(entity)
+	local oldGrid = self.spatialGrids[entity]
+	local room = entity.room
+	local newGrid = room and room.collisionGrid or nil
+
+	if not newGrid then
+		if oldGrid then
+			oldGrid:removeEntity(entity)
+			self.spatialGrids[entity] = nil
+		end
+		return
+	end
+
+	if oldGrid ~= newGrid then
+		if oldGrid then
+			oldGrid:removeEntity(entity)
+		end
+		self.spatialGrids[entity] = newGrid
+	end
+
+	local minX, minY, maxX, maxY = getHitboxesAABB(entity.hb, entity.pos)
+	if minX then
+		newGrid:updateEntity(entity, minX, minY, maxX, maxY)
+	else
+		newGrid:removeEntity(entity)
+	end
+end
+
+---@param entity Entity
+---@param registryKey string
+---@param pos? Vec
+---@return table<Entity, boolean>
+-- retorna apenas candidatos registrados que compartilham células com a entidade
+function CollisionManager:getNearbyEntities(entity, registryKey, pos)
+	local grid = self.spatialGrids[entity] or (entity.room and entity.room.collisionGrid)
+	if not grid then
+		return {}
+	end
+
+	local minX, minY, maxX, maxY = getHitboxesAABB(entity.hb, pos or entity.pos)
+	if not minX then
+		return {}
+	end
+
+	local registered = registryKey == SOLID and self.solids or self.registry[registryKey]
+	return grid:queryAABB(minX, minY, maxX, maxY, registered, entity)
 end
 
 function CollisionManager:handleCollisions()
@@ -282,7 +340,8 @@ function CollisionManager:handleCollisions()
 	--------- PLAYER / OBSTACLE ----------
 	for obstacle, obstaclehb in pairs(registry[OBSTACLE]) do
 		local hitByAnyPlayer = false
-		for player, playerhb in pairs(registry[PLAYER]) do
+		for player in pairs(self:getNearbyEntities(obstacle, PLAYER)) do
+			local playerhb = registry[PLAYER][player]
 			local hit = checkColision(playerhb.default, player, obstaclehb.triggers, obstacle)
 
 			if hit then
@@ -305,7 +364,8 @@ function CollisionManager:handleCollisions()
 
 		local hitByAnyPlayer = false
 
-		for player, playerhb in pairs(registry[PLAYER]) do
+		for player in pairs(self:getNearbyEntities(drop, PLAYER)) do
+			local playerhb = registry[PLAYER][player]
 			local hit = checkColision(playerhb.default, player, drophb.triggers, drop)
 
 			if hit then
@@ -321,7 +381,8 @@ function CollisionManager:handleCollisions()
 	------- PLAYER / NPC --------
 	for player, playerhb in pairs(registry[PLAYER]) do
 		local hitSomeNPC = false
-		for npc, npchb in pairs(registry[NPC]) do
+		for npc in pairs(self:getNearbyEntities(player, NPC)) do
+			local npchb = registry[NPC][npc]
 			local hit = checkColision(playerhb.default, player, npchb.triggers, npc)
 
 			if hit then
@@ -337,7 +398,8 @@ function CollisionManager:handleCollisions()
 
 	--------- ATAQUE / PLAYER ----------
 	for player, playerhb in pairs(registry[PLAYER]) do
-		for attack, attackhb in pairs(registry[ENEMY_ATTACK]) do
+		for attack in pairs(self:getNearbyEntities(player, ENEMY_ATTACK)) do
+			local attackhb = registry[ENEMY_ATTACK][attack]
 			local hit = checkColision(playerhb.default, player, attackhb.default, attack)
 
 			if hit then
@@ -348,7 +410,8 @@ function CollisionManager:handleCollisions()
 
 	------------- ATAQUE / INTERATIVO --------------
 	for attack, attackhb in pairs(registry[PLAYER_ATTACK]) do
-		for inter, interhb in pairs(registry[INTERACTIVE]) do
+		for inter in pairs(self:getNearbyEntities(attack, INTERACTIVE)) do
+			local interhb = registry[INTERACTIVE][inter]
 			local hit = checkColision(attackhb.default, attack, interhb.default, inter)
 
 			if hit then
@@ -359,7 +422,8 @@ function CollisionManager:handleCollisions()
 
 	------------- ATAQUE / INTERATIVO --------------
 	for attack, attackhb in pairs(registry[ENEMY_ATTACK]) do
-		for inter, interhb in pairs(registry[INTERACTIVE]) do
+		for inter in pairs(self:getNearbyEntities(attack, INTERACTIVE)) do
+			local interhb = registry[INTERACTIVE][inter]
 			local hit = checkColision(attackhb.default, attack, interhb.default, inter)
 
 			if hit then
@@ -370,7 +434,8 @@ function CollisionManager:handleCollisions()
 
 	------- PLAYER / DESTRUTIVEL --------
 	for destr, destrhb in pairs(registry[DESTRUCTIBLE]) do
-		for player, playerhb in pairs(registry[PLAYER]) do
+		for player in pairs(self:getNearbyEntities(destr, PLAYER)) do
+			local playerhb = registry[PLAYER][player]
 			local hit = checkColision(destrhb.default, destr, playerhb.default, player)
 
 			if hit then
@@ -382,7 +447,8 @@ function CollisionManager:handleCollisions()
 	-------- PLAYER / INTERATIVO --------
 	for player, playerhb in pairs(registry[PLAYER]) do
 		local hitSomeInteractive = false
-		for inter, interhb in pairs(registry[INTERACTIVE]) do
+		for inter in pairs(self:getNearbyEntities(player, INTERACTIVE)) do
+			local interhb = registry[INTERACTIVE][inter]
 			local hit = checkColision(interhb.triggers, inter, playerhb.default, player)
 
 			if hit then
@@ -394,7 +460,8 @@ function CollisionManager:handleCollisions()
 
 	--------- PLAYER / INIMIGO ----------
 	for player, playerhb in pairs(registry[PLAYER]) do
-		for enemy, enemyhb in pairs(registry[ENEMY]) do
+		for enemy in pairs(self:getNearbyEntities(player, ENEMY)) do
+			local enemyhb = registry[ENEMY][enemy]
 			local hit = checkColision(playerhb.default, player, enemyhb.default, enemy)
 
 			if hit then
@@ -405,7 +472,8 @@ function CollisionManager:handleCollisions()
 
 	--------- INIMIGO / ATAQUE ----------
 	for enemy, enemyhb in pairs(registry[ENEMY]) do
-		for attack, attackhb in pairs(registry[PLAYER_ATTACK]) do
+		for attack in pairs(self:getNearbyEntities(enemy, PLAYER_ATTACK)) do
+			local attackhb = registry[PLAYER_ATTACK][attack]
 			local hit = checkColision(enemyhb.default, enemy, attackhb.default, attack)
 
 			if hit then
@@ -416,7 +484,8 @@ function CollisionManager:handleCollisions()
 
 	------- ATAQUE / DESTRUTIVEL --------
 	for destr, destrhb in pairs(registry[DESTRUCTIBLE]) do
-		for attack, attackhb in pairs(registry[PLAYER_ATTACK]) do
+		for attack in pairs(self:getNearbyEntities(destr, PLAYER_ATTACK)) do
+			local attackhb = registry[PLAYER_ATTACK][attack]
 			local hit = checkColision(destrhb.default, destr, attackhb.default, attack)
 
 			if hit then
@@ -427,7 +496,8 @@ function CollisionManager:handleCollisions()
 
 	---------- ATAQUE / ATAQUE ----------
 	for attackA, attackAhb in pairs(registry[PLAYER_ATTACK]) do
-		for attackB, attackBhb in pairs(registry[ENEMY_ATTACK]) do
+		for attackB in pairs(self:getNearbyEntities(attackA, ENEMY_ATTACK)) do
+			local attackBhb = registry[ENEMY_ATTACK][attackB]
 			local hit = checkColision(attackAhb.default, attackA, attackBhb.default, attackB)
 
 			if hit then
@@ -473,9 +543,9 @@ function CollisionManager:resolveSolidCollisions(entity, nextPos)
 
 		for _ = 1, 5 do
 			local collisionsDetected = 0
+			local nearbySolids = self:getNearbyEntities(entity, SOLID, finalPos)
 
-			for i = 1, #self.solidList do
-				local solid = self.solidList[i]
+			for solid in pairs(nearbySolids) do
 				local solidhbs = self.solids[solid]
 
 				if solid == entity then
@@ -539,6 +609,7 @@ function CollisionManager:onPlayerRoom(player, room)
 	if prevRoom and prevRoom ~= room then
 		prevRoom:onPlayerExit(player)
 		room:onPlayerEnter(player)
+		self:updateSpatialIndex(player)
 	end
 end
 

@@ -114,6 +114,55 @@ function buildWorldHitbox(hitbox, entityPos)
 	}
 end
 
+---@param hitboxesData Hitboxes
+---@param entityPos Vec
+---@return number? minX
+---@return number? minY
+---@return number? maxX
+---@return number? maxY
+-- calcula um AABB conservador contendo todas as hitboxes de uma entidade
+function getHitboxesAABB(hitboxesData, entityPos)
+	local minX, minY = math.huge, math.huge
+	local maxX, maxY = -math.huge, -math.huge
+	local found = false
+	local groups = { hitboxesData.default, hitboxesData.solids, hitboxesData.triggers }
+
+	for _, group in ipairs(groups) do
+		for _, hb in ipairs(group) do
+			local x = entityPos.x + hb.offset.x
+			local y = entityPos.y + hb.offset.y
+			local shape = hb.shape
+			local hbMinX, hbMinY, hbMaxX, hbMaxY
+
+			if shape.shape == CIRCLE then
+				hbMinX, hbMinY = x - shape.radius, y - shape.radius
+				hbMaxX, hbMaxY = x + shape.radius, y + shape.radius
+			elseif shape.shape == RECTANGLE then
+				-- Há rotinas de colisão que tratam o offset como centro e outras como canto.
+				-- A união das duas interpretações mantém a broad phase sem falsos negativos.
+				hbMinX, hbMinY = x - shape.halfW, y - shape.halfH
+				hbMaxX, hbMaxY = x + shape.width, y + shape.height
+			elseif shape.shape == LINE then
+				local endX = x + math.cos(shape.angle) * shape.length
+				local endY = y + math.sin(shape.angle) * shape.length
+				hbMinX, hbMinY = math.min(x, endX), math.min(y, endY)
+				hbMaxX, hbMaxY = math.max(x, endX), math.max(y, endY)
+			end
+
+			if hbMinX then
+				minX, minY = math.min(minX, hbMinX), math.min(minY, hbMinY)
+				maxX, maxY = math.max(maxX, hbMaxX), math.max(maxY, hbMaxY)
+				found = true
+			end
+		end
+	end
+
+	if not found then
+		return nil, nil, nil, nil
+	end
+	return minX, minY, maxX, maxY
+end
+
 function entityKey(entity)
 	if entity.type ~= ATTACK_EVENT then
 		return entity.type

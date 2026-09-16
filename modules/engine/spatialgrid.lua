@@ -14,8 +14,15 @@
 ---@field columns integer
 ---@field rows integer
 ---@field cells table<string, SpatialGridCell>
+---@field memberships table<Entity | Room, SpatialGridMembership>
 SpatialGrid = {}
 SpatialGrid.__index = SpatialGrid
+
+---@class SpatialGridMembership
+---@field minX integer
+---@field minY integer
+---@field maxX integer
+---@field maxY integer
 
 ---@param bounds RoomLimits
 ---@param cellSize number
@@ -30,8 +37,33 @@ function SpatialGrid.new(bounds, cellSize)
 	grid.rows = math.ceil((bounds.p2.y - bounds.p1.y) / cellSize)
 	-- Estrutura esparsa: células só serão criadas quando uma entidade for indexada.
 	grid.cells = {}
+	grid.memberships = {}
 
 	return grid
+end
+
+---@param minX number
+---@param minY number
+---@param maxX number
+---@param maxY number
+---@return integer? minCellX
+---@return integer? minCellY
+---@return integer? maxCellX
+---@return integer? maxCellY
+function SpatialGrid:getCellRangeForAABB(minX, minY, maxX, maxY)
+	local minCellX, minCellY = self:worldToCell(minX, minY)
+	local maxCellX, maxCellY = self:worldToCell(maxX, maxY)
+
+	minCellX = math.max(0, minCellX)
+	minCellY = math.max(0, minCellY)
+	maxCellX = math.min(self.columns - 1, maxCellX)
+	maxCellY = math.min(self.rows - 1, maxCellY)
+
+	if minCellX > maxCellX or minCellY > maxCellY then
+		return nil, nil, nil, nil
+	end
+
+	return minCellX, minCellY, maxCellX, maxCellY
 end
 
 ---@param x integer
@@ -95,10 +127,12 @@ end
 ---@param maxX number
 ---@param maxY number
 ---@return SpatialGridCell[]
-function SpatialGrid:getCellsForAABB(minX, minY, maxX, maxY)
-	local minCellX, minCellY = self:worldToCell(minX, minY)
-	local maxCellX, maxCellY = self:worldToCell(maxX, maxY)
+function SpatialGrid:getOrCreateCellsForAABB(minX, minY, maxX, maxY)
+	local minCellX, minCellY, maxCellX, maxCellY = self:getCellRangeForAABB(minX, minY, maxX, maxY)
 	local cells = {}
+	if not minCellX then
+		return cells
+	end
 
 	for y = minCellY, maxCellY do
 		for x = minCellX, maxCellX do
@@ -110,6 +144,103 @@ function SpatialGrid:getCellsForAABB(minX, minY, maxX, maxY)
 	end
 
 	return cells
+end
+
+---@param entity Entity | Room
+---@param minX number
+---@param minY number
+---@param maxX number
+---@param maxY number
+---@return boolean changed
+function SpatialGrid:updateEntity(entity, minX, minY, maxX, maxY)
+	local minCellX, minCellY, maxCellX, maxCellY = self:getCellRangeForAABB(minX, minY, maxX, maxY)
+	local old = self.memberships[entity]
+
+	if
+		old
+		and old.minX == minCellX
+		and old.minY == minCellY
+		and old.maxX == maxCellX
+		and old.maxY == maxCellY
+	then
+		return false
+	end
+
+	self:removeEntity(entity)
+	if not minCellX then
+		return old ~= nil
+	end
+
+	for y = minCellY, maxCellY do
+		for x = minCellX, maxCellX do
+			local cell = self:getOrCreateCell(x, y)
+			cell.entities[entity] = true
+		end
+	end
+
+	self.memberships[entity] = {
+		minX = minCellX,
+		minY = minCellY,
+		maxX = maxCellX,
+		maxY = maxCellY,
+	}
+	return true
+end
+
+---@param entity Entity | Room
+---@return boolean removed
+function SpatialGrid:removeEntity(entity)
+	local membership = self.memberships[entity]
+	if not membership then
+		return false
+	end
+
+	for y = membership.minY, membership.maxY do
+		for x = membership.minX, membership.maxX do
+			local key = self:makeKey(x, y)
+			local cell = self.cells[key]
+			if cell then
+				cell.entities[entity] = nil
+				if next(cell.entities) == nil then
+					self.cells[key] = nil
+				end
+			end
+		end
+	end
+
+	self.memberships[entity] = nil
+	return true
+end
+
+--- Reúne entidades das células existentes sem criar células vazias.
+---@param minX number
+---@param minY number
+---@param maxX number
+---@param maxY number
+---@param allowed? table<Entity | Room, any>
+---@param excluded? Entity | Room
+---@return table<Entity | Room, boolean>
+function SpatialGrid:queryAABB(minX, minY, maxX, maxY, allowed, excluded)
+	local minCellX, minCellY, maxCellX, maxCellY = self:getCellRangeForAABB(minX, minY, maxX, maxY)
+	local entities = {}
+	if not minCellX then
+		return entities
+	end
+
+	for y = minCellY, maxCellY do
+		for x = minCellX, maxCellX do
+			local cell = self:getCell(x, y)
+			if cell then
+				for entity in pairs(cell.entities) do
+					if entity ~= excluded and (not allowed or allowed[entity]) then
+						entities[entity] = true
+					end
+				end
+			end
+		end
+	end
+
+	return entities
 end
 
 return SpatialGrid

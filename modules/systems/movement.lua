@@ -42,6 +42,9 @@ function setPos(entity, pos)
 	end
 
 	entity.pos = nextPos
+	if collisionManager and collisionManager.spatialGrids[entity] then
+		collisionManager:updateSpatialIndex(entity)
+	end
 end
 
 ---@param entity any

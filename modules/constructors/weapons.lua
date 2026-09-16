@@ -12,7 +12,7 @@ function newKatana()
 		local weapon = atkEvent.atk.weapon
 		local origin = weapon:atkOriginPoint()
 
-		atkEvent.pos = origin
+		setPos(atkEvent, origin)
 	end
 	local onHitFunc = function(e, target) end
 	local rotationFunc = function(e) 

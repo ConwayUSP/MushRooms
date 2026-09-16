@@ -75,8 +75,7 @@ Room.type = ROOM
 Room.stdDim = { width = 1536, height = 1536 }
 Room.spacingV = 96
 Room.spacingH = 96
--- Tamanho-base das células para a broad phase de colisão. Será calibrado por profiling.
-Room.collisionGridCellSize = 192
+Room.collisionGridCellSize = 192 -- valor a ser CALIBRADO
 
 ---@param pos Vec
 ---@param dimensions Size

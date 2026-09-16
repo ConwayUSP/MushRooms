@@ -325,7 +325,7 @@ function newRotatoryAttack(ally, duration, cooldown, hb)
 	})
 	local updateFunc = function(e, dt)
 		e:baseUpdate(dt)
-		e.pos = e.attacker.pos
+		setPos(e, e.attacker.pos)
 	end
 	local onHitFunc = function(e, t)
 		-- print("Rotatory Attack acertou um alvo")
@@ -384,7 +384,7 @@ function newDemonJumpAttack(duration)
 	-- faz a hitbox do ataque acompanhar o demonio
 	local updateFunc = function(e, dt)
 		e:baseUpdate(dt)
-		e.pos = e.attacker.pos
+		setPos(e, e.attacker.pos)
 	end
 
 	local attack = Attack.new(DEMON_JUMP.name, settings, updateFunc, nil, nil)

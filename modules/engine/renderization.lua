@@ -382,6 +382,63 @@ function renderHitboxes(camera)
 end
 
 ---@param camera Camera
+-- renderiza o grid espacial e a ocupação de cada célula da sala da câmera
+function renderSpatialGrid(camera)
+	if not debugMode or not camera.playerAttached or not camera.playerAttached.room then
+		return
+	end
+
+	local grid = camera.playerAttached.room.collisionGrid
+	if not grid then
+		return
+	end
+
+	local bounds = grid.bounds
+	love.graphics.setShader()
+	love.graphics.setLineWidth(1)
+	love.graphics.setColor(0.2, 0.9, 1, 0.55)
+
+	for x = 0, grid.columns do
+		local worldX = math.min(bounds.p1.x + x * grid.cellSize, bounds.p2.x)
+		local viewX1, viewY1 = camera:viewPos(vec(worldX, bounds.p1.y))
+		local viewX2, viewY2 = camera:viewPos(vec(worldX, bounds.p2.y))
+		love.graphics.line(viewX1, viewY1, viewX2, viewY2)
+	end
+
+	for y = 0, grid.rows do
+		local worldY = math.min(bounds.p1.y + y * grid.cellSize, bounds.p2.y)
+		local viewX1, viewY1 = camera:viewPos(vec(bounds.p1.x, worldY))
+		local viewX2, viewY2 = camera:viewPos(vec(bounds.p2.x, worldY))
+		love.graphics.line(viewX1, viewY1, viewX2, viewY2)
+	end
+
+	for _, cell in pairs(grid.cells) do
+		local count = 0
+		for _ in pairs(cell.entities) do
+			count = count + 1
+		end
+
+		if count > 0 then
+			local cellMinX = bounds.p1.x + cell.x * grid.cellSize
+			local cellMinY = bounds.p1.y + cell.y * grid.cellSize
+			local cellMaxX = math.min(cellMinX + grid.cellSize, bounds.p2.x)
+			local cellMaxY = math.min(cellMinY + grid.cellSize, bounds.p2.y)
+			local center = vec((cellMinX + cellMaxX) / 2, (cellMinY + cellMaxY) / 2)
+			local viewX, viewY = camera:viewPos(center)
+			local label = tostring(count)
+
+			love.graphics.setColor(0, 0, 0, 0.75)
+			love.graphics.rectangle("fill", viewX - 13, viewY - 11, 26, 22, 4, 4)
+			love.graphics.setColor(0.4, 1, 1, 1)
+			love.graphics.printf(label, viewX - 20, viewY - 8, 40, "center")
+		end
+	end
+
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.setLineWidth(1)
+end
+
+---@param camera Camera
 ---@param hitboxes Hitbox[]
 ---@param entity Entity
 -- renderiza as hitboxes sólidas na perspectiva da `camera`
