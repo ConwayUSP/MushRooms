@@ -8,15 +8,12 @@ function seekClosestPlayer(tm, target)
 	end
 	local minDist = math.huge
 	local closestPlayerPos = nil
-	-- buscando todos os players na sala por ID, pq eles ficam em um Set ToT
-	for i = 0, 4 do
-		local p = r.playersInRoom:has(i) and r.playersInRoom:get(i) or nil
-		if p then
-			local d = dist(tm.owner.pos, p.pos)
-			if d < minDist then
-				minDist = d
-				closestPlayerPos = p.pos
-			end
+	-- iterar o Set evita perder um jogador com ID fora de uma faixa fixa e invalidar o alvo.
+	for _, p in r.playersInRoom:iter() do
+		local d = dist(tm.owner.pos, p.pos)
+		if d < minDist then
+			minDist = d
+			closestPlayerPos = p.pos
 		end
 	end
 	if closestPlayerPos then
@@ -58,11 +55,8 @@ function seekAllPlayers(tm, target)
 		return
 	end
 	local posSum = vec(0, 0)
-	for i = 0, 4 do
-		local p = r.playersInRoom:has(i) and r.playersInRoom:get(i) or nil
-		if p then
-			posSum = addVec(posSum, p.pos)
-		end
+	for _, p in r.playersInRoom:iter() do
+		posSum = addVec(posSum, p.pos)
 	end
 	target.pos = scaleVec(posSum, 1 / r.playersInRoom:size())
 	target.weight = 1

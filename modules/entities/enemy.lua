@@ -328,8 +328,8 @@ function Enemy:updateState(dt)
 			self.state = IDLE
 		end
 
-		if self.state ~= IDLE and self.state ~= initialState and isMovementState(initialState) then
-			self.animations[self.state].currFrame = self.animations[initialState].currFrame
+		if self.state ~= IDLE and self.state ~= prevState and isMovementState(prevState) then
+			self.animations[self.state].currFrame = self.animations[prevState].currFrame
 		end
 	end
 

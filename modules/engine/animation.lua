@@ -79,9 +79,11 @@ function Animation:update(dt)
 	end
 end
 
--- volta a animação ao primeiro frame
+-- volta a animação ao primeiro frame e a torna executável novamente
 function Animation:reset()
 	self.currFrame = 1
+	self.timer = 0
+	self.isFinished = false
 end
 
 ----------------------------------------
