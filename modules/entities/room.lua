@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.systems.blueprint")
+require("modules.engine.spatialgrid")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
 require("modules.utils.types")
@@ -44,6 +45,7 @@ walls = BiList.new()
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
+---@field collisionGrid SpatialGrid
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
 ---@field createAdjacentRooms fun()
@@ -73,6 +75,8 @@ Room.type = ROOM
 Room.stdDim = { width = 1536, height = 1536 }
 Room.spacingV = 96
 Room.spacingH = 96
+-- Tamanho-base das células para a broad phase de colisão. Será calibrado por profiling.
+Room.collisionGridCellSize = 192
 
 ---@param pos Vec
 ---@param dimensions Size
@@ -95,6 +99,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.roomType = blueprint.roomType               -- tipo da sala
 	room.name = blueprint.roomName                   -- nome da sala
 	room.sprites = sprites                           -- os sprites da sala em camadas
+	room.collisionGrid = SpatialGrid.new(room.limits, Room.collisionGridCellSize)
 	-- atributos fixos na instanciação
 	room.adjacentRooms = {}                          -- salas adjacentes
 	room.explored = false                            -- se algum jogador já entrou na sala ou não
