@@ -138,9 +138,11 @@ function Mortal:die()
 
 	collisionManager:unregister(self)
 	local atks = (self.atk and self.atk[self.selectedAtk].events) or (self.weapon and self.weapon.atk.events)
-	for _, atk in pairs(atks) do
-		collisionManager:unregister(atk)
-		atk:destroy()
+	if atks then
+		for _, atk in pairs(atks) do
+			collisionManager:unregister(atk)
+			atk:destroy()
+		end
 	end
 
 	if self.weapon then
