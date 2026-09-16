@@ -199,6 +199,7 @@ function Room:onPlayerEnter(player)
 	self.playersInRoom:add(player.id, player)
 	player.room = self
 	activeRooms:add(makeKey(self.arrPos.x, self.arrPos.y), self)
+	collisionManager.roomsDirty = true
 	self:createAdjacentRooms()
 
 	if self.roomType == BOSS_ROOM then
