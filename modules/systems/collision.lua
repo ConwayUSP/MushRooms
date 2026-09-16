@@ -542,6 +542,12 @@ function applyContactImpulse(entityA, entityB, normal, restitution)
 
 	local vB_normal = dotProd(vB, u_normal)
 	local vB_tangent = dotProd(vB, u_tangent)
+	local relativeNormalSpeed = vA_normal - vB_normal
+
+	-- valor negativo => objetos já estão se afastando
+	if relativeNormalSpeed <= 0 then
+		return
+	end
 
 	if mA == math.huge or mB == math.huge then
 		if mA == math.huge and mB == math.huge then
