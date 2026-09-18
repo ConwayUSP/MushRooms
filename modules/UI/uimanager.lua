@@ -66,13 +66,13 @@ function UIManager:activateScene(sceneType)
 end
 
 ---@param sceneType Type
--- desativa uma cena de um determinado tipo e todas as cenas abaixo dela no stack
+-- desativa uma cena de um determinado tipo e todas as cenas acima dela no stack (sub-cenas)
 function UIManager:deactivateScene(sceneType)
 	local type = nil
 	repeat
 		type = table.remove(self.activeScenes)
+		self.scenes[type].active = false
 	until type == sceneType
-	self.scenes[sceneType].active = false
 end
 
 ---@param sceneType string
