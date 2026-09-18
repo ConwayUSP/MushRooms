@@ -10,7 +10,9 @@ require("modules.constructors.uiscenes")
 function initGlobalUIManager()
 	local globalManager = UIManager.new()
 	local menuScene = initMenuScene()
+	local settingsScene = initSettingsScene()
 	globalManager:addScene(menuScene)
+	globalManager:addScene(settingsScene)
 	globalManager:activateScene(UI_MENU_SCENE)
 
 	return globalManager
@@ -34,6 +36,6 @@ function newRoomUIManager(room)
 	local roomManager = UIManager.new()
 	local lifeBar = newBossLifeBarScene(room)
 	roomManager:addScene(lifeBar)
-	
+
 	return roomManager
 end

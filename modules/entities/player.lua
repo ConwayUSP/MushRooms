@@ -553,7 +553,7 @@ function Player:tryCollectDrop(drop)
 	if drop.autoPick then
 		self:collectDrop(drop)
 		return
-	elseif love.controls:checkInput(ACT_INT) then
+	elseif self.controls:checkAction(ACT_INT) then
 		self:collectDrop(drop)
 		return
 	end
