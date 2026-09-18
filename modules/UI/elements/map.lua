@@ -27,6 +27,7 @@ function UIMapElem.new(name, pos, size, player)
 
 	map.player = player
 	map.focus = vec(0, 0)
+	map.targetFocus = vec(0, 0)
 	-- TODO: adicionar vetor para armazenar offset da CÃMERA
 
 	map:addSprites()
@@ -57,8 +58,21 @@ function UIMapElem:addSprites()
 	end
 end
 
+function UIMapElem:update(dt)
+	if math.abs(self.focus.x - self.targetFocus.x) > 0.00005 then
+		self.focus.x = lerp(self.focus.x, self.targetFocus.x, 0.1)
+	end
+	if math.abs(self.focus.y - self.targetFocus.y) > 0.00005 then
+		self.focus.y = lerp(self.focus.y, self.targetFocus.y, 0.1)
+	end
+end
+
+function UIMapElem:setFocus(vec)
+	self.targetFocus = vec
+end
+
 function UIMapElem:updateMap(player)
-	self.focus = vec(player.room.arrPos.x, player.room.arrPos.y)
+	self.targetFocus = vec(player.room.arrPos.x, player.room.arrPos.y)
 end
 
 function UIMapElem:calcOffsets(state, roomX, roomY)
@@ -86,11 +100,14 @@ function UIMapElem:calcIconOffsets(offsetX, offsetY, room, player)
 end
 
 function UIMapElem:draw(camera)
-	local firstX = math.floor(self.focus.x) - 3
-	local lastX  = math.ceil(self.focus.x) + 3
+	local firstX = math.floor(self.targetFocus.x) - 3
+	local lastX  = math.ceil(self.targetFocus.x) + 3
 
-	local firstY = math.floor(self.focus.y) - 2
-	local lastY  = math.ceil(self.focus.y) + 2
+	local firstY = math.floor(self.targetFocus.y) - 2
+	local lastY  = math.ceil(self.targetFocus.y) + 2
+
+	local viewX = self.pos.x
+	local viewY = self.pos.y
 
 	for roomY = firstY, lastY do
     for roomX = firstX, lastX do
@@ -98,16 +115,13 @@ function UIMapElem:draw(camera)
 				local roomStatus
 
 				if room then
-					if room == self.player.room then
+					if areVecsEqual(room.arrPos, self.targetFocus) then
 						roomStatus = "current"
 					elseif room.explored then
 						roomStatus = "visited"
 					else
 						roomStatus = "unvisited"
 					end
-
-					local viewX = self.pos.x
-					local viewY = self.pos.y
 	
 					local offsetX, offsetY = self:calcOffsets(roomStatus, roomX, roomY)
 	
@@ -119,6 +133,7 @@ function UIMapElem:draw(camera)
 						local bossIcon = room.explored and "boss_visited" or "boss_unvisited"
 						offsetX, offsetY = self:calcOffsets(bossIcon, roomX, roomY)
 						love.graphics.draw(self.sprites[bossIcon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+
 					elseif room.roomType == NPC_ROOM then
 						for _, npc in ipairs(room.npcs) do
 							if npc.name == "Tenkar" then
@@ -126,6 +141,7 @@ function UIMapElem:draw(camera)
 								love.graphics.draw(self.sprites["Tenkar_icon"], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 							end
 						end
+
 					end
 
 					-- ICON PLAYER
@@ -137,9 +153,7 @@ function UIMapElem:draw(camera)
 						love.graphics.draw(self.sprites[spriteName], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 					end
 
-					love.graphics.setShader()
 				end
-
     end
 	end
 end

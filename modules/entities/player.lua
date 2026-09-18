@@ -634,6 +634,13 @@ function Player:tryRespawn()
 	self.deathTimer = 0
 end
 
+-- atualiza o foco do mapa para a sala em que o player está
+function Player:onRoomChanged()
+	local mapScene = self.uiManager.scenes[UI_MAP_SCENE]
+
+	mapScene:setFocus(self.room.arrPos)
+end
+
 ---@param chest Interactive
 -- abre a UI do baú e a preenche com os recursos necessários
 function Player:openChest(chest)

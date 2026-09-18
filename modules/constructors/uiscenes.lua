@@ -474,9 +474,33 @@ function newMapScene(player)
 	mapScene:addElement(map, ELEM_LAYER_1, vec(1, 1))
 
 	mapScene.onActive = function(self)
-		-- TODO: isso provavelmente mudará no futuro, já que
-		-- se o player morre, o mapa fica no "focus" antigo ainda
 		self.layers[ELEM_LAYER_1][1][1]:updateMap(player)
+	end
+
+	mapScene.handleInput = function(self, key)
+		local dir = vec(0, 0)
+		if self.controls:justPressed(ACT_MU) then
+			dir.y = dir.y - 1
+		elseif self.controls:justPressed(ACT_MD) then
+			dir.y = dir.y + 1
+		elseif self.controls:justPressed(ACT_ML) then
+			dir.x = dir.x - 1
+		elseif self.controls:justPressed(ACT_MR) then
+			dir.x = dir.x + 1
+		end
+
+		if not nullVec(dir) then
+			local finalPos = addVec(self.layers[ELEM_LAYER_1][1][1].targetFocus, dir)
+			if getRoomAt(finalPos) == nil then
+				return
+			end
+			
+			self.layers[ELEM_LAYER_1][1][1]:setFocus(finalPos)
+		end
+	end
+
+	mapScene.setFocus = function(self, arrPos)
+		self.layers[ELEM_LAYER_1][1][1]:setFocus(arrPos)
 	end
 
 	return mapScene

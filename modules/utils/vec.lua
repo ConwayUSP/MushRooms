@@ -144,3 +144,11 @@ end
 function sizeToVec(s)
 	return vec(s.width, s.height)
 end
+
+---@param v1 Vec
+---@param v2 Vec
+---@return boolean
+-- checa se dois vetores são iguais
+function areVecsEqual(v1, v2)
+	return v1.x == v2.x and v1.y == v2.y
+end
