@@ -40,6 +40,10 @@ function UIMapElem:addSprites()
 		current = assetManager:getImage("assets/animations/ui/map_room_current/idle.png"),
 		unvisited = assetManager:getImage("assets/animations/ui/map_room_unvisited/idle.png"),
 		visited = assetManager:getImage("assets/animations/ui/map_room_visited/idle.png"),
+		Mush_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_mush_icon.png"),
+		Musho_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_musho_icon.png"),
+		Roomy_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_roomy_icon.png"),
+		Shroom_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_shroom_icon.png"),
 	}
 
 	-- salva os tamanhos dos sprites para uso posterior
@@ -54,6 +58,30 @@ function UIMapElem:updateMap(player)
 	self.focus = vec(player.room.arrPos.x, player.room.arrPos.y)
 end
 
+function UIMapElem:calcOffsets(state, roomX, roomY)
+	local p = 3
+	local w = self.spriteSizes[state].width
+	local h = self.spriteSizes[state].height
+
+	local wSlot = self.spriteSizes["current"].width
+	local hSlot = self.spriteSizes["current"].height
+
+	local offsetX = w / 2 - (roomX - self.focus.x) * (wSlot + p)
+	local offsetY = h / 2 - (roomY - self.focus.y) * (hSlot + p)
+
+	return offsetX, offsetY
+end
+
+function UIMapElem:calcIconOffsets(offsetX, offsetY, room, player)
+	local wSlot = self.spriteSizes["current"].width
+	local hSlot = self.spriteSizes["current"].height
+
+	local iconOffsetX = -(player.pos.x - room.pos.x) / room.stdDim.width * wSlot * 0.75 + offsetX
+	local iconOffsetY = -(player.pos.y - room.pos.y) / room.stdDim.height * hSlot * 0.75 + offsetY
+
+	return iconOffsetX, iconOffsetY
+end
+
 function UIMapElem:draw(camera)
 	local firstX = math.floor(self.focus.x) - 3
 	local lastX  = math.ceil(self.focus.x) + 3
@@ -64,28 +92,34 @@ function UIMapElem:draw(camera)
 	for roomY = firstY, lastY do
     for roomX = firstX, lastX do
         local room = getRoomAt(vec(roomX, roomY))
-				local state
+				local roomStatus
 
 				if room then
 					if room == self.player.room then
-						state = "current"
+						roomStatus = "current"
 					elseif room.explored then
-						state = "visited"
+						roomStatus = "visited"
 					else
-						state = "unvisited"
+						roomStatus = "unvisited"
 					end
 
 					local viewX = self.pos.x
 					local viewY = self.pos.y
 	
-					local w = self.spriteSizes[state].width
-					local h = self.spriteSizes[state].height
-					local p = 3
+					local offsetX, offsetY = self:calcOffsets(roomStatus, roomX, roomY)
 	
-					local offsetX = w / 2 - (roomX - self.focus.x) * (w + p)
-					local offsetY = h / 2 - (roomY - self.focus.y) * (h + p)
-	
-					love.graphics.draw(self.sprites[state], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+					-- SLOT
+					love.graphics.draw(self.sprites[roomStatus], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+
+					-- ICON PLAYER
+					for _, player in room.playersInRoom:iter() do
+						local spriteName = player.name.."_icon"
+						offsetX, offsetY = self:calcOffsets(spriteName, roomX, roomY)
+						offsetX, offsetY = self:calcIconOffsets(offsetX, offsetY, room, player)
+
+						love.graphics.draw(self.sprites[spriteName], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+					end
+
 					love.graphics.setShader()
 				end
 
