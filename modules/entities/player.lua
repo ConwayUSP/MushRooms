@@ -438,6 +438,11 @@ function Player:checkSpecialActions()
 		self.uiManager:toggleScene(UI_EQUIPMENT_SCENE)
 		stopMovement(self)
 	end
+
+	if self.controls:checkAction(ACT_MAP) then
+		self.uiManager:toggleScene(UI_MAP_SCENE)
+		stopMovement(self)
+	end
 end
 
 ---@param weapon Weapon

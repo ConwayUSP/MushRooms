@@ -5,6 +5,7 @@ require("modules.UI.uiscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.UI.elements.lifebar")
+require("modules.UI.elements.map")
 require("modules.UI.elements.text")
 require("modules.UI.elements.textbox")
 require("modules.constructors.uielements")
@@ -449,6 +450,36 @@ function newCraftingScene(player)
 	invScene:onSelectionChange()
 
 	return invScene
+end
+
+function newMapScene(player)
+	local mapScene = UIScene.new(UI_MAP_SCENE, player)
+
+	local canvasCenter = vec(640, 360)
+
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
+
+	-- local ref = UIImageElem.new("map ref", canvasCenter, size(768, 768))
+	-- ref:addAnimations(bgAnimSettings)
+	-- mapScene:addElement(ref, BG_LAYER_1, vec(1, 1))
+
+	-- BACKGROUND
+	local bg = UIImageElem.new("map bg", canvasCenter, size(768, 768))
+	bg:addAnimations(bgAnimSettings)
+	mapScene:addElement(bg, BG_LAYER_1, vec(1, 2))
+
+	-- MAP
+	local map = UIMapElem.new("map", canvasCenter, size(768, 768), player)
+	mapScene:addElement(map, ELEM_LAYER_1, vec(1, 1))
+
+	mapScene.onActive = function(self)
+		-- TODO: isso provavelmente mudará no futuro, já que
+		-- se o player morre, o mapa fica no "focus" antigo ainda
+		self.layers[ELEM_LAYER_1][1][1]:updateMap(player)
+	end
+
+	return mapScene
 end
 
 function newChestScene()
