@@ -28,7 +28,6 @@ function UIMapElem.new(name, pos, size, player)
 	map.player = player
 	map.focus = vec(0, 0)
 	map.targetFocus = vec(0, 0)
-	-- TODO: adicionar vetor para armazenar offset da CÃMERA
 
 	map:addSprites()
 
@@ -38,6 +37,7 @@ end
 function UIMapElem:addSprites()
 	-- salva todos possíveis sprites de antemão
 	self.sprites = {
+		background = assetManager:getImage("assets/animations/ui/map_bg/idle.png"),
 		current = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_current.png"),
 		unvisited = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_unvisited.png"),
 		visited = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_visited.png"),
@@ -58,6 +58,7 @@ function UIMapElem:addSprites()
 	end
 end
 
+-- atualiza a posição do foco do mapa suavemente em direção ao alvo com lerp
 function UIMapElem:update(dt)
 	if math.abs(self.focus.x - self.targetFocus.x) > 0.00005 then
 		self.focus.x = lerp(self.focus.x, self.targetFocus.x, 0.1)
@@ -67,14 +68,17 @@ function UIMapElem:update(dt)
 	end
 end
 
+-- atualiza a posição do foco do mapa para a sala especificada
 function UIMapElem:setFocus(vec)
 	self.targetFocus = vec
 end
 
+-- atualiza a posição do foco do mapa para a sala do jogador
 function UIMapElem:updateMap(player)
 	self.targetFocus = vec(player.room.arrPos.x, player.room.arrPos.y)
 end
 
+-- calcula o offset do slot do mapa relativo a posição da sala
 function UIMapElem:calcOffsets(state, roomX, roomY)
 	local p = 3
 	local w = self.spriteSizes[state].width
@@ -89,6 +93,7 @@ function UIMapElem:calcOffsets(state, roomX, roomY)
 	return offsetX, offsetY
 end
 
+-- calcula o offset do ícone do jogador dentro do slot (relativo a posição do jogador na sala)
 function UIMapElem:calcIconOffsets(offsetX, offsetY, room, player)
 	local wSlot = self.spriteSizes["current"].width
 	local hSlot = self.spriteSizes["current"].height
@@ -99,63 +104,77 @@ function UIMapElem:calcIconOffsets(offsetX, offsetY, room, player)
 	return iconOffsetX, iconOffsetY
 end
 
-function UIMapElem:draw(camera)
-	local firstX = math.floor(self.targetFocus.x) - 3
-	local lastX  = math.ceil(self.targetFocus.x) + 3
+-- recorta a área de desenho do mapa para que não desenhe fora do fundo
+function UIMapElem:setMapScissor()
+	local padding = 20
 
-	local firstY = math.floor(self.targetFocus.y) - 2
-	local lastY  = math.ceil(self.targetFocus.y) + 2
+	local bgSize = self.spriteSizes.background
+	local width = bgSize.width * 3 - padding * 2
+	local height = bgSize.height * 3 - padding * 2
+
+	love.graphics.setScissor(self.pos.x - width / 2, self.pos.y - height / 2, width, height)
+end
+
+function UIMapElem:draw(camera)
+	local firstX = self.targetFocus.x - 5
+	local lastX  = self.targetFocus.x + 5
+
+	local firstY = self.targetFocus.y - 3
+	local lastY  = self.targetFocus.y + 3
 
 	local viewX = self.pos.x
 	local viewY = self.pos.y
+	self:setMapScissor()
 
 	for roomY = firstY, lastY do
     for roomX = firstX, lastX do
-        local room = getRoomAt(vec(roomX, roomY))
-				local roomStatus
+			local room = getRoomAt(vec(roomX, roomY))
+			local roomStatus
 
-				if room then
-					if areVecsEqual(room.arrPos, self.targetFocus) then
-						roomStatus = "current"
-					elseif room.explored then
-						roomStatus = "visited"
-					else
-						roomStatus = "unvisited"
-					end
-	
-					local offsetX, offsetY = self:calcOffsets(roomStatus, roomX, roomY)
-	
-					-- SLOT
-					love.graphics.draw(self.sprites[roomStatus], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+			if room then
+				if areVecsEqual(room.arrPos, self.targetFocus) then
+					roomStatus = "current"
+				elseif room.explored then
+					roomStatus = "visited"
+				else
+					roomStatus = "unvisited"
+				end
 
-					-- MISC ICONS
-					if room.roomType == BOSS_ROOM then
-						local bossIcon = room.explored and "boss_visited" or "boss_unvisited"
-						offsetX, offsetY = self:calcOffsets(bossIcon, roomX, roomY)
-						love.graphics.draw(self.sprites[bossIcon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+				local offsetX, offsetY = self:calcOffsets(roomStatus, roomX, roomY)
 
-					elseif room.roomType == NPC_ROOM then
-						for _, npc in ipairs(room.npcs) do
-							if npc.name == "Tenkar" then
-								offsetX, offsetY = self:calcOffsets("Tenkar_icon", roomX, roomY)
-								love.graphics.draw(self.sprites["Tenkar_icon"], viewX, viewY, 0, 3, 3, offsetX, offsetY)
-							end
+				-- SLOT
+				love.graphics.draw(self.sprites[roomStatus], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+
+				-- MISC ICONS
+				if room.roomType == BOSS_ROOM then
+					local bossIcon = room.explored and "boss_visited" or "boss_unvisited"
+					offsetX, offsetY = self:calcOffsets(bossIcon, roomX, roomY)
+					love.graphics.draw(self.sprites[bossIcon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+
+				elseif room.roomType == NPC_ROOM then
+					for _, npc in ipairs(room.npcs) do
+						if npc.name == "Tenkar" then
+							offsetX, offsetY = self:calcOffsets("Tenkar_icon", roomX, roomY)
+							love.graphics.draw(self.sprites["Tenkar_icon"], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 						end
-
-					end
-
-					-- ICON PLAYER
-					for _, player in room.playersInRoom:iter() do
-						local spriteName = player.name.."_icon"
-						offsetX, offsetY = self:calcOffsets(spriteName, roomX, roomY)
-						offsetX, offsetY = self:calcIconOffsets(offsetX, offsetY, room, player)
-
-						love.graphics.draw(self.sprites[spriteName], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 					end
 
 				end
-    end
+
+				-- ICON PLAYER
+				for _, player in room.playersInRoom:iter() do
+					local spriteName = player.name.."_icon"
+					offsetX, offsetY = self:calcOffsets(spriteName, roomX, roomY)
+					offsetX, offsetY = self:calcIconOffsets(offsetX, offsetY, room, player)
+
+					love.graphics.draw(self.sprites[spriteName], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+				end
+
+			end
+		end
 	end
+
+	love.graphics.setScissor()
 end
 
 return UIMapElem
