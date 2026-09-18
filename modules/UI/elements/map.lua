@@ -37,13 +37,16 @@ end
 function UIMapElem:addSprites()
 	-- salva todos possíveis sprites de antemão
 	self.sprites = {
-		current = assetManager:getImage("assets/animations/ui/map_room_current/idle.png"),
-		unvisited = assetManager:getImage("assets/animations/ui/map_room_unvisited/idle.png"),
-		visited = assetManager:getImage("assets/animations/ui/map_room_visited/idle.png"),
+		current = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_current.png"),
+		unvisited = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_unvisited.png"),
+		visited = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_visited.png"),
 		Mush_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_mush_icon.png"),
 		Musho_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_musho_icon.png"),
 		Roomy_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_roomy_icon.png"),
 		Shroom_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_shroom_icon.png"),
+		Tenkar_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_tenkar.png"),
+		boss_unvisited = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_boss_unvisited.png"),
+		boss_visited = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_boss_visited.png"),
 	}
 
 	-- salva os tamanhos dos sprites para uso posterior
@@ -110,6 +113,20 @@ function UIMapElem:draw(camera)
 	
 					-- SLOT
 					love.graphics.draw(self.sprites[roomStatus], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+
+					-- MISC ICONS
+					if room.roomType == BOSS_ROOM then
+						local bossIcon = room.explored and "boss_visited" or "boss_unvisited"
+						offsetX, offsetY = self:calcOffsets(bossIcon, roomX, roomY)
+						love.graphics.draw(self.sprites[bossIcon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+					elseif room.roomType == NPC_ROOM then
+						for _, npc in ipairs(room.npcs) do
+							if npc.name == "Tenkar" then
+								offsetX, offsetY = self:calcOffsets("Tenkar_icon", roomX, roomY)
+								love.graphics.draw(self.sprites["Tenkar_icon"], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+							end
+						end
+					end
 
 					-- ICON PLAYER
 					for _, player in room.playersInRoom:iter() do

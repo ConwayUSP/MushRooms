@@ -32,6 +32,7 @@ walls = BiList.new()
 ---@field limits RoomLimits
 ---@field center Vec
 ---@field color Color
+---@field roomType RoomType
 ---@field sprites table
 ---@field explored boolean
 ---@field doorsTimer Timer
