@@ -534,11 +534,16 @@ end
 
 function CollisionManager:onPlayerRoom(player, room)
 	local prevRoom = player.room
+	local changedRoom = prevRoom ~= room
 
 	-- se mudou de sala, se retira dela e entra na próxima
-	if prevRoom and prevRoom ~= room then
+	if prevRoom and changedRoom then
 		prevRoom:onPlayerExit(player)
 		room:onPlayerEnter(player)
+	end
+
+	if changedRoom then
+		player:onRoomChanged()
 	end
 end
 

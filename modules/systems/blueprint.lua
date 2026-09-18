@@ -81,7 +81,7 @@ end
 ----------------------------------------
 
 ---@class Blueprint
----@field roomType any
+---@field roomType RoomType
 ---@field roomName string
 ---@field color Color
 ---@field spawnpoints SpawnPoint[]
@@ -91,7 +91,7 @@ Blueprint = {}
 Blueprint.__index = Blueprint
 Blueprint.type = BLUEPRINT
 
----@param roomType any
+---@param roomType RoomType
 ---@param roomName string
 ---@param color Color
 ---@return Blueprint
@@ -147,7 +147,7 @@ function randRoomType(rng)
 	end
 end
 
----@param roomType any
+---@param roomType RoomType
 ---@param rng RNG
 ---@return Blueprint
 -- retorna um `Blueprint` de uma sala aleatória do tipo `roomType`

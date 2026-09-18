@@ -438,6 +438,11 @@ function Player:checkSpecialActions()
 		self.uiManager:toggleScene(UI_EQUIPMENT_SCENE)
 		stopMovement(self)
 	end
+
+	if self.controls:checkAction(ACT_MAP) then
+		self.uiManager:toggleScene(UI_MAP_SCENE)
+		stopMovement(self)
+	end
 end
 
 ---@param weapon Weapon
@@ -627,6 +632,13 @@ function Player:tryRespawn()
 	self.state = IDLE
 	self.hp = MAX_HP
 	self.deathTimer = 0
+end
+
+-- atualiza o foco do mapa para a sala em que o player está
+function Player:onRoomChanged()
+	local mapScene = self.uiManager.scenes[UI_MAP_SCENE]
+
+	mapScene:setFocus(self.room.arrPos)
 end
 
 ---@param chest Interactive
