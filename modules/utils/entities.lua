@@ -101,6 +101,7 @@ PILLAR_BASE = registerEntity(OBSTACLE, "pillar base")
 ------------- DECORAÇÕES ---------------
 CANDLE = registerEntity(OBSTACLE, "candle")
 TORCH = registerEntity(OBSTACLE, "torch")
+PILLAR_PROP = registerEntity(OBSTACLE, "pillar prop")
 CRACKS = registerEntity(OBSTACLE, "cracks")
 FLOWERS = registerEntity(OBSTACLE, "flowers")
 MOSS = registerEntity(OBSTACLE, "moss")
