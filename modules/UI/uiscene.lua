@@ -9,6 +9,8 @@ VISUAL_LAYER_2 = 4
 ELEM_LAYER_1 = 5
 ELEM_LAYER_2 = 6
 
+local INTERACTION_LAYERS = { ELEM_LAYER_1, ELEM_LAYER_2 }
+
 ----------------------------------------
 -- Classe UIScene
 ----------------------------------------
@@ -46,34 +48,51 @@ end
 ---@param element UIElement
 ---@param layer number
 ---@param pos Vec
+---@param preserveSelection? boolean
 ---@return UIScene
 -- coloca um elemento de UI na cena em uma determinada camada e posição da matriz
-function UIScene:addElement(element, layer, pos)
+function UIScene:addElement(element, layer, pos, preserveSelection)
 	if not self.layers[layer][pos.y] then
 		self.layers[layer][pos.y] = {}
 	end
 	self.layers[layer][pos.y][pos.x] = element
+
 	-- o primeiro elemento começa selecionado
 	if layer == ELEM_LAYER_1 or layer == ELEM_LAYER_2 then
-		local newSelPos = vec(self.selectionPos.x, self.selectionPos.y)
-		if pos.y < self.selectionPos.y or (pos.y == self.selectionPos.y and pos.x < self.selectionPos.x) then
-			newSelPos = vec(pos.x, pos.y)
-		end
-
-		if newSelPos.x ~= self.selectionPos.x or newSelPos.y ~= self.selectionPos.y then
-			local prevRow = self.layers[layer][self.selectionPos.y]
-			if prevRow and prevRow[self.selectionPos.x] then
-				prevRow[self.selectionPos.x]:deselect()
-			end
-
-			self.layers[layer][newSelPos.y][newSelPos.x]:select()
-			self.selectionPos = newSelPos
+		if not preserveSelection
+			and (pos.y < self.selectionPos.y or (pos.y == self.selectionPos.y and pos.x < self.selectionPos.x))
+		then
+			self:setSelection(pos)
 			if self.onSelectionChange then
 				self:onSelectionChange()
 			end
+		elseif pos.x == self.selectionPos.x and pos.y == self.selectionPos.y then
+			-- mantém elementos sobrepostos, como slot e item, sincronizados
+			element:select()
 		end
 	end
 	return self
+end
+
+---@param pos Vec
+-- troca a seleção em todas as camadas interativas ao mesmo tempo
+function UIScene:setSelection(pos)
+	for _, layer in ipairs(INTERACTION_LAYERS) do
+		local current = self.layers[layer][self.selectionPos.y]
+			and self.layers[layer][self.selectionPos.y][self.selectionPos.x]
+		if current then
+			current:deselect()
+		end
+	end
+
+	self.selectionPos = vec(pos.x, pos.y)
+
+	for _, layer in ipairs(INTERACTION_LAYERS) do
+		local selected = self.layers[layer][pos.y] and self.layers[layer][pos.y][pos.x]
+		if selected then
+			selected:select()
+		end
+	end
 end
 
 ---@param layer number
@@ -132,9 +151,6 @@ function UIScene:handleInput(key)
 		dir.x = dir.x + 1
 	end
 
-	-- camadas que possuem interação (botões, itens, etc.)
-	local interactionLayers = { ELEM_LAYER_1, ELEM_LAYER_2 }
-
 	if not nullVec(dir) then
 		local targetPos = addVec(self.selectionPos, dir)
 		local closestEl = nil
@@ -145,25 +161,7 @@ function UIScene:handleInput(key)
 		end
 
 		if closestEl then
-			-- deselecionando os elementos na posição antiga
-			for _, l in ipairs(interactionLayers) do
-				local el = self.layers[l][self.selectionPos.y]
-					and self.layers[l][self.selectionPos.y][self.selectionPos.x]
-				if el then
-					el:deselect()
-				end
-			end
-
-			self.selectionPos = targetPos
-
-			-- selecionando os elementos na nova posição
-			for _, l in ipairs(interactionLayers) do
-				local el = self.layers[l][self.selectionPos.y]
-					and self.layers[l][self.selectionPos.y][self.selectionPos.x]
-				if el then
-					el:select()
-				end
-			end
+			self:setSelection(targetPos)
 
 			-- atualiza a cena se necessário
 			if self.onSelectionChange then
@@ -174,17 +172,20 @@ function UIScene:handleInput(key)
 
 	-- lidando com cliques
 	if self.controls:checkAction(ACT_CON) then
-		for _, l in pairs(interactionLayers) do
+		-- executa somente o elemento clicável mais acima; o callback pode
+		-- reconstruir camadas e alterar a seleção durante o próprio input
+		for _, l in ipairs({ ELEM_LAYER_2, ELEM_LAYER_1 }) do
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 			if el and el.subtype == UI_BUTTON_ELEM and el.onClick then
 				el:onClick()
+				break
 			end
 		end
 	end
 
 	-- lidando com teclas especiais de textbox
 	if key and (key == "backspace" or key == "insert") then
-		for _, l in pairs(interactionLayers) do
+		for _, l in ipairs(INTERACTION_LAYERS) do
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 			if el and el.subtype == UI_TEXTBOX_ELEM then
 				el:keyPressed(key)
@@ -195,11 +196,10 @@ end
 
 -- acha o elemento mais próximo da linha `row` na coluna `column`
 function UIScene:closestElemInRow(row, col)
-	local interactionLayers = { ELEM_LAYER_1, ELEM_LAYER_2 }
-	for _, l in pairs(interactionLayers) do
-		local smallestDif = math.huge
-		local closestEl = nil
-		local closestElPos = nil
+	local smallestDif = math.huge
+	local closestEl = nil
+	local closestElPos = nil
+	for _, l in ipairs(INTERACTION_LAYERS) do
 		if self.layers[l][row] then
 			for i, el in pairs(self.layers[l][row]) do
 				if math.abs(col - i) < smallestDif then
@@ -209,17 +209,16 @@ function UIScene:closestElemInRow(row, col)
 				end
 			end
 		end
-		return closestEl, closestElPos
 	end
+	return closestEl, closestElPos
 end
 
 -- acha o elemento mais próximo da linha `row` na coluna `column`
 function UIScene:closestElemInColumn(col, row)
-	local interactionLayers = { ELEM_LAYER_1, ELEM_LAYER_2 }
-	for _, l in pairs(interactionLayers) do
-		local smallestDif = math.huge
-		local closestEl = nil
-		local closestElPos = nil
+	local smallestDif = math.huge
+	local closestEl = nil
+	local closestElPos = nil
+	for _, l in ipairs(INTERACTION_LAYERS) do
 		for i, r in pairs(self.layers[l]) do
 			if r[col] then
 				if math.abs(row - i) < smallestDif then
@@ -229,13 +228,12 @@ function UIScene:closestElemInColumn(col, row)
 				end
 			end
 		end
-		return closestEl, closestElPos
 	end
+	return closestEl, closestElPos
 end
 
 function UIScene:handleTextInput(t)
-	local interactionLayers = { ELEM_LAYER_1, ELEM_LAYER_2 }
-	for _, l in pairs(interactionLayers) do
+	for _, l in ipairs(INTERACTION_LAYERS) do
 		local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 		if el and el.subtype == UI_TEXTBOX_ELEM then
 			el:handleTextInput(t)
