@@ -204,7 +204,7 @@ end
 ---@param dt number
 -- movimenta o `Player` de acordo com o input do jogador
 function Player:move(dt)
-	if self.state == DYING or self.uiManager.activeScene then
+	if self.state == DYING or self.uiManager:hasActiveScene() then
 		return
 	end
 
@@ -370,14 +370,7 @@ function Player:processInput()
 		return
 	end
 
-	if self.uiManager.activeScene then
-		if self.controls:checkAction(ACT_EXT) then
-			self.uiManager:deactivateAllScenes()
-			if self.activeInteraction then
-				self.activeInteraction:onCloseInteract(self)
-				self.activeInteraction = nil
-			end
-		end
+	if self.uiManager:hasActiveScene() then
 		return
 	end
 

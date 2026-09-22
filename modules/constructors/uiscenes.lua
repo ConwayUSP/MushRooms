@@ -651,15 +651,15 @@ function newMapScene(player)
 		self.layers[ELEM_LAYER_1][1][1]:updateMap(player)
 	end
 
-	mapScene.handleInput = function(self, key)
+	mapScene.handleInput = function(self, key, controls)
 		local dir = vec(0, 0)
-		if self.controls:justPressed(ACT_MU) then
+		if controls:justPressed(ACT_MU) then
 			dir.y = dir.y - 1
-		elseif self.controls:justPressed(ACT_MD) then
+		elseif controls:justPressed(ACT_MD) then
 			dir.y = dir.y + 1
-		elseif self.controls:justPressed(ACT_ML) then
+		elseif controls:justPressed(ACT_ML) then
 			dir.x = dir.x - 1
-		elseif self.controls:justPressed(ACT_MR) then
+		elseif controls:justPressed(ACT_MR) then
 			dir.x = dir.x + 1
 		end
 
@@ -772,6 +772,13 @@ function newChestScene(player)
 
 	chestScene.onActive = function(self)
 		self:syncInventories()
+	end
+
+	chestScene.onInactive = function(self)
+		if self.chest and self.player.activeInteraction == self.chest then
+			self.chest:onCloseInteract(self.player)
+			self.player.activeInteraction = nil
+		end
 	end
 
 	-- se um dos dois inventários atualizaram, sincroniza a cena novamente

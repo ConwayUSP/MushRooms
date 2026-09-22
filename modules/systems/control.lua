@@ -91,7 +91,7 @@ function Controls:checkAction(action, isBuffered)
 
 	if
 		not inputState.isDown
-		or self.owner.uiManager.activeScene
+		or self.owner.uiManager:hasActiveScene()
 		or self.owner.state == DEFENDING
 		or self.owner.inDialogue
 		or self.owner.state == DYING
