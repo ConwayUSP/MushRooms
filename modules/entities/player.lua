@@ -344,6 +344,8 @@ function Player:build()
 			respawnRoom = self.room.arrPos
 			respawnPos = self.building.pos
 		end
+		
+		self.controls.blockAttackUntilRelease = true
 		self.building = nil
 	end
 end
@@ -377,10 +379,10 @@ function Player:processInput()
 	if self.building then 
 		if self.controls:checkAction(ACT_CON) then
 			self:build()
-			return
 		elseif self.controls:checkAction(ACT_EXT) then
 			self:endBuildingMode()
 		end
+		return
 	end
 	
 	if self.interactiveObj and self.controls:checkAction(ACT_INT) then
