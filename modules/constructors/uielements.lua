@@ -5,19 +5,21 @@ require("modules.UI.uielement")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 
-function newResourceItemElement(resName, invLength, topLeft, spacing, numColumns)
-	local col = math.fmod(invLength - 1, numColumns)
-	local row = math.floor((invLength - 1) / numColumns)
-	local posX = topLeft.x + col * spacing
-	local posY = topLeft.y + row * spacing
-	local resourceEl = UIButtonElem.new(resName, vec(posX, posY), size(96, 96), nil, function(scene)
-		print("Recurso clicado: " .. resName)
+---@param resource Resource
+---@param pos Vec
+---@param onClick? function
+---@return UIButtonElem
+function newResourceItemElement(resource, pos, onClick)
+	local resourceEl = UIButtonElem.new(resource.name, pos, size(96, 96), nil, onClick or function()
+		print("Recurso clicado: " .. resource.name)
 	end)
+	resourceEl.resource = resource
+
 	local animSettings = {}
 	animSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	animSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	for state, settings in pairs(animSettings) do
-		local path = pngPathFormat({ "assets", "sprites", "resources", resName })
+		local path = pngPathFormat({ "assets", "sprites", "resources", resource.name })
 		addAnimation(resourceEl, path, state, settings)
 	end
 

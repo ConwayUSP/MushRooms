@@ -429,12 +429,19 @@ function Player:checkSpecialActions()
 		return
 	end
 
-	if self.controls:checkAction(ACT_INT) then
+	if self.controls:checkAction(ACT_OUI) then
 		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
 		stopMovement(self)
 	end
 
-	if self.controls:checkAction(ACT_OUI) then
+	-- TODO: colocar o controle certo (tecla R por enquanto)
+	if self.controls:checkAction(ACT_CA) then
+		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
+		stopMovement(self)
+	end
+	
+	-- TODO: colocar o controle certo (tecla LSHIFT por enquanto)
+	if self.controls:checkAction(ACT_QA) then
 		self.uiManager:toggleScene(UI_EQUIPMENT_SCENE)
 		stopMovement(self)
 	end
@@ -521,12 +528,7 @@ end
 ---@param resource Resource
 ---@return boolean
 function Player:collectResource(resource)
-	local firstResource = not self.inventory:hasItem(resource)
-	local success = self.inventory:addItem(resource)
-	if success and firstResource then
-		self.uiManager.scenes[UI_INVENTORY_SCENE]:addResourceEl(resource, self.inventory, self.uiManager.canvasSize)
-	end
-	return success
+	return self.inventory:addItem(resource)
 end
 
 ---@param drop Drop

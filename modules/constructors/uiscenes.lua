@@ -57,48 +57,133 @@ end
 -- Cenas de Player
 ----------------------------------------
 
-function newResourceInventoryScene()
-	local invScene = UIScene.new(UI_INVENTORY_SCENE)
+function newResourceInventoryScene(player)
+	local invScene = UIScene.new(UI_INVENTORY_SCENE, player)
 	local canvasCenter = vec(640, 360)
+	local slotsCenter = addVec(canvasCenter, vec(-111, 0))
+	local infoCenterX = canvasCenter.x + 250.5
+
+	local COLS = 4
+	local ROWS = 3
+	local ITEMS_PER_PAGE = COLS * ROWS
+	local slotSize = size(96, 96)
+	local slotSpacing = 108
+	local firstSlotPos = vec(
+		slotsCenter.x - ((COLS - 1) * slotSpacing) / 2,
+		slotsCenter.y - ((ROWS - 1) * slotSpacing) / 2
+	)
+
+	invScene.currentPage = 1
+	invScene.lastInventoryRevision = -1
 
 	-- ANIMAÇÕES
-	local animSettings = {}
-	animSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
-	animSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	local slotAnimSettings = {}
+	slotAnimSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	slotAnimSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
 
 	local bgAnimSettings = {}
-	bgAnimSettings[IDLE] = newAnimSetting(1, size(128, 128), 1, true, 1)
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
+
+	local arrowAnimSettings = {}
+	arrowAnimSettings[IDLE] = newAnimSetting(1, size(10, 8), 1, true, 1)
+	arrowAnimSettings[SELECTED] = newAnimSetting(1, size(10, 8), 1, true, 1)
+
+	local infoHeadAnimSettings = {}
+	infoHeadAnimSettings[IDLE] = newAnimSetting(1, size(69, 16), 1, true, 1)
+
+	local infoFootAnimSettings = {}
+	infoFootAnimSettings[IDLE] = newAnimSetting(1, size(69, 5), 1, true, 1)
 
 	-- BACKGROUND
-	local pos = subVec(canvasCenter, vec(256, 256))
-	local invBg = UIImageElem.new("resource inventory bg", canvasCenter, size(768, 768))
+	local invBg = UIImageElem.new("inventory bg", canvasCenter, size(768, 420))
 	invBg:addAnimations(bgAnimSettings)
 	invScene:addElement(invBg, BG_LAYER_1, vec(1, 1))
 
-	-- SLOTS
-	local leftMargin = canvasCenter.x - 300
-	local topMargin = canvasCenter.y
-	for row = 0, 2 do
-		for col = 0, 4 do
-			local posX = leftMargin + col * 108
-			local posY = topMargin + row * 108
-			local slot = UIImageElem.new("resource slot", vec(posX, posY), size(96, 96))
-			slot:addAnimations(animSettings)
-			invScene:addElement(slot, ELEM_LAYER_1, vec(col + 1, row + 1))
-		end
+	-- DECORAÇÕES DO PAINEL DE INFORMAÇÕES
+	local infoHead = UIImageElem.new("inventory info head", vec(infoCenterX, canvasCenter.y - 168), size(207, 48))
+	infoHead:addAnimations(infoHeadAnimSettings)
+	invScene:addElement(infoHead, BG_LAYER_2, vec(1, 1))
+
+	local infoFoot = UIImageElem.new("inventory info foot", vec(infoCenterX, canvasCenter.y + 160.5), size(207, 15))
+	infoFoot:addAnimations(infoFootAnimSettings)
+	invScene:addElement(infoFoot, BG_LAYER_2, vec(1, 2))
+
+	-- retorna a posição visual e a posição nas camadas da UI de um slot
+	function invScene:getInventorySlotPosition(idx)
+		local col = (idx - 1) % COLS
+		local row = math.floor((idx - 1) / COLS)
+
+		return vec(firstSlotPos.x + col * slotSpacing, firstSlotPos.y + row * slotSpacing), vec(col + 1, row + 1)
 	end
 
-	-- MÉTODOS AUXILIARES
-	function invScene:addResourceEl(resource, inventory, canvasSize)
-		local invLength = inventory:length(RESOURCE)
-		local col = math.fmod(invLength - 1, 5)
-		local row = math.floor((invLength - 1) / 5)
-		if row > 2 then
-			return -- ultrapassou o limite do inventário
+	-- SLOTS
+	for idx = 1, ITEMS_PER_PAGE do
+		local pos, layerPos = invScene:getInventorySlotPosition(idx)
+		local slot = UIImageElem.new("inventory slot item", pos, slotSize)
+		slot:addAnimations(slotAnimSettings)
+		invScene:addElement(slot, ELEM_LAYER_1, layerPos)
+	end
+
+	-- troca a página e atualiza os itens visíveis
+	function invScene:setInventoryPage(page)
+		local resources = self.player.inventory.items[RESOURCE]
+		local pageCount = math.max(1, math.ceil(#resources / ITEMS_PER_PAGE))
+		local targetPage = ((page - 1) % pageCount) + 1
+
+		if targetPage == self.currentPage then
+			return
 		end
-		local topLeft = addVec(vec(640, 360), vec(-300, 0))
-		local resourceEl = newResourceItemElement(resource.name, invLength, topLeft, 108, 5)
-		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
+
+		self.currentPage = targetPage
+		self:syncInventory()
+	end
+
+	-- SETAS DE NAVEGAÇÃO
+	local leftArrow = UIButtonElem.new("inventory nav arrow left", vec(slotsCenter.x - 234, slotsCenter.y), size(30, 24), nil, function()
+		print("left arrow pressed")
+		invScene:setInventoryPage(invScene.currentPage - 1)
+	end)
+	leftArrow:addAnimations(arrowAnimSettings)
+	invScene:addElement(leftArrow, ELEM_LAYER_1, vec(0, 2))
+
+	local rightArrow = UIButtonElem.new("inventory nav arrow right", vec(slotsCenter.x + 234, slotsCenter.y), size(30, 24), nil, function()
+		print("right arrow pressed")
+		invScene:setInventoryPage(invScene.currentPage + 1)
+	end)
+	rightArrow:addAnimations(arrowAnimSettings)
+	invScene:addElement(rightArrow, ELEM_LAYER_1, vec(COLS + 1, 2))
+
+	-- sincroniza o inventário do player com os itens exibidos na página atual
+	function invScene:syncInventory()
+		local inventory = self.player.inventory
+		local resources = inventory.items[RESOURCE]
+		local pageCount = math.max(1, math.ceil(#resources / ITEMS_PER_PAGE))
+		self.currentPage = math.min(self.currentPage, pageCount)
+		self.layers[ELEM_LAYER_2] = {}
+
+		local firstResourceIdx = (self.currentPage - 1) * ITEMS_PER_PAGE + 1
+		local lastResourceIdx = math.min(firstResourceIdx + ITEMS_PER_PAGE - 1, #resources)
+
+		for resourceIdx = firstResourceIdx, lastResourceIdx do
+			local slotIdx = resourceIdx - firstResourceIdx + 1
+			local pos, layerPos = self:getInventorySlotPosition(slotIdx)
+			local resource = resources[resourceIdx]
+			local resourceEl = newResourceItemElement(resource, pos)
+			self:addElement(resourceEl, ELEM_LAYER_2, layerPos, true)
+		end
+
+		self.lastInventoryRevision = inventory.revision
+	end
+
+	invScene.onActive = function(self)
+		self:syncInventory()
+	end
+
+	invScene.update = function(self, dt)
+		if self.lastInventoryRevision ~= self.player.inventory.revision then
+			self:syncInventory()
+		end
+		UIScene.update(self, dt)
 	end
 
 	return invScene
@@ -562,31 +647,29 @@ function newChestScene()
 			return -- ultrapassou o limite do inventário
 		end
 		local topLeft = addVec(vec(640, 360), vec(-382, -124))
-		local resourceEl = newResourceItemElement(resource.name, idx, topLeft, 132, 3)
-		resourceEl.ctx = { resource = resource, player = player, chest = chest }
+		local pos = vec(topLeft.x + col * 132, topLeft.y + row * 132)
 		-- ao clicar, transfere o recurso do player ao baú e recarrega a UI (com openChest)
-		resourceEl.onClick = function(self)
-			self.ctx.player.inventory:transferItem(self.ctx.resource, self.ctx.chest.inventory)
-			self.ctx.player:openChest(self.ctx.chest)
-		end
+		local resourceEl = newResourceItemElement(resource, pos, function()
+			player.inventory:transferItem(resource, chest.inventory)
+			player:openChest(chest)
+		end)
 		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
 	end
 
 	function chestScene:addChestResourceEl(resource, inventory, idx, player, chest)
-		local col = 3 + math.fmod(idx - 1, 3)
+		local col = math.fmod(idx - 1, 3)
 		local row = math.floor((idx - 1) / 3)
 		if row > 2 then
 			return -- ultrapassou o limite do inventário
 		end
 		local topLeft = addVec(vec(640, 360), vec(108, -124))
-		local resourceEl = newResourceItemElement(resource.name, idx, topLeft, 132, 3)
-		resourceEl.ctx = { resource = resource, player = player, chest = chest }
+		local pos = vec(topLeft.x + col * 132, topLeft.y + row * 132)
 		-- ao clicar, transfere o recurso do baú ao player e recarrega a UI (com openChest)
-		resourceEl.onClick = function(self)
-			self.ctx.chest.inventory:transferItem(self.ctx.resource, self.ctx.player.inventory)
-			self.ctx.player:openChest(self.ctx.chest)
-		end
-		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
+		local resourceEl = newResourceItemElement(resource, pos, function()
+			chest.inventory:transferItem(resource, player.inventory)
+			player:openChest(chest)
+		end)
+		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 4, row + 1))
 	end
 
 	return chestScene
