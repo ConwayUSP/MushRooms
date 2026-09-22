@@ -9,10 +9,16 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
     // distância "normalizada" para o centro da textura
     float d = distance(center_of_pixel, vec2(0.5, 0.5)) * 2.0;
     float oscilation = sin(time * 2) * sqrt(steps) / grid_size / 5;
+    // gradiente interno de cada camada
+    float gradient = (d + oscilation) * steps;
+    float gradient_strength = 0.6;
     // criando transições rígidas, quanto mais longe do centro, maior o valor
-    float d_step = floor((d + oscilation) * steps);
+    float d_step = floor(gradient);
+    // misturando degradê com passos rígidos
+    float d_fract = fract(gradient);
+    float modified_step = d_step + (d_fract * gradient_strength);
     // definindo a força do brilho inversamente proporcional ao centro
-    float glow_alpha = max(0.0, 1.0 - (d_step / steps) - oscilation * 3);
+    float glow_alpha = max(0.0, (1.0 - (modified_step / steps) - oscilation * 3.0));
     vec4 glow = vec4(glow_color.rgb, pow(glow_alpha, 3.0) * glow_color.a);
 
     vec4 result = glow;
