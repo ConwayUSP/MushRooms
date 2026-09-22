@@ -18,7 +18,6 @@ ELEM_LAYER_2 = 6
 ---@field active boolean
 ---@field player Player?
 ---@field hasBg boolean
----@field controls Controls
 ---@field selectionPos Vec
 ---@field layers table<_, table<_, UIElement>>[]
 
@@ -35,7 +34,6 @@ function UIScene.new(sceneType, player, hasBg)
 	local uiscene = setmetatable({}, UIScene)
 	uiscene.subtype = sceneType
 	uiscene.player = player
-	uiscene.controls = player and player.controls or _newDefaultControl()
 	uiscene.hasBg = hasBg
 	uiscene.active = false
 	uiscene.selectionPos = vec(math.huge, math.huge)
@@ -88,11 +86,6 @@ end
 ---@param dt number
 -- atualiza cada um dos elementos de UI desta cena
 function UIScene:update(dt)
-	-- se tiver um player, podemos confiar que ele já deu o update
-	if not self.player then
-		self.controls:update(dt)
-	end
-
 	for i = 1, #self.layers do
 		local layer = self.layers[i]
 		for _, row in pairs(layer) do
@@ -119,16 +112,17 @@ function UIScene:draw()
 end
 
 ---@param key string
-function UIScene:handleInput(key)
+---@param controls Controls
+function UIScene:handleInput(key, controls)
 	-- lidando com movimentação pela UI
 	local dir = vec(0, 0)
-	if self.controls:justPressed(ACT_MU) then
+	if controls:justPressed(ACT_MU) then
 		dir.y = dir.y - 1
-	elseif self.controls:justPressed(ACT_MD) then
+	elseif controls:justPressed(ACT_MD) then
 		dir.y = dir.y + 1
-	elseif self.controls:justPressed(ACT_ML) then
+	elseif controls:justPressed(ACT_ML) then
 		dir.x = dir.x - 1
-	elseif self.controls:justPressed(ACT_MR) then
+	elseif controls:justPressed(ACT_MR) then
 		dir.x = dir.x + 1
 	end
 
@@ -173,7 +167,7 @@ function UIScene:handleInput(key)
 	end
 
 	-- lidando com cliques
-	if self.controls:checkAction(ACT_CON) then
+	if controls:justPressed(ACT_CON) then
 		for _, l in pairs(interactionLayers) do
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 			if el and el.subtype == UI_BUTTON_ELEM and el.onClick then

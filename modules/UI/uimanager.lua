@@ -4,6 +4,7 @@
 
 ---@class UIManager
 ---@field player Player
+---@field controls Controls
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
@@ -20,6 +21,7 @@ UIManager.type = UI_MANAGER
 function UIManager.new(player)
 	local uimanager = setmetatable({}, UIManager)
 	uimanager.player = player
+	uimanager.controls = player and player.controls or _newDefaultControl()
 	uimanager.baseWidth = 1280
 	uimanager.baseHeight = 720
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)
@@ -82,6 +84,14 @@ function UIManager:isSceneActive(sceneType)
 	return self.scenes[sceneType].active
 end
 
+---@param keepOneAlive bool
+-- remove a cena ativa do topo da pilha, a não ser que `keepOneAlive` seja verdadeiro e a cena seja a última
+function UIManager:deactivateActiveScene(keepOneAlive)
+	if #self.activeScenes == 0 or #self.activeScenes == 1 and keepOneAlive then return end
+	local activeScene = table.remove(self.activeScenes)
+	self.scenes[activeScene].active = false
+end
+
 ---@param sceneType Type
 -- faz com que uma cena ativa se desative e uma cena desativa se ative
 function UIManager:toggleScene(sceneType)
@@ -113,6 +123,11 @@ end
 ---@param dt number
 -- atualiza o estado de todas as cenas deste manager
 function UIManager:update(dt)
+	-- se tiver um player, podemos confiar que ele já deu o update
+	if not self.player then
+		self.controls:update(dt)
+	end
+
 	self:handleInput()
 	for _, scene in pairs(self.scenes) do
 		if scene.active then
@@ -154,9 +169,17 @@ end
 
 ---@param key? string
 function UIManager:handleInput(key)
+	if self.controls:justPressed(ACT_EXT) then
+		if self.player then
+			self:deactivateActiveScene(false)
+		else
+			self:deactivateActiveScene(true)
+		end
+		return
+	end
 	local activeScene = self.activeScenes[#self.activeScenes]
 	if activeScene then
-		self.scenes[activeScene]:handleInput(key)
+		self.scenes[activeScene]:handleInput(key, self.controls)
 	end
 end
 

@@ -11,8 +11,10 @@ function initGlobalUIManager()
 	local globalManager = UIManager.new()
 	local menuScene = initMenuScene()
 	local settingsScene = initSettingsScene()
+	local controlsScene = initControlsScene()
 	globalManager:addScene(menuScene)
 	globalManager:addScene(settingsScene)
+	globalManager:addScene(controlsScene)
 	globalManager:activateScene(UI_MENU_SCENE)
 
 	return globalManager

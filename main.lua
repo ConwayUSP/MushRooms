@@ -50,11 +50,6 @@ lightLevels = 7
 ----------------------------------------
 
 function love.keypressed(key, scancode, isrepeat)
-	-- esc fecha o jogo
-	if key == "escape" then
-		quitGame()
-	end
-
 	globalUIManager:handleInput(key)
 	for _, p in pairs(players) do
 		p.uiManager:handleInput(key)

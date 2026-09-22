@@ -59,16 +59,13 @@ function initSettingsScene()
 	-- ELEMENTOS
 	local settingsBg = UIImageElem.new("settings bg", vec(640, 360), size(1280, 720))
 	local controlsBtn = UIButtonElem.new("settings controls btn", vec(656, 260), size(832, 96), nil, function()
-		print("MUDAR CONTROLES")
+		globalUIManager:activateScene(UI_CONTROLS_SCENE)
 	end)
 	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
 		print("OPÇÕES DE GRÁFICOS")
 	end)
 	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
 		print("CRÉDITOS")
-	end)
-	local returnBtn = UIButtonElem.new("go back btn", vec(640, 590), size(96, 72), nil, function()
-		globalUIManager:deactivateScene(UI_SETTINGS_SCENE)
 	end)
 
 	-- ANIMAÇÕES
@@ -81,19 +78,61 @@ function initSettingsScene()
 	local bgAnimSettings = {}
 	bgAnimSettings[IDLE] = newAnimSetting(13, size(320, 180), 0.08, true, 1)
 	settingsBg:addAnimations(bgAnimSettings)
-	local returnAnimSettings = {}
-	returnAnimSettings[IDLE] = newAnimSetting(1, size(24, 18), 1000, true, 1)
-	returnAnimSettings[SELECTED] = newAnimSetting(2, size(24, 18), 0.8, true, 1)
-	returnBtn:addAnimations(returnAnimSettings)
 
 	-- SETUP DA CENA
 	settingsScene:addElement(settingsBg, BG_LAYER_1, vec(1, 1))
 	settingsScene:addElement(controlsBtn, ELEM_LAYER_1, vec(1, 1))
 	settingsScene:addElement(displayBtn, ELEM_LAYER_1, vec(1, 2))
 	settingsScene:addElement(creditsBtn, ELEM_LAYER_1, vec(1, 3))
-	settingsScene:addElement(returnBtn, ELEM_LAYER_1, vec(1, 4))
 
 	return settingsScene
+end
+
+function initControlsScene()
+	local controlsScene = UIScene.new(UI_CONTROLS_SCENE)
+	-- ELEMENTOS
+	local controlsBg = UIImageElem.new("controls settings bg", vec(640, 360), size(1280, 720))
+	local controlsLabels = UITextElem.new(
+		"controls labels",
+		vec(312, 106),
+		size(140, 700),
+		2.2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"Walk\nAim\nAttack\nDefend\nUse Item\nChange Weapon\nChange Item\nOpen Inventory\nOpen Map\nInteract\nConfirm\nExit\nQuick Actions\nPause",
+		true
+	)
+	local kbMouseBinds = UITextElem.new(
+		"kb-mouse binds",
+		vec(680, 106),
+		size(120, 700),
+		2.2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"WASD\nmouse\nL-mouse\nR-mouse\nQ\nwheel\nR\nE\nTab\nspace\nspace\nesc\nshift\nesc"
+	)
+	local joystickBinds = UITextElem.new(
+		"joystick binds",
+		vec(860, 106),
+		size(120, 700),
+		2.2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"L-stick\nR-stick\nR2\nL2\nR1\n\n\n\nL1\n\n\n\n\nopt"
+	)
+
+	-- ANIMAÇÕES
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(320, 180), 1000, true, 1)
+	controlsBg:addAnimations(bgAnimSettings)
+
+	-- SETUP DA CENA
+	controlsScene:addElement(controlsBg, BG_LAYER_1, vec(1, 1))
+	controlsScene:addElement(controlsLabels, BG_LAYER_2, vec(1, 1))
+	controlsScene:addElement(kbMouseBinds, BG_LAYER_2, vec(2, 1))
+	controlsScene:addElement(joystickBinds, BG_LAYER_2, vec(3, 1))
+
+	return controlsScene
 end
 
 ----------------------------------------

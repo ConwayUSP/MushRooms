@@ -178,7 +178,7 @@ function _newDefaultControl()
 		"i",
 		"tab",
 		"e",
-		"mouse1",
+		"space",
 		"escape",
 		"lshift",
 		"escape"
