@@ -1,6 +1,7 @@
 ---@class Inventory
 ---@field owner Entity
 ---@field items table
+---@field revision number
 
 Inventory = {}
 Inventory.__index = Inventory
@@ -12,8 +13,14 @@ function Inventory.new(owner)
 	local inv = setmetatable({}, Inventory)
 	inv.owner = owner
 	inv.items = inv:startItems()
+	inv.revision = 0
 
 	return inv
+end
+
+-- marca que o conteúdo do inventário foi alterado
+function Inventory:touch()
+	self.revision = self.revision + 1
 end
 
 function Inventory:startItems()
@@ -50,6 +57,7 @@ function Inventory:addItem(item)
 		invItem.quantity = invItem.quantity + 1
 	end
 
+	self:touch()
 	return true
 end
 
@@ -57,7 +65,7 @@ end
 ---@return boolean
 function Inventory:subtractItem(item)
 	local index = self:hasItem(item)
-	if index ~= -1 then
+	if index then
 		local invItem = self.items[item.type][index]
 
 		if invItem.quantity > 1 then
@@ -66,6 +74,7 @@ function Inventory:subtractItem(item)
 			table.remove(self.items[item.type], index)
 		end
 
+		self:touch()
 		return true
 	end
 
@@ -93,10 +102,12 @@ function Inventory:transferItem(item, dest)
 	if destIdx then
 		dest.items[item.type][destIdx].quantity = dest.items[item.type][destIdx].quantity
 			+ self.items[item.type][selfIdx].quantity
+		dest:touch()
 	else
 		dest:addItem(self.items[item.type][selfIdx])
 	end
 	table.remove(self.items[item.type], selfIdx)
+	self:touch()
 end
 
 function Inventory:length(itemType)
