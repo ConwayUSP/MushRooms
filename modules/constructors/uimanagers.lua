@@ -26,10 +26,12 @@ function newPlayerUIManager(player)
 	local craftingScene = newCraftingScene(player)
 	local openChestScene = newChestScene()
 	local equipScene = newEquipmentScene(player)
+	local mapScene = newMapScene(player)
 	playerManager:addScene(inventoryScene)
 	playerManager:addScene(craftingScene)
 	playerManager:addScene(openChestScene)
 	playerManager:addScene(equipScene)
+	playerManager:addScene(mapScene)
 
 	return playerManager
 end

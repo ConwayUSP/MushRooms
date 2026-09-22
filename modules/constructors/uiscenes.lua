@@ -5,6 +5,7 @@ require("modules.UI.uiscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.UI.elements.lifebar")
+require("modules.UI.elements.map")
 require("modules.UI.elements.text")
 require("modules.UI.elements.textbox")
 require("modules.constructors.uielements")
@@ -538,6 +539,60 @@ function newCraftingScene(player)
 	invScene:onSelectionChange()
 
 	return invScene
+end
+
+function newMapScene(player)
+	local mapScene = UIScene.new(UI_MAP_SCENE, player)
+
+	local canvasCenter = vec(640, 360)
+
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
+
+	-- local ref = UIImageElem.new("map ref", canvasCenter, size(768, 768))
+	-- ref:addAnimations(bgAnimSettings)
+	-- mapScene:addElement(ref, BG_LAYER_1, vec(1, 1))
+
+	-- BACKGROUND
+	local bg = UIImageElem.new("map bg", canvasCenter, size(768, 768))
+	bg:addAnimations(bgAnimSettings)
+	mapScene:addElement(bg, BG_LAYER_1, vec(1, 2))
+
+	-- MAP
+	local map = UIMapElem.new("map", canvasCenter, size(768, 768), player)
+	mapScene:addElement(map, ELEM_LAYER_1, vec(1, 1))
+
+	mapScene.onActive = function(self)
+		self.layers[ELEM_LAYER_1][1][1]:updateMap(player)
+	end
+
+	mapScene.handleInput = function(self, key)
+		local dir = vec(0, 0)
+		if self.controls:justPressed(ACT_MU) then
+			dir.y = dir.y - 1
+		elseif self.controls:justPressed(ACT_MD) then
+			dir.y = dir.y + 1
+		elseif self.controls:justPressed(ACT_ML) then
+			dir.x = dir.x - 1
+		elseif self.controls:justPressed(ACT_MR) then
+			dir.x = dir.x + 1
+		end
+
+		if not nullVec(dir) then
+			local finalPos = addVec(self.layers[ELEM_LAYER_1][1][1].targetFocus, dir)
+			if getRoomAt(finalPos) == nil then
+				return
+			end
+			
+			self.layers[ELEM_LAYER_1][1][1]:setFocus(finalPos)
+		end
+	end
+
+	mapScene.setFocus = function(self, arrPos)
+		self.layers[ELEM_LAYER_1][1][1]:setFocus(arrPos)
+	end
+
+	return mapScene
 end
 
 function newChestScene()
