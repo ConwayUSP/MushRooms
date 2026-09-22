@@ -687,6 +687,7 @@ function newChestScene(player)
 	local ROWS = 3
 	local ITEMS_PER_SIDE = COLS * ROWS
 	local slotSpacing = 132
+	local slotSize = size(120, 120)
 	local playerSlotsStart = addVec(canvasCenter, vec(-382, -124))
 	local chestSlotsStart = addVec(canvasCenter, vec(108, -124))
 
@@ -712,7 +713,7 @@ function newChestScene(player)
 		for col = 0, COLS - 1 do
 			local posX = playerSlotsStart.x + col * slotSpacing
 			local posY = playerSlotsStart.y + row * slotSpacing
-			local slot = UIImageElem.new("chest player slot", vec(posX, posY), size(120, 120))
+			local slot = UIImageElem.new("chest player slot", vec(posX, posY), slotSize)
 			slot:addAnimations(slotAnimSettings)
 			chestScene:addElement(slot, ELEM_LAYER_1, vec(col + 1, row + 1))
 		end
@@ -723,7 +724,7 @@ function newChestScene(player)
 		for col = 0, COLS - 1 do
 			local posX = chestSlotsStart.x + col * slotSpacing
 			local posY = chestSlotsStart.y + row * slotSpacing
-			local slot = UIImageElem.new("chest slot", vec(posX, posY), size(120, 120))
+			local slot = UIImageElem.new("chest slot", vec(posX, posY), slotSize)
 			slot:addAnimations(slotAnimSettings)
 			chestScene:addElement(slot, ELEM_LAYER_1, vec(COLS + col + 1, row + 1))
 		end
@@ -749,7 +750,7 @@ function newChestScene(player)
 			local destinationInventory = isPlayerSide and self.chest.inventory or self.player.inventory
 			local resourceEl = newResourceItemElement(resource, pos, function()
 				sourceInventory:transferItem(resource, destinationInventory)
-			end)
+			end, slotSize)
 			self:addElement(resourceEl, ELEM_LAYER_2, layerPos, true)
 		end
 	end
