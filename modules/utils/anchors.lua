@@ -70,6 +70,8 @@ ANCHORS = {
 	moss = floorAnchor(-8000), -- também muito em baixo, mas acima dos negativos
 	rubble_small = floorAnchor(0.3),
 	rubble_big = floorAnchor(-6),
+	torch = floorAnchor(200),
+	pillar_prop = floorAnchor(-4),
 
 	-- Produtos
 	chest = floorAnchor(10),

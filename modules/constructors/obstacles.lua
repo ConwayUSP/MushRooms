@@ -79,12 +79,30 @@ function newPillarBase(spawnPos, room)
 	return obs
 end
 
+function newPillarProp(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local obs = Obstacle.new(PILLAR_PROP.name, hbs, spawnPos, room, false)
+	obs:addAnimations(newAnimSetting(1, size(57, 52), 1000, false))
+
+	return obs
+end
+
 function newCandle(spawnPos, room)
 	local hbs = hitboxes({}, {}, {})
-	local randCandle = tostring(math.random(1))
+	local randCandle = tostring(math.random(3))
 	local obs = Obstacle.new(CANDLE.name .. randCandle, hbs, spawnPos, room, true)
-	obs:addAnimations(newAnimSetting(2, size(20, 28), 0.35, true, 1, 0))
+	obs:addAnimations(newAnimSetting(2, size(27, 36), 0.35, true, 1))
 	obs:makeGlow(600)
+
+	return obs
+end
+
+function newTorch(spawnPos, room)
+	local hbs = hitboxes({}, {}, {})
+	local randTorch = tostring(math.random(1))
+	local obs = Obstacle.new(TORCH.name .. randTorch, hbs, spawnPos, room, true)
+	obs:addAnimations(newAnimSetting(2, size(17, 37), 0.35, true, 1))
+	obs:makeGlow(400)
 
 	return obs
 end

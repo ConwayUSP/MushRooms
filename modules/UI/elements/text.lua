@@ -10,12 +10,13 @@ require("modules.UI.uielement")
 UITextElem = setmetatable({}, { __index = UIElement })
 UITextElem.__index = UITextElem
 
-function UITextElem.new(name, pos, size, scale, hitboxes, color, text)
+function UITextElem.new(name, pos, size, scale, hitboxes, color, text, leftAlign)
 	local txt = setmetatable({}, UITextElem)
 	txt:init(name, UI_TEXT_ELEM, pos, size, hitboxes)
 	txt.color = color
 	txt.text = text
 	txt.scale = scale
+	txt.leftAlign = leftAlign
 	return txt
 end
 
@@ -26,6 +27,15 @@ function UITextElem:draw(camera)
 		viewX, viewY = camera:viewPos(self.pos)
 	end
 	love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a)
-	love.graphics.printf(self.text, viewX, viewY, self.size.width, "center", 0, self.scale, self.scale)
+	love.graphics.printf(
+		self.text,
+		viewX,
+		viewY,
+		self.size.width,
+		self.leftAlign and "left" or "center",
+		0,
+		self.scale,
+		self.scale
+	)
 	love.graphics.setColor(1, 1, 1, 1)
 end

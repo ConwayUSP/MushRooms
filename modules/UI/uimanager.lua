@@ -4,10 +4,11 @@
 
 ---@class UIManager
 ---@field player Player
+---@field controls Controls
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
----@field activeScene UIScene
+---@field activeScenes UIScene[]
 ---@field parentCanvas table
 ---@field parentCanvasPos Vec
 
@@ -20,12 +21,13 @@ UIManager.type = UI_MANAGER
 function UIManager.new(player)
 	local uimanager = setmetatable({}, UIManager)
 	uimanager.player = player
+	uimanager.controls = player and player.controls or _newDefaultControl()
 	uimanager.baseWidth = 1280
 	uimanager.baseHeight = 720
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)
 	uimanager.canvasPos = vec(0, 0)
 	uimanager.scenes = {}
-	uimanager.activeScene = nil
+	uimanager.activeScenes = {}
 	return uimanager
 end
 
@@ -61,16 +63,18 @@ end
 -- ativa uma cena de um determinado tipo
 function UIManager:activateScene(sceneType)
 	self.scenes[sceneType].active = true
-	self.activeScene = sceneType
-	self:onSceneActivaded(sceneType)
+	table.insert(self.activeScenes, sceneType)
+	self:onSceneActivated(sceneType)
 end
 
 ---@param sceneType Type
--- desativa uma cena de um determinado tipo
+-- desativa uma cena de um determinado tipo e todas as cenas acima dela no stack (sub-cenas)
 function UIManager:deactivateScene(sceneType)
-	self.scenes[sceneType].active = false
-	-- !TODO: implementar um stack de cenas ativas para UIs sobrepostas
-	self.activeScene = nil
+	local type = nil
+	repeat
+		type = table.remove(self.activeScenes)
+		self.scenes[type].active = false
+	until type == sceneType
 end
 
 ---@param sceneType string
@@ -80,6 +84,14 @@ function UIManager:isSceneActive(sceneType)
 	return self.scenes[sceneType].active
 end
 
+---@param keepOneAlive bool
+-- remove a cena ativa do topo da pilha, a não ser que `keepOneAlive` seja verdadeiro e a cena seja a última
+function UIManager:deactivateActiveScene(keepOneAlive)
+	if #self.activeScenes == 0 or #self.activeScenes == 1 and keepOneAlive then return end
+	local activeScene = table.remove(self.activeScenes)
+	self.scenes[activeScene].active = false
+end
+
 ---@param sceneType Type
 -- faz com que uma cena ativa se desative e uma cena desativa se ative
 function UIManager:toggleScene(sceneType)
@@ -87,16 +99,14 @@ function UIManager:toggleScene(sceneType)
 	self.scenes[sceneType].active = newState
 
 	if newState then
-		self.activeScene = sceneType
-		self:onSceneActivaded(sceneType)
+		self:activateScene(sceneType)
+		self:onSceneActivated(sceneType)
 	else
-		if self.activeScene == sceneType then
-			self.activeScene = nil
-		end
+		self:deactivateScene(sceneType)
 	end
 end
 
-function UIManager:onSceneActivaded(sceneType)
+function UIManager:onSceneActivated(sceneType)
 	if self.scenes[sceneType].onActive then
 		self.scenes[sceneType]:onActive()
 	end
@@ -107,12 +117,17 @@ function UIManager:deactivateAllScenes()
 	for _, scene in pairs(self.scenes) do
 		scene.active = false
 	end
-	self.activeScene = nil
+	self.activeScenes = {}
 end
 
 ---@param dt number
 -- atualiza o estado de todas as cenas deste manager
 function UIManager:update(dt)
+	-- se tiver um player, podemos confiar que ele já deu o update
+	if not self.player then
+		self.controls:update(dt)
+	end
+
 	self:handleInput()
 	for _, scene in pairs(self.scenes) do
 		if scene.active then
@@ -127,10 +142,8 @@ end
 function UIManager:draw(camera)
 	love.graphics.setCanvas(self.canvas)
 	love.graphics.clear(0.0, 0.0, 0.0, 0.0)
-	for _, scene in pairs(self.scenes) do
-		if scene.active then
-			scene:draw()
-		end
+	for _, sceneType in ipairs(self.activeScenes) do
+		self.scenes[sceneType]:draw()
 	end
 
 	-- projetamos o canvas interno para o destino, delegando a transformação para a GPU
@@ -156,13 +169,23 @@ end
 
 ---@param key? string
 function UIManager:handleInput(key)
-	if self.activeScene then
-		self.scenes[self.activeScene]:handleInput(key)
+	if self.controls:justPressed(ACT_EXT) then
+		if self.player then
+			self:deactivateActiveScene(false)
+		else
+			self:deactivateActiveScene(true)
+		end
+		return
+	end
+	local activeScene = self.activeScenes[#self.activeScenes]
+	if activeScene then
+		self.scenes[activeScene]:handleInput(key, self.controls)
 	end
 end
 
 function UIManager:handleTextInput(t)
-	if self.activeScene then
-		self.scenes[self.activeScene]:handleTextInput(t)
+	local activeScene = self.activeScenes[#self.activeScenes]
+	if activeScene then
+		self.scenes[activeScene]:handleTextInput(t)
 	end
 end

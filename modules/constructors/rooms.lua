@@ -135,6 +135,7 @@ function insertGeneralDecorations(blueprint, rng)
 	-- !WARNING: essa função é uma generalização bem forte, é recomendado
 	-- fazermos uma personalização mais fina das salas depois
 	insertPossiblePillars(blueprint, 0.6, rng)
+	insertPossibleTorches(blueprint, 0.8, rng)
 	insertRandomly(blueprint, NEGATIVE, 20, rng)
 	insertRandomly(blueprint, MOSS, 18, rng)
 	insertRandomly(blueprint, CRACKS, 16, rng)
@@ -200,11 +201,39 @@ function insertPossiblePillars(blueprint, prob, rng)
 		for i = 1, 4 do
 			local spPillar = SpawnPoint.new(pillarPositions[i])
 			local spPillarBase = SpawnPoint.new(addVec(pillarPositions[i], vec(-91, 210)))
+			local spPillarProp = SpawnPoint.new(addVec(pillarPositions[i], vec(-168, 268)))
+			local spPillarDecoration = SpawnPoint.new(addVec(pillarPositions[i], vec(rng:random(-140, 10), 280)))
 			local pillarData = SpawnData.new(PILLAR, 1.0)
 			local pillarBaseData = SpawnData.new(PILLAR_BASE, 1.0)
+			local pillarPropData = SpawnData.new(PILLAR_PROP, 1.0)
+			local pillarDecData1 = SpawnData.new(CANDLE, 0.2)
+			local pillarDecData2 = SpawnData.new(SKELETON, 0.3)
 			spPillar:insert(pillarData)
 			spPillarBase:insert(pillarBaseData)
-			blueprint:insert(spPillar):insert(spPillarBase)
+			spPillarProp:insert(pillarPropData)
+			spPillarDecoration:insert(pillarDecData1):insert(pillarDecData2)
+			blueprint:insert(spPillar):insert(spPillarBase):insert(spPillarProp):insert(spPillarDecoration)
+		end
+	end
+end
+
+---@param blueprint Blueprint
+---@param prob number
+-- insere tochas na parede de cima da sala
+function insertPossibleTorches(blueprint, prob, rng)
+	local torchPositions = {
+		vec(-600, -900),
+		vec(-200, -900),
+		vec(200, -900),
+		vec(600, -900),
+	}
+	for i = 1, 4 do
+		local r = rng:random()
+		if r < prob then
+			local spTorch = SpawnPoint.new(torchPositions[i])
+			local torchData = SpawnData.new(TORCH, 1.0)
+			spTorch:insert(torchData)
+			blueprint:insert(spTorch)
 		end
 	end
 end

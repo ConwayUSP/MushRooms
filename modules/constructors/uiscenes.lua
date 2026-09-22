@@ -21,7 +21,9 @@ function initMenuScene()
 	local startBtn = UIButtonElem.new("menu play btn", vec(300, 400), size(120, 120), nil, function()
 		startGame()
 	end)
-	local settingsBtn = UIButtonElem.new("menu opt btn", vec(640, 400), size(120, 120), nil, function() end)
+	local settingsBtn = UIButtonElem.new("menu opt btn", vec(640, 400), size(120, 120), nil, function()
+		globalUIManager:activateScene(UI_SETTINGS_SCENE)
+	end)
 	local quitBtn = UIButtonElem.new("menu quit btn", vec(980, 400), size(120, 120), nil, function()
 		quitGame()
 	end)
@@ -51,6 +53,87 @@ function initMenuScene()
 	menuScene:addElement(seedTextbox, ELEM_LAYER_1, vec(2, 2))
 
 	return menuScene
+end
+
+function initSettingsScene()
+	local settingsScene = UIScene.new(UI_SETTINGS_SCENE)
+	-- ELEMENTOS
+	local settingsBg = UIImageElem.new("settings bg", vec(640, 360), size(1280, 720))
+	local controlsBtn = UIButtonElem.new("settings controls btn", vec(656, 260), size(832, 96), nil, function()
+		globalUIManager:activateScene(UI_CONTROLS_SCENE)
+	end)
+	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
+		print("OPÇÕES DE GRÁFICOS")
+	end)
+	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
+		print("CRÉDITOS")
+	end)
+
+	-- ANIMAÇÕES
+	local btnAnimSettings = {}
+	btnAnimSettings[IDLE] = newAnimSetting(5, size(208, 24), 0.04, true, 5)
+	btnAnimSettings[SELECTED] = newAnimSetting(5, size(208, 24), 0.04, true, 5)
+	controlsBtn:addAnimations(btnAnimSettings)
+	displayBtn:addAnimations(btnAnimSettings)
+	creditsBtn:addAnimations(btnAnimSettings)
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(13, size(320, 180), 0.08, true, 1)
+	settingsBg:addAnimations(bgAnimSettings)
+
+	-- SETUP DA CENA
+	settingsScene:addElement(settingsBg, BG_LAYER_1, vec(1, 1))
+	settingsScene:addElement(controlsBtn, ELEM_LAYER_1, vec(1, 1))
+	settingsScene:addElement(displayBtn, ELEM_LAYER_1, vec(1, 2))
+	settingsScene:addElement(creditsBtn, ELEM_LAYER_1, vec(1, 3))
+
+	return settingsScene
+end
+
+function initControlsScene()
+	local controlsScene = UIScene.new(UI_CONTROLS_SCENE)
+	-- ELEMENTOS
+	local controlsBg = UIImageElem.new("controls settings bg", vec(640, 360), size(1280, 720))
+	local controlsLabels = UITextElem.new(
+		"controls labels",
+		vec(312, 106),
+		size(140, 700),
+		2.2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"Walk\nAim\nAttack\nDefend\nUse Item\nChange Weapon\nChange Item\nOpen Inventory\nOpen Map\nInteract\nConfirm\nExit\nQuick Actions\nPause",
+		true
+	)
+	local kbMouseBinds = UITextElem.new(
+		"kb-mouse binds",
+		vec(680, 106),
+		size(120, 700),
+		2.2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"WASD\nmouse\nL-mouse\nR-mouse\nQ\nwheel\nR\nE\nTab\nspace\nspace\nesc\nshift\nesc"
+	)
+	local joystickBinds = UITextElem.new(
+		"joystick binds",
+		vec(860, 106),
+		size(120, 700),
+		2.2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"L-stick\nR-stick\nR2\nL2\nR1\n\n\n\nL1\n\n\n\n\nopt"
+	)
+
+	-- ANIMAÇÕES
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(320, 180), 1000, true, 1)
+	controlsBg:addAnimations(bgAnimSettings)
+
+	-- SETUP DA CENA
+	controlsScene:addElement(controlsBg, BG_LAYER_1, vec(1, 1))
+	controlsScene:addElement(controlsLabels, BG_LAYER_2, vec(1, 1))
+	controlsScene:addElement(kbMouseBinds, BG_LAYER_2, vec(2, 1))
+	controlsScene:addElement(joystickBinds, BG_LAYER_2, vec(3, 1))
+
+	return controlsScene
 end
 
 ----------------------------------------
@@ -216,7 +299,8 @@ function newEquipmentScene(player)
 	equipScene:addElement(bg, BG_LAYER_1, vec(1, 2))
 
 	-- ASSINATURA PLAYER
-	local signature = UIImageElem.new("equip signature " .. player.name, vec(canvasCenter.x, canvasCenter.y + 90), size(168, 168))
+	local signature =
+		UIImageElem.new("equip signature " .. player.name, vec(canvasCenter.x, canvasCenter.y + 90), size(168, 168))
 	signature:addAnimations(signatureSettings)
 	equipScene:addElement(signature, BG_LAYER_1, vec(1, 3))
 
@@ -236,19 +320,17 @@ function newEquipmentScene(player)
 			local col = (idx - 1) % 2
 			local row = math.floor((idx - 1) / 2)
 
-			return vec(weaponCenter.x + (-1 + col * 2) * padding, weaponCenter.y + (row - 1) * padding * 2), vec(col, row + 1)
-
+			return vec(weaponCenter.x + (-1 + col * 2) * padding, weaponCenter.y + (row - 1) * padding * 2),
+				vec(col, row + 1)
 		elseif equipmentType == ARTIFACT then
 			local col = idx - 1
 
 			return vec(artifactCenter.x + (-1 + col * 2) * 65, artifactCenter.y), vec(col + 2, 1)
-
 		elseif equipmentType == BLESSING then
 			local row = idx - 1
 			local col = row % 2 == 0 and 1 or -1
 
 			return vec(blessingCenter.x + col * 40, blessingCenter.y + (row - 2) * 60), vec((col + 1) / 2 + 4, idx)
-
 		end
 	end
 
@@ -264,7 +346,8 @@ function newEquipmentScene(player)
 	---------------
 
 	-- DECORAÇÃO DE ARTEFATO
-	local decorationArtifact = UIImageElem.new("equip decoration artifact", vec(canvasCenter.x, canvasCenter.y - 75), size(15*3, 39*3))
+	local decorationArtifact =
+		UIImageElem.new("equip decoration artifact", vec(canvasCenter.x, canvasCenter.y - 75), size(15 * 3, 39 * 3))
 	decorationArtifact:addAnimations(decorationSettings)
 	equipScene:addElement(decorationArtifact, BG_LAYER_1, vec(1, 4))
 
@@ -291,13 +374,20 @@ function newEquipmentScene(player)
 	---------------
 	-- LIFE BAR
 	---------------
-	
+
 	local calcFunc = function()
 		return player.hp, player.maxHp
 	end
 	local offset = { l = 11, r = 3 }
 
-	local lifebar = UILifeBarElem.new("equip player lifebar", vec(canvasCenter.x, canvasCenter.y - 170), size(74, 14), calcFunc, offset, 3)
+	local lifebar = UILifeBarElem.new(
+		"equip player lifebar",
+		vec(canvasCenter.x, canvasCenter.y - 170),
+		size(74, 14),
+		calcFunc,
+		offset,
+		3
+	)
 	equipScene:addElement(lifebar, ELEM_LAYER_1, vec(1, 5))
 
 	-- cria os UIElements de fato (armas e artefatos são interagíveis)
@@ -317,9 +407,8 @@ function newEquipmentScene(player)
 		end
 		element.equipment = equipment
 
-		local path = equipmentType == BLESSING
-			and pngPathFormat({ "assets", "sprites", "blessings", equipment.name })
-			or pngPathFormat({ "assets", "sprites", "icons", equipmentType.."s", equipment.name })
+		local path = equipmentType == BLESSING and pngPathFormat({ "assets", "sprites", "blessings", equipment.name })
+			or pngPathFormat({ "assets", "sprites", "icons", equipmentType .. "s", equipment.name })
 		addAnimation(element, path, IDLE, slotSettings[IDLE])
 		addAnimation(element, path, SELECTED, slotSettings[SELECTED])
 
