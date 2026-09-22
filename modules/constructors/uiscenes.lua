@@ -591,35 +591,38 @@ function newMapScene(player)
 	return mapScene
 end
 
-function newChestScene()
-	local chestScene = UIScene.new(UI_CHEST_SCENE)
+function newChestScene(player)
+	local chestScene = UIScene.new(UI_CHEST_SCENE, player)
 	local canvasCenter = vec(640, 360)
+	local COLS = 3
+	local ROWS = 3
+	local ITEMS_PER_SIDE = COLS * ROWS
+	local slotSpacing = 132
+	local playerSlotsStart = addVec(canvasCenter, vec(-382, -124))
+	local chestSlotsStart = addVec(canvasCenter, vec(108, -124))
+
+	chestScene.chest = nil
+	chestScene.lastPlayerInventoryRevision = -1
+	chestScene.lastChestInventoryRevision = -1
 
 	-- ANIMAÇÕES
 	local slotAnimSettings = {}
 	slotAnimSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	slotAnimSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
 
-	local arrowAnimSettings = {}
-	arrowAnimSettings[IDLE] = newAnimSetting(1, size(16, 16), 1, true, 1)
-	arrowAnimSettings[SELECTED] = newAnimSetting(1, size(16, 16), 1, true, 1)
-
 	local bgAnimSettings = {}
 	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 128), 1, true, 1)
 
 	-- BACKGROUND
-	local pos = subVec(canvasCenter, vec(128, 128))
 	local chestBg = UIImageElem.new("chest bg", canvasCenter, size(1024, 512))
 	chestBg:addAnimations(bgAnimSettings)
 	chestScene:addElement(chestBg, BG_LAYER_1, vec(1, 1))
 
 	-- PLAYER ITEM SLOTS
-	local leftMargin = canvasCenter.x - 382
-	local topMargin = canvasCenter.y - 124
-	for row = 0, 2 do
-		for col = 0, 2 do
-			local posX = leftMargin + col * 132
-			local posY = topMargin + row * 132
+	for row = 0, ROWS - 1 do
+		for col = 0, COLS - 1 do
+			local posX = playerSlotsStart.x + col * slotSpacing
+			local posY = playerSlotsStart.y + row * slotSpacing
 			local slot = UIImageElem.new("chest player slot", vec(posX, posY), size(120, 120))
 			slot:addAnimations(slotAnimSettings)
 			chestScene:addElement(slot, ELEM_LAYER_1, vec(col + 1, row + 1))
@@ -627,49 +630,70 @@ function newChestScene()
 	end
 
 	-- CHEST SLOTS
-	leftMargin = canvasCenter.x + 108
-	topMargin = canvasCenter.y - 124
-	for row = 0, 2 do
-		for col = 0, 2 do
-			local posX = leftMargin + col * 132
-			local posY = topMargin + row * 132
+	for row = 0, ROWS - 1 do
+		for col = 0, COLS - 1 do
+			local posX = chestSlotsStart.x + col * slotSpacing
+			local posY = chestSlotsStart.y + row * slotSpacing
 			local slot = UIImageElem.new("chest slot", vec(posX, posY), size(120, 120))
 			slot:addAnimations(slotAnimSettings)
-			chestScene:addElement(slot, ELEM_LAYER_1, vec(3 + col + 1, row + 1))
+			chestScene:addElement(slot, ELEM_LAYER_1, vec(COLS + col + 1, row + 1))
 		end
 	end
 
-	-- MÉTODOS AUXILIARES
-	function chestScene:addPlayerResourceEl(resource, inventory, idx, player, chest)
-		local col = math.fmod(idx - 1, 3)
-		local row = math.floor((idx - 1) / 3)
-		if row > 2 then
-			return -- ultrapassou o limite do inventário
-		end
-		local topLeft = addVec(vec(640, 360), vec(-382, -124))
-		local pos = vec(topLeft.x + col * 132, topLeft.y + row * 132)
-		-- ao clicar, transfere o recurso do player ao baú e recarrega a UI (com openChest)
-		local resourceEl = newResourceItemElement(resource, pos, function()
-			player.inventory:transferItem(resource, chest.inventory)
-			player:openChest(chest)
-		end)
-		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 1, row + 1))
+	-- retorna a posição visual e a posição nas camadas de um dos lados do baú
+	function chestScene:getChestSlotPosition(idx, isPlayerSide)
+		local col = (idx - 1) % COLS
+		local row = math.floor((idx - 1) / COLS)
+		local startPos = isPlayerSide and playerSlotsStart or chestSlotsStart
+		local layerCol = isPlayerSide and col + 1 or COLS + col + 1
+
+		return vec(startPos.x + col * slotSpacing, startPos.y + row * slotSpacing), vec(layerCol, row + 1)
 	end
 
-	function chestScene:addChestResourceEl(resource, inventory, idx, player, chest)
-		local col = math.fmod(idx - 1, 3)
-		local row = math.floor((idx - 1) / 3)
-		if row > 2 then
-			return -- ultrapassou o limite do inventário
+	-- adiciona até nove recursos de um inventário em um dos lados da cena
+	function chestScene:syncInventorySide(inventory, isPlayerSide)
+		local resources = inventory.items[RESOURCE]
+		for idx = 1, math.min(#resources, ITEMS_PER_SIDE) do
+			local resource = resources[idx]
+			local pos, layerPos = self:getChestSlotPosition(idx, isPlayerSide)
+			local sourceInventory = inventory
+			local destinationInventory = isPlayerSide and self.chest.inventory or self.player.inventory
+			local resourceEl = newResourceItemElement(resource, pos, function()
+				sourceInventory:transferItem(resource, destinationInventory)
+			end)
+			self:addElement(resourceEl, ELEM_LAYER_2, layerPos, true)
 		end
-		local topLeft = addVec(vec(640, 360), vec(108, -124))
-		local pos = vec(topLeft.x + col * 132, topLeft.y + row * 132)
-		-- ao clicar, transfere o recurso do baú ao player e recarrega a UI (com openChest)
-		local resourceEl = newResourceItemElement(resource, pos, function()
-			chest.inventory:transferItem(resource, player.inventory)
-			player:openChest(chest)
-		end)
-		self:addElement(resourceEl, ELEM_LAYER_2, vec(col + 4, row + 1))
+	end
+
+	function chestScene:syncInventories()
+		if not self.chest then
+			return
+		end
+
+		self.layers[ELEM_LAYER_2] = {}
+		self:syncInventorySide(self.player.inventory, true)
+		self:syncInventorySide(self.chest.inventory, false)
+		self.lastPlayerInventoryRevision = self.player.inventory.revision
+		self.lastChestInventoryRevision = self.chest.inventory.revision
+	end
+
+	function chestScene:setChest(chest)
+		self.chest = chest
+	end
+
+	chestScene.onActive = function(self)
+		self:syncInventories()
+	end
+
+	-- se um dos dois inventários atualizaram, sincroniza a cena novamente
+	chestScene.update = function(self, dt)
+		if self.chest
+			and (self.lastPlayerInventoryRevision ~= self.player.inventory.revision
+				or self.lastChestInventoryRevision ~= self.chest.inventory.revision)
+		then
+			self:syncInventories()
+		end
+		UIScene.update(self, dt)
 	end
 
 	return chestScene

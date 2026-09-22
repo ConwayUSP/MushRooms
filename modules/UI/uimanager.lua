@@ -62,6 +62,7 @@ end
 function UIManager:activateScene(sceneType)
 	self.scenes[sceneType].active = true
 	self.activeScene = sceneType
+	self:onSceneActivaded(sceneType)
 end
 
 ---@param sceneType Type

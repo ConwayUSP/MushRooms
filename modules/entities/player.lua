@@ -644,43 +644,9 @@ function Player:onRoomChanged()
 end
 
 ---@param chest Interactive
--- abre a UI do baú e a preenche com os recursos necessários
+-- define o baú ativo e abre sua UI; a própria cena sincroniza os inventários
 function Player:openChest(chest)
-	-- limpando a UI do baú caso outro player tenha mexido nela e modificado sem sabermos
-	self.uiManager.scenes[UI_CHEST_SCENE].layers[ELEM_LAYER_2] = {}
-	-- salvando a posição da seleção para não bugar ao inserir novos elementos na cena
-	local selPos = self.uiManager.scenes[UI_CHEST_SCENE].selectionPos
-	-- adicionando os items do player nos slots da esquerda
-	local idx = 0
-	for _, itemList in pairs(self.inventory.items) do
-		for _, item in pairs(itemList) do
-			idx = idx + 1
-			self.uiManager.scenes[UI_CHEST_SCENE]:addPlayerResourceEl(
-				item,
-				self.inventory,
-				self.uiManager.canvasSize,
-				idx,
-				self,
-				chest
-			)
-		end
-	end
-	-- adicionando os items que estão no baú nos slots da direita
-	idx = 0
-	for _, itemList in pairs(chest.inventory.items) do
-		for _, item in pairs(itemList) do
-			idx = idx + 1
-			self.uiManager.scenes[UI_CHEST_SCENE]:addChestResourceEl(
-				item,
-				inventory,
-				self.uiManager.canvasSize,
-				idx,
-				self,
-				chest
-			)
-		end
-	end
-	self.uiManager.scenes[UI_CHEST_SCENE].selectionPos = selPos
+	self.uiManager.scenes[UI_CHEST_SCENE]:setChest(chest)
 	self.uiManager:activateScene(UI_CHEST_SCENE)
 end
 
