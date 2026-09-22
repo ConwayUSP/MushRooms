@@ -255,14 +255,13 @@ function renderEntities(camera)
 
 	-- desenha as sombras das entidades
 	love.graphics.setColor(0, 0, 0.1, 1.0)
-	love.graphics.setShader(ditherShadowShader)
+	love.graphics.setShader(basicShadowShader)
 	for _, s in ipairs(shadows) do
 		local viewX, viewY = camera:viewPos(vec(s.sx, s.sy))
-		ditherShadowShader:send("shadow_center", { viewX, viewY })
-		ditherShadowShader:send("shadow_radii", { s.rx, s.ry })
-		ditherShadowShader:send("time", love.timer.getTime())
-		ditherShadowShader:send("zoom", camera.zoom)
-		ditherShadowShader:send("viewport_size", { camera.viewport.width, camera.viewport.height })
+		basicShadowShader:send("shadow_center", { viewX, viewY })
+		basicShadowShader:send("shadow_radii", { s.rx, s.ry })
+		basicShadowShader:send("zoom", camera.zoom)
+		basicShadowShader:send("viewport_size", { camera.viewport.width, camera.viewport.height })
 		love.graphics.circle("fill", viewX, viewY, s.rx)
 	end
 	love.graphics.setColor(1, 1, 1, 1)
