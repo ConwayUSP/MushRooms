@@ -75,10 +75,6 @@ function AudioManager.init()
 end
 
 function AudioManager:update(dt)
-	if #players > 0 then
-		love.audio.setPosition(players[1].pos.x, players[1].pos.y, 0)
-	end
-
 	-- atualizando a tabela de fades entre músicas
 	if self.targetMusic and self.fadeRate > 0 then
 		for audioType, currentMult in pairs(self.musicFades) do
@@ -95,9 +91,30 @@ function AudioManager:update(dt)
 		local source = audio.source
 
 		if source:isPlaying() then
-			-- atualiza posição se a entidade estiver se movendo
+			-- atualiza posição do áudio em relação ao jogador mais próximo
 			if audio.owner and audio.owner.pos then
-				source:setPosition(audio.owner.pos.x, audio.owner.pos.y, 0)
+				local closestPlayer = nil
+				local minDistance = math.huge
+
+				for _, p in pairs(players) do
+					-- só calcula se o player estiver vivo (evita focar áudio em um defunto)
+					if p.state ~= DYING then
+						local d = dist(audio.owner.pos, p.pos)
+						if d < minDistance then
+							minDistance = d
+							closestPlayer = p
+						end
+					end
+				end
+
+				if closestPlayer then
+					local relX = audio.owner.pos.x - closestPlayer.pos.x
+					local relY = audio.owner.pos.y - closestPlayer.pos.y
+					source:setPosition(relX, relY, 0)
+				else
+					-- fallback caso todos estejam mortos
+					source:setPosition(0, 0, 0)
+				end
 			end
 
 			-- verificando se o áudio loopou para randomizar o pitch
@@ -184,8 +201,6 @@ function AudioManager:play(audioType, owner, path)
 
 	-- áudio posicional
 	if owner and not isMusic then
-		-- importante: o arquivo de áudio precisa ser MONO (1 canal)
-		clone:setPosition(owner.pos.x, owner.pos.y, 0)
 		clone:setAttenuationDistances(100, 1000)
 	end
 
