@@ -45,7 +45,7 @@ local MAX_CONCURRENT_SOUNDS = 3
 ---@field play fun(type: string)
 ---@field stop fun(type: string)
 ---@field changeMusic fun(type: string)
----@field update fun()
+---@field update fun(dt: number)
 
 AudioManager = {}
 AudioManager.__index = AudioManager
@@ -58,9 +58,13 @@ function AudioManager.init()
 		am.typeCounts = {} -- contador para o limite de áudios simultâneos
 		am.musicPlaying = nil
 
-		am.masterVolume = 1.0
-		am.sfxVolume = 1.0
-		am.musicVolume = 1.0
+		am.masterVolume = 1.0 -- volume geral (multiplica todos os volumes)
+		am.sfxVolume = 1.0 -- volume de áudios normais (wav)
+		am.musicVolume = 1.0 -- volume de músicas (ogg)
+
+		am.musicFades = {} -- mapa de fade-in-out para áudio adaptativo
+		am.targetMusic = nil
+		am.fadeRate = 0
 
 		-- configuração de atenuação do áudio espacial (ajuste conforme o tamanho das suas salas)
 		love.audio.setDistanceModel("inverseclamped")
@@ -70,10 +74,22 @@ function AudioManager.init()
 	end
 end
 
-function AudioManager:update()
+function AudioManager:update(dt)
 	if #players > 0 then
 		love.audio.setPosition(players[1].pos.x, players[1].pos.y, 0)
 	end
+
+	-- atualizando a tabela de fades entre músicas
+	if self.targetMusic and self.fadeRate > 0 then
+		for audioType, currentMult in pairs(self.musicFades) do
+			if audioType == self.targetMusic then
+				self.musicFades[audioType] = math.min(1.0, currentMult + (self.fadeRate * dt))
+			else
+				self.musicFades[audioType] = math.max(0.0, currentMult - (self.fadeRate * dt))
+			end
+		end
+	end
+
 	for i = #self.activeAudios, 1, -1 do
 		local audio = self.activeAudios[i]
 		local source = audio.source
@@ -94,9 +110,24 @@ function AudioManager:update()
 				end
 				audio.lastPos = currentPos
 			end
+
+			-- atualizando o volume de acordo com o fade
+			if audio.isMusic then
+				local fadeMult = self.musicFades[audio.type] or 1.0
+				-- parando a música se o fade-out zerou
+				if fadeMult <= 0 and audio.type ~= self.targetMusic then
+					source:stop()
+				else
+					local baseVol = AUDIO_VOLUME_TABLE[audio.type] or 1.0
+					source:setVolume(baseVol * self.musicVolume * self.masterVolume * fadeMult)
+				end
+			end
 		else
 			-- limpeza
 			self.typeCounts[audio.type] = self.typeCounts[audio.type] - 1
+			if audio.isMusic then
+				self.musicFades[audio.type] = nil
+			end
 			table.remove(self.activeAudios, i)
 		end
 	end
@@ -142,7 +173,8 @@ function AudioManager:play(audioType, owner, path)
 	-- ajusta o volume específico do áudio e da categoria
 	local baseVolume = AUDIO_VOLUME_TABLE[audioType] or 1.0
 	local categoryVolume = isMusic and self.musicVolume or self.sfxVolume
-	clone:setVolume(baseVolume * categoryVolume * self.masterVolume)
+	local fadeMultiplier = self.musicFades[audioType] or 1.0
+	clone:setVolume(baseVolume * categoryVolume * self.masterVolume * fadeMultiplier)
 
 	local variance = AUDIO_PITCH_VARIANCE_TABLE[audioType]
 	if variance then
@@ -165,6 +197,7 @@ function AudioManager:play(audioType, owner, path)
 		owner = owner,
 		lastPos = clone:tell(),
 		hasVariance = variance ~= nil,
+		isMusic = isMusic,
 	})
 	self.typeCounts[audioType] = self.typeCounts[audioType] + 1
 
@@ -200,9 +233,27 @@ function AudioManager:stopAllFrom(owner)
 end
 
 ---@param audioType string
-function AudioManager:changeMusic(audioType)
-	if self.musicPlaying then
-		self:stop(self.musicPlaying)
+---@param fadeDuration number
+function AudioManager:changeMusic(audioType, fadeDuration)
+	fadeDuration = fadeDuration or 2.0
+	self.fadeRate = 1.0 / fadeDuration
+	self.targetMusic = audioType
+
+	local isPlaying = false
+
+	for _, audio in ipairs(self.activeAudios) do
+		if audio.isMusic then
+			-- se não estava no mapa de fade (iniciou direto pelo play), assume 1.0
+			self.musicFades[audio.type] = self.musicFades[audio.type] or 1.0
+			if audio.type == audioType then
+				isPlaying = true
+			end
+		end
 	end
-	self:play(audioType)
+
+	-- se a nova música não estiver tocando, adiciona no mapa zerada (fade-in) e dá play
+	if not isPlaying then
+		self.musicFades[audioType] = 0.0
+		self:play(audioType)
+	end
 end

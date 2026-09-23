@@ -198,7 +198,7 @@ function love.update(dt)
 		c:updatePosition(dt)
 	end
 	------------ Áudio ------------
-	globalAudioManager:update()
+	globalAudioManager:update(dt)
 
 	-------------- UI -------------
 	::uiupdate::
