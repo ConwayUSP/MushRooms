@@ -92,6 +92,7 @@ function Mortal:takeDamage(damage)
 
 	self:setInvulnerable()
 	self.hp = math.max(self.hp - damage, 0)
+	globalAudioManager:play(AUDIO_GET_HIT, self, "au")
 
 	if self.hp <= 0 then
 		self:die()

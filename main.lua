@@ -136,12 +136,7 @@ function love.load()
 	assetManager = AssetManager.init()
 
 	-- carregando o gerenciador de áudios
-	globalAudioManager = AudioManager.new({
-		MUSIC_MENU,
-		MUSIC_LAYER1,
-		MUSIC_LAYER2,
-		MUSIC_LAYER3,
-	})
+	globalAudioManager = AudioManager.init()
 
 	globalAudioManager:play(MUSIC_MENU)
 
@@ -196,12 +191,14 @@ function love.update(dt)
 	for _, p in pairs(players) do
 		p:update(dt)
 	end
-	---------- Partículas ----------
+	---------- Partículas ---------
 	globalVFXManager:update(dt)
 	----------- Cameras -----------
 	for _, c in pairs(cameras) do
 		c:updatePosition(dt)
 	end
+	------------ Áudio ------------
+	globalAudioManager:update()
 
 	-------------- UI -------------
 	::uiupdate::

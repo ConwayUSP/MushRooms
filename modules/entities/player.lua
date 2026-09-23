@@ -60,10 +60,8 @@ local MAX_HP = 100
 ---@field inventory Inventory
 ---@field candidateInteractives? Interactive|Npc[]
 ---@field uiManager table
----@field audioManager AudioManager
 ---@field craftingManager CraftingManager
 ---@field blessingManager BlessingManager
----@field vfxManager VFXManager
 ---@field building any
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
@@ -110,7 +108,6 @@ function Player.new(name, spawnPos, keybinds, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
-	player.audioManager = AudioManager.new({ AUDIO_MOVEMENT, AUDIO_GET_HIT }, player) -- gerenciador de áudios do jogador
 	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
@@ -303,9 +300,9 @@ function Player:updateState()
 		-- iniciando ou parando áudio de movimento
 		local wasMoving = isMovementState(prevState)
 		if isMoving and not wasMoving then
-			self.audioManager:play(AUDIO_MOVEMENT)
+			globalAudioManager:play(AUDIO_MOVEMENT, self)
 		elseif not isMoving and wasMoving then
-			self.audioManager:stop(AUDIO_MOVEMENT)
+			globalAudioManager:stop(AUDIO_MOVEMENT, self)
 		end
 	end
 end
@@ -613,7 +610,6 @@ end
 function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
 	cameras[self.id]:shake(damage / 5, 0.5)
-	self.audioManager:play(AUDIO_GET_HIT)
 end
 
 -- tenta reespawnar quando está morto

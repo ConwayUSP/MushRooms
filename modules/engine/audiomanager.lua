@@ -17,6 +17,15 @@ local AUDIO_LOOP_TABLE = {
 	[AUDIO_GET_HIT] = false,
 }
 
+local AUDIO_VOLUME_TABLE = {
+	[MUSIC_MENU] = 0.75,
+	[MUSIC_LAYER1] = 0.25,
+	[AUDIO_GET_HIT] = 1.0,
+}
+
+-- limite máximo de vezes que o mesmo tipo de áudio pode tocar simultaneamente (evita estouro de volume)
+local MAX_CONCURRENT_SOUNDS = 3
+
 ----------------------------------------
 -- Gerenciador de Áudios
 ----------------------------------------
@@ -34,47 +43,135 @@ AudioManager = {}
 AudioManager.__index = AudioManager
 AudioManager.type = AUDIO_MANAGER
 
-function AudioManager.new(audioTypes, owner)
-	local am = setmetatable({}, AudioManager)
+function AudioManager.init()
+	if not globalAudioManager then
+		local am = setmetatable({}, AudioManager)
+		am.activeAudios = {} -- lista de estruturas { source = Source, type = string, owner = Entity? }
+		am.typeCounts = {} -- contador para o limite de áudios simultâneos
+		am.musicPlaying = nil
 
-	am.musicPlaying = nil
-	am.owner = owner
-	am.audios = {}
-	for _, type in pairs(audioTypes) do
-		local pathParts = {}
-		local isMusic = type:sub(#type - 4, #type) == "music"
-		if owner then
-			pathParts = { "assets", "audios", owner.type, owner.name, type }
-		else
-			pathParts = { "assets", "audios", "global", type }
+		am.masterVolume = 1.0
+		am.sfxVolume = 1.0
+		am.musicVolume = 1.0
+
+		-- configuração de atenuação do áudio espacial (ajuste conforme o tamanho das suas salas)
+		love.audio.setDistanceModel("inverseclamped")
+		love.audio.setPosition(0, 0, 0)
+
+		return am
+	end
+end
+
+function AudioManager:update()
+	if #players > 0 then
+		love.audio.setPosition(players[1].pos.x, players[1].pos.y, 0)
+	end
+	for i = #self.activeAudios, 1, -1 do
+		local audio = self.activeAudios[i]
+
+		-- atualiza posição se a entidade estiver se movendo
+		if audio.owner then
+			audio.source:setPosition(audio.owner.pos.x, audio.owner.pos.y, 0)
 		end
-		local path = isMusic and oggPathFormat(pathParts) or wavPathFormat(pathParts)
-		am.audios[type] = assetManager:getAudio(path, isMusic):clone()
-		am.audios[type]:setLooping(AUDIO_LOOP_TABLE[type])
+
+		-- limpeza
+		if not audio.source:isPlaying() then
+			self.typeCounts[audio.type] = self.typeCounts[audio.type] - 1
+			table.remove(self.activeAudios, i)
+			print("AUDIO ENDED: " .. audio.type)
+		end
+	end
+end
+
+---@param audioType string
+---@param owner Entity?
+---@param path string?
+-- para compartilhar áudios, podemos passar um path relativo a `assets/audios/shared`
+function AudioManager:play(audioType, owner, path)
+	-- verifica limite de concorrência
+	self.typeCounts[audioType] = self.typeCounts[audioType] or 0
+	if self.typeCounts[audioType] >= MAX_CONCURRENT_SOUNDS then
+		return
 	end
 
-	return am
+	local pathParts = { "assets", "audios" }
+	local isMusic = audioType:sub(#audioType - 4, #audioType) == "music"
+	if path then
+		table.insert(pathParts, "shared")
+		table.insert(pathParts, path)
+	else
+		if owner then
+			table.insert(pathParts, owner.type)
+			table.insert(pathParts, owner.name)
+			table.insert(pathParts, audioType)
+		else
+			table.insert(pathParts, "global")
+			table.insert(pathParts, audioType)
+		end
+	end
+	local finalPath = isMusic and oggPathFormat(pathParts) or wavPathFormat(pathParts)
+
+	-- clonando do assetManager
+	local baseSource = assetManager:getAudio(finalPath, isMusic)
+	if not baseSource then
+		return
+	end
+
+	local clone = baseSource:clone()
+	clone:setLooping(AUDIO_LOOP_TABLE[audioType] or false)
+
+	-- ajusta o volume específico do áudio e da categoria
+	local baseVolume = AUDIO_VOLUME_TABLE[audioType] or 1.0
+	local categoryVolume = isMusic and self.musicVolume or self.sfxVolume
+	clone:setVolume(baseVolume * categoryVolume * self.masterVolume)
+
+	-- áudio posicional
+	if owner and not isMusic then
+		-- importante: o arquivo de áudio precisa ser MONO (1 canal)
+		clone:setPosition(owner.pos.x, owner.pos.y, 0)
+		clone:setAttenuationDistances(100, 1000)
+	end
+
+	-- toca e registra na pool
+	clone:play()
+	table.insert(self.activeAudios, { source = clone, type = audioType, owner = owner })
+	self.typeCounts[audioType] = self.typeCounts[audioType] + 1
+
+	if isMusic then
+		self.musicPlaying = audioType
+	end
 end
 
 ---@param audioType string
----@return nil
-function AudioManager:play(audioType)
-	self.audios[audioType]:play()
-	self.musicPlaying = self.audios[audioType]:getType() == "stream" and audioType or self.musicPlaying
+---@param owner Entity?
+function AudioManager:stop(audioType, owner)
+	for i = #self.activeAudios, 1, -1 do
+		local audio = self.activeAudios[i]
+		if audio.type == audioType and audio.owner == owner then
+			audio.source:stop()
+			self.typeCounts[audio.type] = self.typeCounts[audio.type] - 1
+			table.remove(self.activeAudios, i)
+		end
+	end
+end
+
+---@param owner Entity
+-- para os áudios de uma entidade que morreu/foi destruída
+function AudioManager:stopAllFrom(owner)
+	for i = #self.activeAudios, 1, -1 do
+		local audio = self.activeAudios[i]
+		if audio.owner == owner then
+			audio.source:stop()
+			self.typeCounts[audio.type] = self.typeCounts[audio.type] - 1
+			table.remove(self.activeAudios, i)
+		end
+	end
 end
 
 ---@param audioType string
----@return nil
-function AudioManager:stop(audioType)
-	self.audios[audioType]:stop()
-end
-
----@param audioType string
----@return nil
 function AudioManager:changeMusic(audioType)
-	self.audios[self.musicPlaying]:stop()
-	self.audios[audioType]:play()
+	if self.musicPlaying then
+		self:stop(self.musicPlaying)
+	end
+	self:play(audioType)
 end
-
--- !TODO: Lembrar de criar uma ferramenta para destruir os áudios
--- clonados quando eles passarem a ser desnecessários
