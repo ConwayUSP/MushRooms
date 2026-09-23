@@ -205,6 +205,9 @@ function love.update(dt)
 	globalUIManager:update(dt)
 	updateFPSVisor(dt)
 
+	collectgarbage("step", 20) -- tentativa de amenizar os lagspikes causados pelo GC
+	--print(math.floor(collectgarbage("count")) .. " KB")
+
 	-- encerrando o profiling
 	-- updateProfile:stop()
 end
