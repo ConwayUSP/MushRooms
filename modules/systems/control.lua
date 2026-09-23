@@ -59,6 +59,7 @@ function Controls.new(keybinds, owner)
 	return controls
 end
 
+---@param dt number
 function Controls:update(dt)
 	for action, binding in pairs(self.keybinds) do
 		local state = self.keyStates[action]
@@ -77,6 +78,9 @@ function Controls:update(dt)
 	end
 end
 
+---@param action string
+---@param isBuffered boolean
+---@return boolean
 function Controls:checkAction(action, isBuffered)
 	local inputState = self.keyStates[action]
 	-- o ataque é um caso especial pois envolve o input buffer
@@ -122,6 +126,8 @@ function Controls:checkAction(action, isBuffered)
 	return true
 end
 
+---@param action string
+---@return boolean
 function Controls:isDown(action)
 	if action == ACT_CW then
 		-- !TODO: implementar a rodinha do mouse
@@ -135,8 +141,16 @@ function Controls:isDown(action)
 	end
 end
 
+---@param action string
+---@return boolean
 function Controls:justPressed(action)
 	return self.keyStates[action].justPressed
+end
+
+---@param action string
+---@return boolean
+function Controls:justReleased(action)
+	return self.keyStates[action].justReleased
 end
 
 ----------------------------------------

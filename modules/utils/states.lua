@@ -25,6 +25,9 @@ DIRECTIONS = { UP, DOWN, LEFT, RIGHT }
 ----------------- NPCS -----------------
 SPEAKING = "speaking"
 
+----------------- ARMAS ----------------
+CHARGING = "charging"
+
 -------- DESTRUTÍVEIS / ATAQUES --------
 
 INTACT = "intact"
