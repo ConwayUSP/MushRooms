@@ -135,6 +135,7 @@ function Mortal:die()
 	self.state = DYING
 	self.deathTimer = 0
 	stopMovement(self)
+	globalAudioManager:stopAllFrom(self)
 
 	collisionManager:unregister(self)
 	local atks = (self.atk and self.atk[self.selectedAtk].events) or (self.weapon and self.weapon.atk.events)
