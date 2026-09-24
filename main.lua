@@ -177,7 +177,7 @@ function love.update(dt)
 
 	-- pulando o update de gameplay enquanto está no menu
 	if gameCtx == MENU_CTX then
-		goto uiupdate
+		goto skipgameplay
 	end
 
 	DialogueManager:update(dt)
@@ -197,13 +197,14 @@ function love.update(dt)
 	for _, c in pairs(cameras) do
 		c:updatePosition(dt)
 	end
-	------------ Áudio ------------
-	globalAudioManager:update(dt)
 
+	::skipgameplay::
 	-------------- UI -------------
-	::uiupdate::
 	globalUIManager:update(dt)
 	updateFPSVisor(dt)
+
+	------------ Áudio ------------
+	globalAudioManager:update(dt)
 
 	collectgarbage("step", 20) -- tentativa de amenizar os lagspikes causados pelo GC
 	--print(math.floor(collectgarbage("count")) .. " KB")

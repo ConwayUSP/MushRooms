@@ -69,7 +69,7 @@ function Drop.new(object, pos, room, autoPick, floorY)
 	if object.image then
 		drop.image = object.image
 	else
-		local sprite_path = pngPathFormat({ "assets", "sprites", "icons", object.type.."s", object.name })
+		local sprite_path = pngPathFormat({ "assets", "sprites", "icons", object.type .. "s", object.name })
 		drop.image = love.graphics.newImage(sprite_path)
 		drop.image:setFilter("nearest", "nearest")
 	end
@@ -190,6 +190,8 @@ function spawnDrop(object, pos, room, autoPick, floorY, impuselVec)
 	end
 
 	applyImpulse(drop, impuselVec)
+	globalAudioManager:play(AUDIO_SPAWN, self, "ui")
+
 	return drop
 end
 

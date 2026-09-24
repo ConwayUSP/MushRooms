@@ -295,6 +295,7 @@ function Player:updateState()
 		self.animations[prevState]:reset()
 		-- parando efeito de partículas
 		if prevState == DEFENDING then
+			globalAudioManager:stop(AUDIO_DEFENSE, self)
 			globalVFXManager:stopParticle(PARTICLE_DEFENSE, self)
 		end
 		-- iniciando ou parando áudio de movimento
@@ -409,6 +410,7 @@ function Player:processInput()
 	if self.controls:checkAction(ACT_DEF) then
 		if not self.defendingDurationTimer.active and not self.defendingDurationTimer.completed and not self.defendingCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
+			globalAudioManager:play(AUDIO_DEFENSE, self, "pop")
 			self.defendingDurationTimer:start()
 			self.defendingCooldownTimer:stop()
 		elseif not self.defendingCooldownTimer.active and not self.defendingCooldownTimer.completed and self.defendingDurationTimer.completed then
@@ -542,6 +544,7 @@ function Player:collectDrop(drop)
 	end
 	if result then
 		drop:setCollected()
+		globalAudioManager:play(AUDIO_COLLECT, self, "pop")
 	end
 end
 

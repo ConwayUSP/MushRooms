@@ -15,9 +15,9 @@ require("table")
 -- Enums
 ----------------------------------------
 -- opções do que acontece se o player toca no destrutível
-FRAGILE = "fragile"   -- quebra quando player toca
+FRAGILE = "fragile" -- quebra quando player toca
 UNSTABLE = "unstable" -- se move mas não quebra
-STABLE = "stable"     -- não se move e nem quebra
+STABLE = "stable" -- não se move e nem quebra
 
 ----------------------------------------
 -- Classe Destructible
@@ -104,6 +104,7 @@ function Destructible:breakApart()
 	self.state = BREAKING
 	self:spawnLoot()
 	collisionManager:unregister(self)
+	globalAudioManager:play(AUDIO_BREAK, self, "pfffft")
 	local anim = self.animations[BREAKING]
 	anim.onFinish = function()
 		self.state = BROKEN

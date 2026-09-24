@@ -336,6 +336,14 @@ function Enemy:updateState(dt)
 	if self.state ~= prevState then
 		-- resetando a animação anterior
 		self.animations[prevState]:reset()
+
+		local isMoving = isMovementState(self.state)
+		local wasMoving = isMovementState(prevState)
+		if isMoving and not wasMoving then
+			globalAudioManager:play(AUDIO_MOVEMENT, self, "movement_audio")
+		elseif not isMoving and wasMoving then
+			globalAudioManager:stop(AUDIO_MOVEMENT, self)
+		end
 	end
 
 	self.animations[self.state]:update(dt)

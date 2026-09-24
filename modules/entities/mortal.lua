@@ -1,8 +1,8 @@
 ----------------------------------------
 --- Importações de Módulos
 ----------------------------------------
-
 require("modules.entities.entity")
+require("modules.utils.types")
 
 ----------------------------------------
 -- Enums e Constantes

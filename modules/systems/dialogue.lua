@@ -53,6 +53,8 @@ function Dialogue:start()
 	self.speaker.inDialogue = true
 	self.speaker.state = SPEAKING
 
+	globalAudioManager:play(AUDIO_SPEAK, self.speaker, "amnuninamnuminuna")
+
 	local playerCamera = getCameraByPlayer(self.listener)
 	if playerCamera then
 		playerCamera:changeTarget(self.speaker)
@@ -93,6 +95,7 @@ function Dialogue:advance()
 
 	if self.activeSequence.idx < #self.activeSequence.text then
 		self.activeSequence.idx = self.activeSequence.idx + 1
+		globalAudioManager:play(AUDIO_SPEAK, self.speaker, "amnuninamnuminuna")
 	else
 		self:endDialogue()
 	end

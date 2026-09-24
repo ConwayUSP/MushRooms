@@ -15,6 +15,7 @@ local AUDIO_LOOP_TABLE = {
 	[MUSIC_LAYER3] = true,
 	[AUDIO_MOVEMENT] = true,
 	[AUDIO_GET_HIT] = false,
+	[AUDIO_DEFENSE] = true,
 }
 
 -- volume específico de cada tipo de áudio (de 0 a 1).
@@ -29,6 +30,8 @@ local AUDIO_VOLUME_TABLE = {
 local AUDIO_PITCH_VARIANCE_TABLE = {
 	[AUDIO_MOVEMENT] = 0.08,
 	[AUDIO_GET_HIT] = 0.15,
+	[AUDIO_DEFENSE] = 0.15,
+	[AUDIO_ATTACK] = 0.1,
 }
 
 -- limite máximo de vezes que o mesmo tipo de áudio pode tocar simultaneamente (evita estouro de volume)
@@ -201,7 +204,7 @@ function AudioManager:play(audioType, owner, path)
 
 	-- áudio posicional
 	if owner and not isMusic then
-		clone:setAttenuationDistances(100, 1000)
+		clone:setAttenuationDistances(250, 1250)
 	end
 
 	-- toca e registra na pool
