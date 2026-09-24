@@ -61,6 +61,8 @@ function AudioManager.init()
 		am.typeCounts = {} -- contador para o limite de áudios simultâneos
 		am.musicPlaying = nil
 
+		am.audioPool = {} -- guarda áudios criados para serem reutilizados depois
+
 		am.masterVolume = 1.0 -- volume geral (multiplica todos os volumes)
 		am.sfxVolume = 1.0 -- volume de áudios normais (wav)
 		am.musicVolume = 1.0 -- volume de músicas (ogg)
@@ -148,6 +150,11 @@ function AudioManager:update(dt)
 			if audio.isMusic then
 				self.musicFades[audio.type] = nil
 			end
+			-- guardando no pool de reutilização
+			local poolKey = audio.poolKey
+			self.audioPool[poolKey] = self.audioPool[poolKey] or {}
+			table.insert(self.audioPool[poolKey], source)
+
 			table.remove(self.activeAudios, i)
 		end
 	end
@@ -181,14 +188,22 @@ function AudioManager:play(audioType, owner, path)
 	end
 	local finalPath = isMusic and oggPathFormat(pathParts) or wavPathFormat(pathParts)
 
-	-- clonando do assetManager
-	local baseSource = assetManager:getAudio(finalPath, isMusic)
-	if not baseSource then
-		return
-	end
+	local clone
+	local audioPool = self.audioPool[finalPath]
+	if audioPool and #audioPool > 0 then
+		clone = table.remove(self.audioPool[finalPath])
+		-- rebobina o áudio para o início
+		clone:seek(0)
+	else
+		-- clonando do assetManager
+		local baseSource = assetManager:getAudio(finalPath, isMusic)
+		if not baseSource then
+			return
+		end
 
-	local clone = baseSource:clone()
-	clone:setLooping(AUDIO_LOOP_TABLE[audioType] or false)
+		clone = baseSource:clone()
+		clone:setLooping(AUDIO_LOOP_TABLE[audioType] or false)
+	end
 
 	-- ajusta o volume específico do áudio e da categoria
 	local baseVolume = AUDIO_VOLUME_TABLE[audioType] or 1.0
@@ -216,6 +231,7 @@ function AudioManager:play(audioType, owner, path)
 		lastPos = clone:tell(),
 		hasVariance = variance ~= nil,
 		isMusic = isMusic,
+		poolKey = finalPath,
 	})
 	self.typeCounts[audioType] = self.typeCounts[audioType] + 1
 
