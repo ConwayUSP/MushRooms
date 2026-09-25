@@ -1,8 +1,8 @@
 ----------------------------------------
 --- Importações de Módulos
 ----------------------------------------
-
 require("modules.entities.entity")
+require("modules.utils.types")
 
 ----------------------------------------
 -- Enums e Constantes
@@ -92,6 +92,7 @@ function Mortal:takeDamage(damage)
 
 	self:setInvulnerable()
 	self.hp = math.max(self.hp - damage, 0)
+	globalAudioManager:play(AUDIO_GET_HIT, self, "au")
 
 	if self.hp <= 0 then
 		self:die()
@@ -134,12 +135,15 @@ function Mortal:die()
 	self.state = DYING
 	self.deathTimer = 0
 	stopMovement(self)
+	globalAudioManager:stopAllFrom(self)
 
 	collisionManager:unregister(self)
 	local atks = (self.atk and self.atk[self.selectedAtk].events) or (self.weapon and self.weapon.atk.events)
-	for _, atk in pairs(atks) do
-		collisionManager:unregister(atk)
-		atk:destroy()
+	if atks then
+		for _, atk in pairs(atks) do
+			collisionManager:unregister(atk)
+			atk:destroy()
+		end
 	end
 
 	if self.weapon then

@@ -60,10 +60,8 @@ local MAX_HP = 100
 ---@field inventory Inventory
 ---@field candidateInteractives? Interactive|Npc[]
 ---@field uiManager table
----@field audioManager AudioManager
 ---@field craftingManager CraftingManager
 ---@field blessingManager BlessingManager
----@field vfxManager VFXManager
 ---@field building any
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
@@ -110,7 +108,6 @@ function Player.new(name, spawnPos, keybinds, colors, room)
 	player.candidateInteractives = {} -- lista de objetos interativos próximos ao jogador
 	player.craftingManager = newCraftingRaw(player) -- gerenciador de crafting do jogador
 	player.uiManager = newPlayerUIManager(player) -- gerenciador da UI do jogador
-	player.audioManager = AudioManager.new({ AUDIO_MOVEMENT, AUDIO_GET_HIT }, player) -- gerenciador de áudios do jogador
 	player.blessingManager = BlessingManager.new(player) -- gerenciador de bênçãos do jogador
 	player.building = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
@@ -298,14 +295,15 @@ function Player:updateState()
 		self.animations[prevState]:reset()
 		-- parando efeito de partículas
 		if prevState == DEFENDING then
+			globalAudioManager:stop(AUDIO_DEFENSE, self)
 			globalVFXManager:stopParticle(PARTICLE_DEFENSE, self)
 		end
 		-- iniciando ou parando áudio de movimento
 		local wasMoving = isMovementState(prevState)
 		if isMoving and not wasMoving then
-			self.audioManager:play(AUDIO_MOVEMENT)
+			globalAudioManager:play(AUDIO_MOVEMENT, self)
 		elseif not isMoving and wasMoving then
-			self.audioManager:stop(AUDIO_MOVEMENT)
+			globalAudioManager:stop(AUDIO_MOVEMENT, self)
 		end
 	end
 end
@@ -407,6 +405,7 @@ function Player:processInput()
 	if self.controls:checkAction(ACT_DEF) then
 		if not self.defendingDurationTimer.active and not self.defendingDurationTimer.completed and not self.defendingCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
+			globalAudioManager:play(AUDIO_DEFENSE, self, "pop")
 			self.defendingDurationTimer:start()
 			self.defendingCooldownTimer:stop()
 		elseif not self.defendingCooldownTimer.active and not self.defendingCooldownTimer.completed and self.defendingDurationTimer.completed then
@@ -542,6 +541,7 @@ function Player:collectDrop(drop)
 	end
 	if result then
 		drop:setCollected()
+		globalAudioManager:play(AUDIO_COLLECT, self, "pop")
 	end
 end
 
@@ -610,7 +610,6 @@ end
 function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
 	cameras[self.id]:shake(damage / 5, 0.5)
-	self.audioManager:play(AUDIO_GET_HIT)
 end
 
 -- tenta reespawnar quando está morto

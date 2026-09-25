@@ -156,6 +156,7 @@ function UIScene:handleInput(key, controls)
 
 		if closestEl then
 			self:setSelection(targetPos)
+			globalAudioManager:play(AUDIO_SELECT, self, "pop")
 
 			-- atualiza a cena se necessário
 			if self.onSelectionChange then
@@ -170,6 +171,7 @@ function UIScene:handleInput(key, controls)
 			local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 			if el and el.subtype == UI_BUTTON_ELEM and el.onClick then
 				el:onClick()
+				globalAudioManager:play(AUDIO_SELECT, self, "kabum")
 				break
 			end
 		end
@@ -229,6 +231,7 @@ function UIScene:handleTextInput(t)
 		local el = self.layers[l][self.selectionPos.y] and self.layers[l][self.selectionPos.y][self.selectionPos.x]
 		if el and el.subtype == UI_TEXTBOX_ELEM then
 			el:handleTextInput(t)
+			globalAudioManager:play(AUDIO_SELECT, self, "kabum")
 		end
 	end
 end

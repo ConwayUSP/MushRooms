@@ -15,7 +15,7 @@ function newKatana()
 		atkEvent.pos = origin
 	end
 	local onHitFunc = function(e, target) end
-	local rotationFunc = function(e) 
+	local rotationFunc = function(e)
 		return e.direction
 	end
 	local hb = hitbox(Circle.new(100))
@@ -35,7 +35,7 @@ function newKatana()
 	attack:addAnimations(atkAnimSettings, atkAnimSettings)
 
 	-- Inicialicação da arma em si
-	local katana = Weapon.new(KATANA.name, math.huge, attack, vec(2, 30), vec(34, -30))
+	local katana = Weapon.new(KATANA.name, attack, vec(2, 30), vec(34, -30))
 	local idleAnimSettings = newAnimSetting(4, { width = 64, height = 64 }, 0.3, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 64, height = 64 }, 0.03, false, 1)
 	katana:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -48,7 +48,7 @@ function newSlingShot()
 	local cooldown = constCooldown(0.4)
 	local attack = newPebbleShotAttack(true, 5, cooldown, 1200, nil)
 	attack:setOnHit(onHitLinkTwoEnemies)
-	local slingshot = Weapon.new(SLING_SHOT.name, math.huge, attack, vec(-10, 10), vec(40, -30))
+	local slingshot = Weapon.new(SLING_SHOT.name, attack, vec(-10, 10), vec(40, -30))
 	local idleAnimSettings = newAnimSetting(2, { width = 64, height = 64 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(10, { width = 64, height = 64 }, 0.05, false, 1)
 	slingshot:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -59,7 +59,7 @@ end
 -- cria uma arma do tipo Boomerangue
 function newBoomerangue()
 	local attack = newBoomerangueAttack(true, 1600, 0.35, 4)
-	local boomerangue = Weapon.new(BOOMERANGUE.name, 1, attack, vec(20, 30))
+	local boomerangue = Weapon.new(BOOMERANGUE.name, attack, vec(20, 30))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
 	boomerangue:addAnimations(idleAnimSettings)
 	return boomerangue
@@ -74,7 +74,7 @@ function newSkullShooter()
 	end
 	local attack = newSkullAttack(true, 10, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
-	local skullshooter = Weapon.new(SKULL_SHOOTER.name, math.huge, attack, vec(25, 20), vec(30, -5))
+	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(30, -5))
 	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -86,10 +86,11 @@ end
 function newBlackholer()
 	local cooldown = constCooldown(1)
 	local attack = newBlackholeAttack(true, 10, cooldown, 1200, nil)
-	local blackhole = Weapon.new(BLACKHOLER.name, math.huge, attack, vec(25, 20), vec(30, -5))
+	local blackhole = Weapon.new(BLACKHOLER.name, attack, vec(25, 20), vec(30, -5), 1.0)
 	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
-	blackhole:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
+	local weaponAtkAnimSettings = newAnimSetting(6, { width = 36, height = 36 }, 0.1, false, 1)
+	local weaponChargingAnimSettings = newAnimSetting(8, { width = 36, height = 36 }, 0.12, true, 7)
+	blackhole:addAnimations(idleAnimSettings, weaponAtkAnimSettings, weaponChargingAnimSettings)
 	return blackhole
 end
 
@@ -99,7 +100,7 @@ function newFlowergun()
 	local cooldown = constCooldown(0.05)
 	local attack = newSeedAttack(true, 0.2, cooldown, 1800, nil)
 	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
-	local flowergun = Weapon.new(FLOWERGUN.name, math.huge, attack, vec(25, 20), vec(30, -5))
+	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(30, -5))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	flowergun:addAnimations(idleAnimSettings, weaponAtkAnimSettings)

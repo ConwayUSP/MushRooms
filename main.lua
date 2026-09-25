@@ -136,12 +136,7 @@ function love.load()
 	assetManager = AssetManager.init()
 
 	-- carregando o gerenciador de áudios
-	globalAudioManager = AudioManager.new({
-		MUSIC_MENU,
-		MUSIC_LAYER1,
-		MUSIC_LAYER2,
-		MUSIC_LAYER3,
-	})
+	globalAudioManager = AudioManager.init()
 
 	globalAudioManager:play(MUSIC_MENU)
 
@@ -182,7 +177,7 @@ function love.update(dt)
 
 	-- pulando o update de gameplay enquanto está no menu
 	if gameCtx == MENU_CTX then
-		goto uiupdate
+		goto skipgameplay
 	end
 
 	DialogueManager:update(dt)
@@ -196,17 +191,23 @@ function love.update(dt)
 	for _, p in pairs(players) do
 		p:update(dt)
 	end
-	---------- Partículas ----------
+	---------- Partículas ---------
 	globalVFXManager:update(dt)
 	----------- Cameras -----------
 	for _, c in pairs(cameras) do
 		c:updatePosition(dt)
 	end
 
+	::skipgameplay::
 	-------------- UI -------------
-	::uiupdate::
 	globalUIManager:update(dt)
 	updateFPSVisor(dt)
+
+	------------ Áudio ------------
+	globalAudioManager:update(dt)
+
+	collectgarbage("step", 20) -- tentativa de amenizar os lagspikes causados pelo GC
+	--print(math.floor(collectgarbage("count")) .. " KB")
 
 	-- encerrando o profiling
 	-- updateProfile:stop()

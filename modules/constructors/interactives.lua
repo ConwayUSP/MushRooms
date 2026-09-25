@@ -40,15 +40,17 @@ local openDoor = function(door, player)
 	door.state = OPENING
 	door.openingTimer = 0.05 * 19 -- sincroniza com a animação
 	door.animations[CLOSING]:reset()
+	globalAudioManager:play(AUDIO_OPEN, door, "wurr")
 end
 
-local closeDoor = function (door, player)
+local closeDoor = function(door, player)
 	if door.state == CLOSED or door.state == CLOSING then
 		return
 	end
 	door.state = CLOSING
 	door.closingTimer = 0.05 * 17 -- sincroniza com a animação
 	door.animations[OPENING]:reset()
+	globalAudioManager:play(AUDIO_OPEN, door, "wurr")
 end
 
 local updateDoor = function(door, dt)
@@ -61,6 +63,7 @@ local updateDoor = function(door, dt)
 		end
 		if door.openingTimer < 0 then
 			door.state = OPEN
+			globalAudioManager:play(AUDIO_PRESS, door, "pfffft")
 		end
 	elseif door.state == CLOSING then
 		local oldTimer = door.closingTimer
@@ -76,6 +79,7 @@ local updateDoor = function(door, dt)
 		end
 		if door.closingTimer <= 0 then
 			door.state = CLOSED
+			globalAudioManager:play(AUDIO_PRESS, door, "pfffft")
 		end
 	end
 end
