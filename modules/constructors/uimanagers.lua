@@ -22,9 +22,9 @@ end
 
 function newPlayerUIManager(player)
 	local playerManager = UIManager.new(player)
-	local inventoryScene = newResourceInventoryScene()
+	local inventoryScene = newResourceInventoryScene(player)
 	local craftingScene = newCraftingScene(player)
-	local openChestScene = newChestScene()
+	local openChestScene = newChestScene(player)
 	local equipScene = newEquipmentScene(player)
 	local mapScene = newMapScene(player)
 	playerManager:addScene(inventoryScene)
