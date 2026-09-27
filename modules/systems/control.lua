@@ -28,6 +28,7 @@ end
 ---@field keybinds table<string, string>
 ---@field inputBuffer InputBuffer
 ---@field hold table<string, number>
+---@field blockAttackUntilRelease boolean
 
 ---@param config table
 ---@return Controls
@@ -44,6 +45,7 @@ function Controls.new(keybinds, owner)
 	local controls = setmetatable({}, Controls)
 	controls.owner = owner
 	controls.keybinds = keybinds
+	controls.blockAttackUntilRelease = false
 
 	-- Atributos fixos na instanciação
 	controls.inputBuffer = InputBuffer.new(owner)
@@ -76,6 +78,10 @@ function Controls:update(dt)
 			state.holdTime = 0
 		end
 	end
+
+	if self.blockAttackUntilRelease and not self.keyStates[ACT_ATK].isDown then
+		self.blockAttackUntilRelease = false
+	end
 end
 
 ---@param action string
@@ -95,7 +101,9 @@ function Controls:checkAction(action, isBuffered)
 
 	if
 		not inputState.isDown
-		or self.owner.uiManager.activeScene
+		or self.blockAttackUntilRelease
+		or self.owner.building
+		or self.owner.uiManager:hasActiveScene()
 		or self.owner.state == DEFENDING
 		or self.owner.inDialogue
 		or self.owner.state == DYING

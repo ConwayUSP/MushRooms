@@ -8,7 +8,7 @@
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
----@field activeScenes UIScene[]
+---@field activeScenes Type[]
 ---@field parentCanvas table
 ---@field parentCanvasPos Vec
 
@@ -62,6 +62,10 @@ end
 ---@param sceneType Type
 -- ativa uma cena de um determinado tipo
 function UIManager:activateScene(sceneType)
+	if self.scenes[sceneType].active then
+		return
+	end
+
 	self.scenes[sceneType].active = true
 	table.insert(self.activeScenes, sceneType)
 	self:onSceneActivated(sceneType)
@@ -70,11 +74,14 @@ end
 ---@param sceneType Type
 -- desativa uma cena de um determinado tipo e todas as cenas acima dela no stack (sub-cenas)
 function UIManager:deactivateScene(sceneType)
-	local type = nil
-	repeat
-		type = table.remove(self.activeScenes)
-		self.scenes[type].active = false
-	until type == sceneType
+	for idx = #self.activeScenes, 1, -1 do
+		if self.activeScenes[idx] == sceneType then
+			while #self.activeScenes >= idx do
+				self:deactivateActiveScene(false)
+			end
+			return
+		end
+	end
 end
 
 ---@param sceneType string
@@ -84,23 +91,32 @@ function UIManager:isSceneActive(sceneType)
 	return self.scenes[sceneType].active
 end
 
+---@return boolean
+-- retorna se existe pelo menos uma cena na pilha
+function UIManager:hasActiveScene()
+	return #self.activeScenes > 0
+end
+
 ---@param keepOneAlive bool
 -- remove a cena ativa do topo da pilha, a não ser que `keepOneAlive` seja verdadeiro e a cena seja a última
 function UIManager:deactivateActiveScene(keepOneAlive)
-	if #self.activeScenes == 0 or #self.activeScenes == 1 and keepOneAlive then return end
+	if #self.activeScenes == 0 or (#self.activeScenes == 1 and keepOneAlive) then
+		return
+	end
+
 	local activeScene = table.remove(self.activeScenes)
-	self.scenes[activeScene].active = false
+	local scene = self.scenes[activeScene]
+	scene.active = false
+	if scene.onInactive then
+		scene:onInactive()
+	end
 end
 
 ---@param sceneType Type
 -- faz com que uma cena ativa se desative e uma cena desativa se ative
 function UIManager:toggleScene(sceneType)
-	local newState = not self.scenes[sceneType].active
-	self.scenes[sceneType].active = newState
-
-	if newState then
+	if not self.scenes[sceneType].active then
 		self:activateScene(sceneType)
-		self:onSceneActivated(sceneType)
 	else
 		self:deactivateScene(sceneType)
 	end
@@ -114,10 +130,19 @@ end
 
 -- desativa todas as cenas deste UI manager
 function UIManager:deactivateAllScenes()
-	for _, scene in pairs(self.scenes) do
-		scene.active = false
+	while #self.activeScenes > 0 do
+		self:deactivateActiveScene(false)
 	end
-	self.activeScenes = {}
+
+	-- garante consistência mesmo para uma cena marcada como ativa fora da pilha
+	for _, scene in pairs(self.scenes) do
+		if scene.active then
+			scene.active = false
+			if scene.onInactive then
+				scene:onInactive()
+			end
+		end
+	end
 end
 
 ---@param dt number
