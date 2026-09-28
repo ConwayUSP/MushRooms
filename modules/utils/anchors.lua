@@ -47,6 +47,7 @@ ANCHORS = {
 	-- Inimigos
 	spider_duck = floorAnchor(14),
 	nuclear_cat = floorAnchor(16),
+	rolling_stone = floorAnchor(15),
 
 	-- Jogadores
 	mush = floorAnchor(14),

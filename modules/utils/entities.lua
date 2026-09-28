@@ -21,6 +21,7 @@ end
 SPIDER_DUCK = registerEntity(ENEMY, "Spider Duck")
 NUCLEAR_CAT = registerEntity(ENEMY, "Nuclear Cat")
 DEMON_BALL = registerEntity(ENEMY, "Demon Ball")
+ROLLING_STONE = registerEntity(ENEMY, "Rolling Stone")
 SPIDER_DUCK_BOSS = registerEntity(ENEMY, "Spider Duck Boss")
 
 ----------------- NPCs -----------------
@@ -46,6 +47,7 @@ BLACKHOLE_SHOT = registerEntity(ATTACK, "Blackhole Shot")
 SEED_SHOT = registerEntity(ATTACK, "Seed Shot")
 EMBER_MARK = registerEntity(ATTACK, "Ember Mark")
 DEMON_JUMP = registerEntity(ATTACK, "Demon Jump")
+ROLLING_RUSH = registerEntity(ATTACK, "Rolling Rush")
 
 -------------- ARTEFATOS ---------------
 INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")
