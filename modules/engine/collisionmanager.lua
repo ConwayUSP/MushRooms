@@ -24,10 +24,10 @@ function CollisionManager.init()
 	local cm = setmetatable({}, CollisionManager)
 
 	cm.registry = cm:startRegistry() -- tabela mestre de hitboxes registradas
-	cm.roomsDirty = false         -- flag para indicar se as listas de hitboxes precisam ser atualizadas
-	cm.solids = {}                -- tabela que liga entidades com seus hitboxes sólidos
-	cm.solidList = {}             -- lista com índices numéricos de hitboxes sólidas
-	cm.solidIndices = {}          -- mapa de entidade para índice da lista `solids`
+	cm.roomsDirty = false -- flag para indicar se as listas de hitboxes precisam ser atualizadas
+	cm.solids = {} -- tabela que liga entidades com seus hitboxes sólidos
+	cm.solidList = {} -- lista com índices numéricos de hitboxes sólidas
+	cm.solidIndices = {} -- mapa de entidade para índice da lista `solids`
 
 	-- otimização: manter uma cópia das salas ativas
 	-- para minimizar o número de colisões checadas
@@ -442,7 +442,63 @@ function CollisionManager:handleSolidCollisions(entityA, entityB)
 		self:onAttackObstacle(entityA, entityB)
 	elseif entityA.type == OBSTACLE and entityB.type == ATTACK_EVENT then
 		self:onAttackObstacle(entityB, entityA)
+	elseif entityA.type == ENEMY then
+		if entityA.onSolidHit then
+			entityA:onSolidHit(entityB)
+		end
 	end
+end
+
+---@param entity Entity
+---@param pos Vec
+---@return boolean
+-- verifica se as hitboxes padrão de `entity` colidiriam com algum sólido caso
+-- ela estivesse na posição `pos`, sem aplicar nenhuma correção de posição
+function CollisionManager:wouldCollideAt(entity, pos)
+	if not entity.hb or not entity.hb.default then
+		return false
+	end
+
+	for i = 1, #self.solidList do
+		local solid = self.solidList[i]
+		local solidHbs = self.solids[solid]
+
+		if solid ~= entity and solidHbs then
+			for _, entityHb in ipairs(entity.hb.default) do
+				local worldEntityHb = buildWorldHitbox(entityHb, pos)
+
+				for _, solidHb in ipairs(solidHbs) do
+					-- usa o mesmo teste do resolveSolidCollisions para garantir
+					-- que uma posição "livre" também seria aceita por ele
+					if getCollisionManifold(worldEntityHb, buildWorldHitbox(solidHb, solid.pos)) then
+						return true
+					end
+				end
+			end
+		end
+	end
+
+	return false
+end
+
+---@param entity Entity
+---@param dir Vec direção unitária
+---@param maxDist number distância máxima a ser verificada
+---@param step? number passo da verificação (default 16)
+---@return number
+-- distância que `entity` consegue andar na direção `dir` antes de encostar em
+-- algum sólido (ou `maxDist`, se não encostar em nada)
+function CollisionManager:clearanceInDirection(entity, dir, maxDist, step)
+	step = step or 16
+
+	for d = step, maxDist, step do
+		local pos = addVec(entity.pos, scaleVec(dir, d))
+		if self:wouldCollideAt(entity, pos) then
+			return d - step
+		end
+	end
+
+	return maxDist
 end
 
 ---@param entity Entity
@@ -458,7 +514,7 @@ function CollisionManager:resolveSolidCollisions(entity, nextPos)
 	-- primeiro movemos apenas em X e resolvemos colisões
 	-- depois movemos apenas em Y (com o X já corrigido) e resolvemos colisões
 	local steps = {
-		{ isX = true,  pos = vec(nextPos.x, entity.pos.y) },
+		{ isX = true, pos = vec(nextPos.x, entity.pos.y) },
 		{ isX = false, pos = vec(0, nextPos.y) },
 	}
 
@@ -582,9 +638,13 @@ end
 ---@param player Player
 -- trata a colisão entre um `enemy` e um `player`
 function CollisionManager:onEnemyPlayer(enemy, player)
-	-- dano de contato
+	-- inimigos podem optar por não dar dano de contato (ex.: Rolling Stone)
+	if enemy.contactDamage == false then
+		return
+	end
+
 	if not player.invisible then
-		player:takeDamage(10)
+		player:takeDamage(enemy.contactDamage or 10)
 	end
 end
 

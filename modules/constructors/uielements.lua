@@ -5,20 +5,52 @@ require("modules.UI.uielement")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 
-function newResourceItemElement(resName, invLength, topLeft, spacing, numColumns)
-	local col = math.fmod(invLength - 1, numColumns)
-	local row = math.floor((invLength - 1) / numColumns)
-	local posX = topLeft.x + col * spacing
-	local posY = topLeft.y + row * spacing
-	local resourceEl = UIButtonElem.new(resName, vec(posX, posY), size(96, 96), nil, function(scene)
-		print("Recurso clicado: " .. resName)
+---@param resource Resource
+---@param pos Vec
+---@param onClick? function
+---@param quantityBounds? Size
+---@return UIButtonElem
+function newResourceItemElement(resource, pos, onClick, quantityBounds)
+	local resourceEl = UIButtonElem.new(resource.name, pos, size(96, 96), nil, onClick or function()
+		print("Recurso clicado: " .. resource.name)
 	end)
+	resourceEl.resource = resource
+	resourceEl.quantityBounds = quantityBounds or resourceEl.size
+
 	local animSettings = {}
 	animSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	animSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	for state, settings in pairs(animSettings) do
-		local path = pngPathFormat({ "assets", "sprites", "resources", resName })
+		local path = pngPathFormat({ "assets", "sprites", "resources", resource.name })
 		addAnimation(resourceEl, path, state, settings)
+	end
+
+	-- desenha a quantidade no canto inferior direito do slot que contém o recurso
+	resourceEl.draw = function(self, camera)
+		UIElement.draw(self, camera)
+
+		local viewX = self.pos.x
+		local viewY = self.pos.y
+		if camera then
+			viewX, viewY = camera:viewPos(self.pos)
+		end
+
+		local quantity = tostring(self.resource.quantity or 1)
+		local padding = 6
+		local textX = viewX - self.quantityBounds.width / 2
+		local textY = viewY + self.quantityBounds.height / 2 - mushFont:getHeight() - padding
+		local textWidth = self.quantityBounds.width - padding * 2
+		local previousFont = love.graphics.getFont()
+		local r, g, b, a = love.graphics.getColor()
+
+		love.graphics.setFont(mushFont)
+		love.graphics.setColor(0, 0, 0, 0.85)
+		love.graphics.printf(quantity, textX + 2, textY + 2, textWidth, "right") -- texto sombreado
+		love.graphics.setColor(1, 1, 1, 1)
+		love.graphics.printf(quantity, textX, textY, textWidth, "right") -- texto normal
+
+		love.graphics.setFont(previousFont)
+		love.graphics.setColor(r, g, b, a)
 	end
 
 	return resourceEl

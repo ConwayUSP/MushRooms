@@ -40,7 +40,7 @@ function newChest()
 
 	local makeInteractive = function(pos, room)
 		local chestInteractive = Interactive.new(CHEST.name, pos, hb, room, physics, onInteract, onCloseInteract, nil, nil, onExit)
-		chestInteractive.inventory = Inventory.new(chestInteractive)
+		chestInteractive.inventory = Inventory.new(chestInteractive, 9)
 		animSettings[OPENING] = newAnimSetting(5, size(46, 46), 0.2, false, 1, 4, nil, function(anim)
 			chestInteractive.state = OPEN
 		end)

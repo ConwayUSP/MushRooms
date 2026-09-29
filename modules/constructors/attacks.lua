@@ -391,6 +391,39 @@ function newDemonJumpAttack(duration)
 	return attack
 end
 
+---@param ally boolean
+---@param duration number
+---@param dmg number
+---@param hb? Hitboxes
+---@return Attack
+-- embalo do Rolling Stone. Ataque corpo-a-corpo com hitbox um pouco maior que
+-- a do corpo, que acompanha o inimigo enquanto ele rola
+function newRollingRushAttack(ally, duration, dmg, hb)
+	hb = hb or hitboxes({ hitbox(Circle.new(40)) })
+	local settings = newAtkSetting({
+		subtype = MELEE_ATTACK,
+		ally = ally,
+		dmg = dmg,
+		dur = duration,
+		hb = hb,
+		cooldown = constCooldown(0),
+		tick = 0.5,
+		bounces = math.huge,
+	})
+
+	-- a hitbox segue o inimigo e herda a velocidade do embalo
+	local updateFunc = function(e, dt)
+		e:baseUpdate(dt)
+		e.pos = e.attacker.pos
+		e.vel = e.attacker.vel
+	end
+
+	local attack = Attack.new(ROLLING_RUSH.name, settings, updateFunc, nil, nil)
+	attack.hasShadow = false
+
+	return attack
+end
+
 ------------------------------------
 --- Attack Funcs
 ------------------------------------

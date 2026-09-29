@@ -36,6 +36,7 @@ CONSTRUCTORS[ENEMY] = {
 	[SPIDER_DUCK.name] = newSpiderDuck,
 	[NUCLEAR_CAT.name] = newNuclearCat,
 	[DEMON_BALL.name] = newDemonBall,
+	[ROLLING_STONE.name] = newRollingStone,
 	[SPIDER_DUCK_BOSS.name] = newSpiderDuckBoss,
 }
 

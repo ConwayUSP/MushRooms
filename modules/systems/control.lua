@@ -29,6 +29,7 @@ end
 ---@field inputBuffer InputBuffer
 ---@field gamepad table?
 ---@field hold table<string, number>
+---@field blockAttackUntilRelease boolean
 
 ---@param config table
 ---@return Controls
@@ -45,6 +46,7 @@ function Controls.new(keybinds, gamepad)
 	local controls = setmetatable({}, Controls)
 	controls.owner = nil
 	controls.keybinds = keybinds
+	controls.blockAttackUntilRelease = false
 
 	-- atributos que variam
 	controls.gamepad = gamepad
@@ -81,6 +83,10 @@ function Controls:update(dt)
 			state.holdTime = 0
 		end
 	end
+
+	if self.blockAttackUntilRelease and not self.keyStates[ACT_ATK].isDown then
+		self.blockAttackUntilRelease = false
+	end
 end
 
 ---@param action string
@@ -100,7 +106,9 @@ function Controls:checkAction(action, isBuffered)
 
 	if
 		not inputState.isDown
-		or self.owner.uiManager.activeScene
+		or self.blockAttackUntilRelease
+		or self.owner.building
+		or self.owner.uiManager:hasActiveScene()
 		or self.owner.state == DEFENDING
 		or self.owner.inDialogue
 		or self.owner.state == DYING
