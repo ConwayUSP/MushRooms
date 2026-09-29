@@ -27,6 +27,7 @@ end
 ---@field owner Player?
 ---@field keybinds table<string, string>
 ---@field inputBuffer InputBuffer
+---@field gamepad table?
 ---@field hold table<string, number>
 
 ---@param config table
@@ -37,15 +38,17 @@ Controls.__index = Controls
 Controls.type = CONTROLS
 
 ---@param keybinds table<string, string>
----@param owner? Player
+---@param gamepad? table
 ---@return table
 -- cria um novo controle, possivelmente associado a um jogador
-function Controls.new(keybinds, owner)
+function Controls.new(keybinds, gamepad)
 	local controls = setmetatable({}, Controls)
-	controls.owner = owner
+	controls.owner = nil
 	controls.keybinds = keybinds
 
-	-- Atributos fixos na instanciação
+	-- atributos que variam
+	controls.gamepad = gamepad
+	-- atributos fixos na instanciação
 	controls.inputBuffer = InputBuffer.new(owner)
 	controls.keyStates = {}
 	for action, _ in pairs(keybinds) do
@@ -54,6 +57,7 @@ function Controls.new(keybinds, owner)
 			justPressed = false,
 			justReleased = false,
 			holdTime = 0,
+			analogVal = 0,
 		}
 	end
 	return controls
@@ -65,6 +69,7 @@ function Controls:update(dt)
 		local state = self.keyStates[action]
 		local wasDown = state.isDown
 		-- atualizando os estados de cada ação
+		state.analogVal = 0
 		state.isDown = self:isDown(action)
 		state.justPressed = state.isDown and not wasDown
 		state.justReleased = not state.isDown and wasDown
@@ -112,7 +117,7 @@ function Controls:checkAction(action, isBuffered)
 			shouldBuffer = not self.owner.weapon.atk.canAttack
 		else
 			if self.owner.weapon.atk.canAttack then
-				self.inputBuffer:pop(self.keybinds[action])
+				self.inputBuffer:pop(action)
 				return true
 			end
 			return false
@@ -120,7 +125,7 @@ function Controls:checkAction(action, isBuffered)
 	end
 
 	if shouldBuffer then
-		self.inputBuffer:buffer(self.keybinds[action])
+		self.inputBuffer:buffer(action)
 		return false
 	end
 	return true
@@ -129,15 +134,55 @@ end
 ---@param action string
 ---@return boolean
 function Controls:isDown(action)
-	if action == ACT_CW then
-		-- !TODO: implementar a rodinha do mouse
-		return false
-	end
-
-	if self.keybinds[action]:sub(1, 5) == "mouse" then
-		return love.mouse.isDown(tonumber(self.keybinds[action]:sub(6, 6)))
+	local act = self.keybinds[action]
+	if self.gamepad then
+		local gp = self.gamepad
+		local dz = 0.2 -- deadzone dos analógicos
+		if act:sub(1,7) == "trigger" then
+			local axis = gp:getGamepadAxis(act)
+			if axis > dz then
+				self.keyStates[action].analogVal = axis
+				return true
+			end
+			return false
+		elseif act == "leftx" then
+			local axis = gp:getGamepadAxis(act)
+			if (axis > dz or axis < -dz) then
+				if action == ACT_MR then
+					self.keyStates[action].analogVal = axis
+					return axis > 0
+				elseif action == ACT_ML then
+					self.keyStates[action].analogVal = -axis
+					return axis < 0
+				end
+			end
+			return false
+		elseif act == "lefty" then
+			local axis = gp:getGamepadAxis(act)
+			if (axis > dz or axis < -dz) then
+				if action == ACT_MD then
+					self.keyStates[action].analogVal = axis
+					return axis > 0
+				elseif action == ACT_MU then
+					self.keyStates[action].analogVal = -axis
+					return axis < 0
+				end
+			end
+			return false
+		else
+			return gp:isGamepadDown(act)
+		end
 	else
-		return love.keyboard.isDown(self.keybinds[action])
+		if action == ACT_CW then
+			-- !TODO: implementar a rodinha do mouse
+			return false
+		end
+
+		if act:sub(1, 5) == "mouse" then
+			return love.mouse.isDown(tonumber(act:sub(6, 6)))
+		else
+			return love.keyboard.isDown(act)
+		end
 	end
 end
 
@@ -198,4 +243,26 @@ function _newDefaultControl()
 		"escape"
 	)
 	return Controls.new(keybinds)
+end
+
+function _newJoystickControl(gamepad)
+	local keybinds = newKeybind(
+		"leftx",
+		"leftx",
+		"lefty",
+		"lefty",
+		"triggerright",
+		"triggerleft",
+		"rightshoulder",
+		"dpright",
+		"dpdown",
+		"x",
+		"leftshoulder",
+		"x",
+		"a",
+		"b",
+		"y",
+		"start"
+	)
+	return Controls.new(keybinds, gamepad)
 end

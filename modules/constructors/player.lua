@@ -12,9 +12,9 @@ function getPlayersAnimSettings()
 end
 
 -- inicializa o jogador 1 - Mush
-function initPlayer1()
+function initPlayer1(gamepad)
 	local firstSpawnPoint = { x = rooms[0][0].pos.x, y = rooms[0][0].pos.y }
-	local keybinds = newKeybind(
+	local control = Controls.new(newKeybind(
 		"a",
 		"d",
 		"w",
@@ -31,107 +31,63 @@ function initPlayer1()
 		"escape",
 		"lshift",
 		"escape"
+	))
+	player1 = Player.new(
+		"Mush",
+		firstSpawnPoint,
+		control,
+		getP1ColorPalette(),
+		rooms[0][0]
 	)
-	player1 = Player.new("Mush", firstSpawnPoint, keybinds, getP1ColorPalette(), rooms[0][0])
+	control.owner = player1
 	player1:addAnimations(getPlayersAnimSettings())
 	player1.room:onPlayerEnter(player1)
 	table.insert(players, player1)
 end
 
 -- inicializa o jogador 2 - Shroom
-function initPlayer2()
-	-- !TODO: colocar keybinds diferentes das do player 1
-	local keybinds = newKeybind(
-		"a",
-		"d",
-		"w",
-		"s",
-		"mouse1",
-		"mouse2",
-		"q",
-		"mousewheel",
-		"r",
-		"i",
-		"tab",
-		"e",
-		"mouse1",
-		"escape",
-		"lshift",
-		"escape"
-	)
+function initPlayer2(gamepad)
+	local control = _newJoystickControl(gamepad)
 	local player2 = Player.new(
 		"Shroom",
-		{ x = player1.pos.x + 75, y = player1.pos.y },
-		keybinds,
+		{ x = player1.pos.x + 40, y = player1.pos.y },
+		control,
 		getP2ColorPalette(),
 		players[1].room
 	)
+	control.owner = player2
 	player2:addAnimations(getPlayersAnimSettings())
 	player2.room:onPlayerEnter(player2)
 	table.insert(players, player2)
 end
 
 -- inicializa o jogador 3 - Musho
-function initPlayer3()
-	-- !TODO: colocar keybinds diferentes das do player 1
-	local keybinds = newKeybind(
-		"a",
-		"d",
-		"w",
-		"s",
-		"mouse1",
-		"mouse2",
-		"q",
-		"mousewheel",
-		"r",
-		"i",
-		"tab",
-		"e",
-		"mouse1",
-		"escape",
-		"lshift",
-		"escape"
-	)
+function initPlayer3(gamepad)
+	local control = _newJoystickControl(gamepad)
 	local player3 = Player.new(
 		"Musho",
-		{ x = player1.pos.x + 75, y = player1.pos.y },
-		keybinds,
+		{ x = player1.pos.x - 40, y = player1.pos.y },
+		control,
 		getP3ColorPalette(),
 		players[1].room
 	)
+	control.owner = player3
 	player3:addAnimations(getPlayersAnimSettings())
 	player3.room:onPlayerEnter(player3)
 	table.insert(players, player3)
 end
 
 -- inicializa o jogador 4 - Roomy
-function initPlayer4()
-	-- !TODO: colocar keybinds diferentes das do player 1
-	local keybinds = newKeybind(
-		"a",
-		"d",
-		"w",
-		"s",
-		"mouse1",
-		"mouse2",
-		"q",
-		"mousewheel",
-		"r",
-		"i",
-		"tab",
-		"e",
-		"mouse1",
-		"escape",
-		"lshift",
-		"escape"
-	)
+function initPlayer4(gamepad)
+	local control = _newJoystickControl(gamepad)
 	local player4 = Player.new(
 		"Roomy",
-		{ x = player1.pos.x + 75, y = player1.pos.y },
-		keybinds,
+		{ x = player1.pos.x, y = player1.pos.y + 40 },
+		control,
 		getP4ColorPalette(),
 		players[1].room
 	)
+	control.owner = player4
 	player4:addAnimations(getPlayersAnimSettings())
 	player4.room:onPlayerEnter(player4)
 	table.insert(players, player4)

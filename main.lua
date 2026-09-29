@@ -59,11 +59,6 @@ function love.keypressed(key, scancode, isrepeat)
 		return
 	end
 
-	-- n adiciona um player ao jogo
-	if key == "n" then
-		newPlayer()
-	end
-
 	---------- DEBUG ----------
 
 	-- q faz a câmera 1 tremer (teste)
@@ -99,6 +94,12 @@ function love.keypressed(key, scancode, isrepeat)
 	end
 
 	-------- FIM DEBUG --------
+end
+
+function love.joystickadded(joystick)
+	if gameCtx == GAMEPLAY_CTX and joystick:isGamepad() then
+		newPlayer(joystick)
+	end
 end
 
 function love.keyreleased(key, scancode)

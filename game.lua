@@ -32,7 +32,12 @@ function startGame()
 	collisionManager = CollisionManager.init()
 	createInitialRooms()
 	respawnPos = vec(rooms[0][0].pos.x, rooms[0][0].pos.y)
-	newPlayer()
+	newPlayer() 
+	for _, joystick in pairs(love.joystick.getJoysticks()) do
+		if joystick:isGamepad() then			
+			newPlayer(joystick)
+		end
+	end
 	-- debug -------------------------------------------------
 	players[1]:collectWeapon(newSlingShot())
 	players[1]:collectWeapon(newKatana())

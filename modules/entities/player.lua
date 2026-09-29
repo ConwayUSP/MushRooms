@@ -80,7 +80,7 @@ Player.type = PLAYER
 ---@param room Room
 ---@return Player
 -- cria uma instância de `Player` e o adiciona à lista global de `players`
-function Player.new(name, spawnPos, keybinds, colors, room)
+function Player.new(name, spawnPos, control, colors, room)
 	---@type Player
 	local player = setmetatable({}, Player) ---@diagnostic disable-line
 
@@ -90,7 +90,7 @@ function Player.new(name, spawnPos, keybinds, colors, room)
 
 	-- atributos que variam
 	player.id = #players + 1 -- número do jogador
-	player.controls = Controls.new(keybinds, player) -- os comandos para controlar o boneco, no formato {up = "", left = "", down = "", ...}
+	player.controls = control -- o controle associado ao jogador, seja teclado ou gamepad
 	player.colors = colors -- paleta de cores do jogador
 	-- atributos fixos na instanciação
 	player.movementVec = { x = 0, y = 0 } -- vetor de direção e magnitude do movimento do jogador
@@ -749,15 +749,16 @@ end
 -- Funções Globais
 ----------------------------------------
 
+---@param gamepad table?
 ---@return boolean
 -- inicializa o próximo jogador, caso os 4 jogadores
 -- já tenham sido inicializados, retorna `false`
-function newPlayer()
+function newPlayer(gamepad)
 	-- limite de jogadores alcançado
 	if #players >= 4 then
 		return false
 	end
-	CONSTRUCTORS[PLAYER][#players + 1]()
+	CONSTRUCTORS[PLAYER][#players + 1](gamepad)
 	newCameras() -- cria novas câmeras para cada player
 
 	return true
