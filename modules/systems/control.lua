@@ -30,6 +30,16 @@ end
 ---@field gamepad table?
 ---@field hold table<string, number>
 ---@field blockAttackUntilRelease boolean
+---@field update fun(dt)
+---@field checkAction fun(string, boolean) : boolean
+---@field isDown fun(string) : boolean
+---@field justPressed fun(string) : boolean
+---@field justReleased fun(string) : boolean
+---@field getStickAngle fun(string) : table<number, number, number> | nil
+---@field setOwner fun(Player)
+---@field newKeybinds function : table
+---@field newDefaultControl fun() : Controls
+---@field newJoystickControl fun(gamepad: table) : Controls
 
 ---@param config table
 ---@return Controls
@@ -44,14 +54,12 @@ Controls.type = CONTROLS
 -- cria um novo controle, possivelmente associado a um jogador
 function Controls.new(keybinds, gamepad)
 	local controls = setmetatable({}, Controls)
-	controls.owner = nil
 	controls.keybinds = keybinds
 	controls.blockAttackUntilRelease = false
 
 	-- atributos que variam
 	controls.gamepad = gamepad
 	-- atributos fixos na instanciação
-	controls.inputBuffer = InputBuffer.new(owner)
 	controls.keyStates = {}
 	for action, _ in pairs(keybinds) do
 		controls.keyStates[action] = {
@@ -206,11 +214,33 @@ function Controls:justReleased(action)
 	return self.keyStates[action].justReleased
 end
 
+---@param stick string
+---@return number?, number?
+-- nos dá o ângulo em radianos que o analógico aponta para termos movimento e mira precisos
+function Controls:getStickDir(stick)
+	if self.gamepad then
+		local y = self.gamepad:getGamepadAxis(stick .. "y")
+		local x = self.gamepad:getGamepadAxis(stick .. "x")
+		if math.sqrt(x*x + y*y) >= 0.2 then
+			return x, y
+		end
+	end
+
+	return nil
+end
+
+---@param player Player
+-- 
+function Controls:setOwner(player)
+	self.owner = player
+	self.inputBuffer = InputBuffer.new(player)
+end
+
 ----------------------------------------
 -- Funções Globais
 ----------------------------------------
 
-function newKeybind(ML, MR, MU, MD, ATK, DEF, UA, CW, CA, OUI, MAP, INT, CON, EXT, QA, PA)
+function newKeybind(ML, MR, MU, MD, ATK, DEF, UA, CW, CA, OUI, MAP, INT, CON, EXT, QA, PS)
 	return {
 		[ACT_ML] = ML,
 		[ACT_MR] = MR,
@@ -227,11 +257,11 @@ function newKeybind(ML, MR, MU, MD, ATK, DEF, UA, CW, CA, OUI, MAP, INT, CON, EX
 		[ACT_CON] = CON,
 		[ACT_EXT] = EXT,
 		[ACT_QA] = QA,
-		[ACT_PA] = PA,
+		[ACT_PS] = PS,
 	}
 end
 
-function _newDefaultControl()
+function newDefaultControl()
 	local keybinds = newKeybind(
 		"left",
 		"right",
@@ -253,7 +283,7 @@ function _newDefaultControl()
 	return Controls.new(keybinds)
 end
 
-function _newJoystickControl(gamepad)
+function newJoystickControl(gamepad)
 	local keybinds = newKeybind(
 		"leftx",
 		"leftx",

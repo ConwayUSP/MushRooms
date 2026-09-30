@@ -21,7 +21,7 @@ UIManager.type = UI_MANAGER
 function UIManager.new(player)
 	local uimanager = setmetatable({}, UIManager)
 	uimanager.player = player
-	uimanager.controls = player and player.controls or _newDefaultControl()
+	uimanager.controls = player and player.controls or newDefaultControl()
 	uimanager.baseWidth = 1280
 	uimanager.baseHeight = 720
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)

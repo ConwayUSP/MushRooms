@@ -65,9 +65,7 @@ end
 ---@param dirVec Vec
 -- atualiza a orientação (ângulo em radianos) de `Weapon`
 function Weapon:updateOrientation(dirVec)
-	if dirVec.x == 0 and dirVec.y == 0 then
-		self.rotation = -math.pi * 0.5
-	else
+	if not nullVec(dirVec) then
 		self.rotation = math.atan2(dirVec.x, -dirVec.y) - math.pi * 0.5
 	end
 end

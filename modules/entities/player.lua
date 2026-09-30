@@ -185,6 +185,16 @@ function Player:update(dt)
 	self.age = self.age + dt
 	self.animations[self.state]:update(dt)
 
+	-- controla a mira do personagem
+	if self.weapon then
+		if self.controls.gamepad then
+			local x, y = self.controls:getStickDir("right")
+			x = x or 0
+			y = y or 0
+			self.weapon:updateOrientation({x = x, y = y})
+		end
+	end
+
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
 		if w == self.weapon and self.weapon.animations[self.weapon.state] then
@@ -209,17 +219,24 @@ function Player:move(dt)
 	if self.state == DEFENDING or self.inDialogue then
 		return
 	end
-	if self.controls:checkAction(ACT_MU) then
-		movementDir.y = -1
-	end
-	if self.controls:checkAction(ACT_MD) then
-		movementDir.y = 1
-	end
-	if self.controls:checkAction(ACT_ML) then
-		movementDir.x = -1
-	end
-	if self.controls:checkAction(ACT_MR) then
-		movementDir.x = 1
+
+	if self.controls.gamepad then
+		movementDir.x, movementDir.y = self.controls:getStickDir("left")
+		movementDir.x = movementDir.x or 0
+		movementDir.y = movementDir.y or 0
+	else
+		if self.controls:checkAction(ACT_MU) then
+			movementDir.y = -1
+		end
+		if self.controls:checkAction(ACT_MD) then
+			movementDir.y = 1
+		end
+		if self.controls:checkAction(ACT_ML) then
+			movementDir.x = -1
+		end
+		if self.controls:checkAction(ACT_MR) then
+			movementDir.x = 1
+		end
 	end
 
 	if nullVec(movementDir) then
@@ -242,11 +259,13 @@ function Player:move(dt)
 	-- atualizando objetos cujo movimento depende do Player
 	self:updateBuildingPos()
 	if self.weapon then
-		-- separa a orientação da arma em dois casos para amenizar o bug ao colidir com paredes
-		if not nullVec(self.vel) then
-			self.weapon:updateOrientation({ x = self.vel.x, y = self.vel.y })
-		else
-			self.weapon:updateOrientation(movementDir)
+		if not self.controls.gamepad then
+			-- separa a orientação da arma em dois casos para amenizar o bug ao colidir com paredes
+			if not nullVec(self.vel) then
+				self.weapon:updateOrientation({ x = self.vel.x, y = self.vel.y })
+			else
+				self.weapon:updateOrientation(movementDir)
+			end
 		end
 	end
 end
