@@ -126,6 +126,7 @@ function Mortal:die()
 	end
 
 	if self.type == PLAYER then
+		self:dropAllResources()
 		if self.activeInteraction then
 			self.activeInteraction:onExit(self.activeInteraction, self)
 			self.uiManager:deactivateAllScenes()

@@ -538,6 +538,10 @@ function Player:hasArtifact(artifactName)
 	return false
 end
 
+function Player:unequipArtifact()
+	self.artifact = nil
+end
+
 ---@param resource Resource
 ---@return boolean
 function Player:collectResource(resource)
@@ -725,6 +729,55 @@ function Player:defenseShake(offset, scaleX, scaleY)
 	rotateOffset = vec(scaleX * rotateOffset.x, scaleY * rotateOffset.y)
 
 	return rotateOffset, angle
+end
+
+function Player:dropAllResources()
+	for _, r in pairs(self.inventory.items[RESOURCE]) do
+		local mockR = {
+			name = r.name,
+			type = r.type,
+			image = assetManager:getImage(pngPathFormat({ "assets", "sprites", "resources", r.name }))
+		}
+		for i=1, r.quantity do
+			spawnDrop(mockR, self.pos, self.room, true, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+		end
+		self.inventory.items[RESOURCE] = {}
+	end
+end
+
+function Player:dropAllWeapons()
+	for _, w in pairs(self.weapons) do
+		if w.atk and w.atk.events then
+			for _, e in pairs(w.atk.events) do
+				CollisionManager:unregister(e)
+				if e.destroy then
+					e:destroy()
+				end
+			end
+			w.atk.events = {}
+		end
+		spawnDrop(w, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+	end
+	self:unequipWeapon()
+	self.weapons = {}
+end
+
+function Player:dropAllArtifacts()
+	for _, a in pairs(self.artifacts) do
+		spawnDrop(a, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+	end
+	self:unequipArtifact()
+	self.artifacts = {}
+end
+
+function Player:dropAllBlessings()
+	for _, b in pairs(self.blessingManager.equipped) do
+		spawnDrop(b, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+		if b[TP_ON_UNEQUIP] then
+			b[TP_ON_UNEQUIP](b, self)
+		end
+	end
+	self.blessingManager.equipped = {}
 end
 
 ----------------------------------------

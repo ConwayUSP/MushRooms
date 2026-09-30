@@ -102,6 +102,19 @@ function love.joystickadded(joystick)
 	end
 end
 
+function love.joystickremoved(joystick)
+	for _, p in pairs(players) do
+		if p.controls.gamepad == joystick then
+			p:die()
+			p:dropAllWeapons()
+			p:dropAllArtifacts()
+			p:dropAllBlessings()
+			table.remove(players, tableIndexOf(players, p))
+			newCameras()
+		end
+	end
+end
+
 function love.keyreleased(key, scancode)
 	if key == "z" then
 		cameras[1].targetZoom = cameras[1].startingZoom
