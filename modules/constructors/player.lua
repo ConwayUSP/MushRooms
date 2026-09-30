@@ -42,10 +42,10 @@ end
 function initPlayer2()
 	-- !TODO: colocar keybinds diferentes das do player 1
 	local keybinds = newKeybind(
-		"a",
-		"d",
-		"w",
-		"s",
+		"left",
+		"right",
+		"up",
+		"down",
 		"mouse1",
 		"mouse2",
 		"q",

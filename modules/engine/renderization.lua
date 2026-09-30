@@ -178,6 +178,12 @@ function renderEntities(camera)
 				addEntityToDrawList(o, y)
 			end
 		end
+		-- adiciona o brilho de portas abertas
+		if r.playersInRoom:has(camera.playerAttached.id) then
+			for _, glow in pairs(r.doorGlows) do
+				addEntityToDrawList(glow, glow.pos.y + 100)
+			end
+		end
 	end
 
 	-- adiciona jogadores e suas possíveis armas e construções

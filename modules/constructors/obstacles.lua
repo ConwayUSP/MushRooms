@@ -14,8 +14,8 @@ function newWallUp(spawnPos, room)
 end
 
 function newWallDown(spawnPos, room)
-	local solidHb1 = hitbox(Rectangle.new(700, 228), vec(-420, 0))
-	local solidHb2 = hitbox(Rectangle.new(700, 228), vec(420, 0))
+	local solidHb1 = hitbox(Rectangle.new(700, 160), vec(-420, 0))
+	local solidHb2 = hitbox(Rectangle.new(700, 160), vec(420, 0))
 	local hbs = hitboxes({}, { solidHb1, solidHb2 }, {})
 	local obs = Obstacle.new(WALL_DOWN.name, hbs, spawnPos, room)
 	obs:addAnimations(newAnimSetting(1, size(512, 76), 1000, true))
@@ -24,7 +24,7 @@ function newWallDown(spawnPos, room)
 end
 
 function newWallLeftBack(spawnPos, room)
-	local solidHb = hitbox(Rectangle.new(100, 700), vec(0, 16))
+	local solidHb = hitbox(Rectangle.new(100, 800), vec(0, -34))
 	local hbs = hitboxes({}, { solidHb }, {})
 	local obs = Obstacle.new(WALL_LEFT_BACK.name, hbs, spawnPos, room)
 	obs:addAnimations(newAnimSetting(1, size(34, 340), 1000, true))
@@ -33,7 +33,7 @@ function newWallLeftBack(spawnPos, room)
 end
 
 function newWallLeftFront(spawnPos, room)
-	local solidHb = hitbox(Rectangle.new(100, 700), vec(0, 160))
+	local solidHb = hitbox(Rectangle.new(100, 800), vec(0, 210))
 	local hbs = hitboxes({}, { solidHb }, {})
 	local obs = Obstacle.new(WALL_LEFT_FRONT.name, hbs, spawnPos, room)
 	obs:addAnimations(newAnimSetting(1, size(34, 340), 1000, true))
@@ -42,7 +42,7 @@ function newWallLeftFront(spawnPos, room)
 end
 
 function newWallRightBack(spawnPos, room)
-	local solidHb = hitbox(Rectangle.new(100, 700), vec(0, 16))
+	local solidHb = hitbox(Rectangle.new(100, 800), vec(0, -34))
 	local hbs = hitboxes({}, { solidHb }, {})
 	local obs = Obstacle.new(WALL_RIGHT_BACK.name, hbs, spawnPos, room)
 	obs:addAnimations(newAnimSetting(1, size(34, 340), 1000, true))
@@ -51,7 +51,7 @@ function newWallRightBack(spawnPos, room)
 end
 
 function newWallRightFront(spawnPos, room)
-	local solidHb = hitbox(Rectangle.new(100, 700), vec(0, 160))
+	local solidHb = hitbox(Rectangle.new(100, 800), vec(0, 210))
 	local hbs = hitboxes({}, { solidHb }, {})
 	local obs = Obstacle.new(WALL_RIGHT_FRONT.name, hbs, spawnPos, room)
 	obs:addAnimations(newAnimSetting(1, size(34, 340), 1000, true))
