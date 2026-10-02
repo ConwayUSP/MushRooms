@@ -40,7 +40,7 @@ ANCHORS = {
 
 	-- Interagiveis
 	door_up = floorAnchor(20),
-	door_left = floorAnchor(10),
+	door_left = floorAnchor(10.0001),
 	door_right = floorAnchor(10),
 	turtle = floorAnchor(10),
 

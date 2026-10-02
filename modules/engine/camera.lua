@@ -110,7 +110,7 @@ function Camera:updatePosition(dt)
 				)
 				self.targetPos.y = clamp(
 					self.target.pos.y,
-					room.limits.p1.y + viewportZoomed.height / 2 - 180,
+					room.limits.p1.y + viewportZoomed.height / 2 - 112,
 					room.limits.p2.y - Room.spacingV / 2 - viewportZoomed.height / 2
 				)
 			end

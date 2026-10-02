@@ -1,6 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
+require("modules.entities.doorglow")
 require("modules.systems.blueprint")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
@@ -45,6 +46,7 @@ walls = BiList.new()
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
+---@field doorGlows DoorGlow[]
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
 ---@field createAdjacentRooms fun()
@@ -72,7 +74,7 @@ Room = {}
 Room.__index = Room
 Room.type = ROOM
 Room.stdDim = { width = 1536, height = 1536 }
-Room.spacingV = 96
+Room.spacingV = 228
 Room.spacingH = 96
 
 ---@param pos Vec
@@ -87,28 +89,29 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	local room = setmetatable({}, Room)
 
 	-- atributos que variam
-	room.arrPos = pos                                -- posição da sala na array de salas
-	room.dimensions = dimensions                     -- largura e altura da sala
-	room.hb = hitboxes                               -- hitbox da sala
-	room.limits = limits                             -- limites da sala nas coordenadas de mundo
+	room.arrPos = pos -- posição da sala na array de salas
+	room.dimensions = dimensions -- largura e altura da sala
+	room.hb = hitboxes -- hitbox da sala
+	room.limits = limits -- limites da sala nas coordenadas de mundo
 	room.pos = midpoint(room.limits.p1, room.limits.p2) -- centro da sala nas coordenadas de mundo
-	room.color = blueprint.color                     -- cor da sala
-	room.roomType = blueprint.roomType               -- tipo da sala
-	room.name = blueprint.roomName                   -- nome da sala
-	room.sprites = sprites                           -- os sprites da sala em camadas
+	room.color = blueprint.color -- cor da sala
+	room.roomType = blueprint.roomType -- tipo da sala
+	room.name = blueprint.roomName -- nome da sala
+	room.sprites = sprites -- os sprites da sala em camadas
 	-- atributos fixos na instanciação
-	room.adjacentRooms = {}                          -- salas adjacentes
-	room.explored = false                            -- se algum jogador já entrou na sala ou não
-	room.destructibles = {}                          -- lista de objetos destrutíveis da sala
-	room.interactives = {}                           -- lista de objetos interativos na sala
-	room.drops = {}                                  -- lista de itens dropados na sala
-	room.enemies = {}                                -- lista de inimigos na sala
-	room.npcs = {}                                   -- lista de NPCs na sala
-	room.obstacles = {}                              -- lista de obstáculos na sala
-	room.playersInRoom = Set.new()                   -- lista de jogadores na sala
-	room.linkManager = LinkManager.new()             -- gerenciador de links da sala
-	room.uiManager = newRoomUIManager(room)          -- gerenciador de UI da sala
-	room.doorsTimer = Timer.new(3)                   -- timer para fechar a sala
+	room.adjacentRooms = {} -- salas adjacentes
+	room.explored = false -- se algum jogador já entrou na sala ou não
+	room.destructibles = {} -- lista de objetos destrutíveis da sala
+	room.interactives = {} -- lista de objetos interativos na sala
+	room.drops = {} -- lista de itens dropados na sala
+	room.enemies = {} -- lista de inimigos na sala
+	room.npcs = {} -- lista de NPCs na sala
+	room.obstacles = {} -- lista de obstáculos na sala
+	room.playersInRoom = Set.new() -- lista de jogadores na sala
+	room.linkManager = LinkManager.new() -- gerenciador de links da sala
+	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
+	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
+	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
 
 	room:addWallsAndDoors()
 
@@ -145,6 +148,10 @@ function Room:update(dt)
 	-- atualiza portas
 	for _, door in pairs(self:getDoors()) do
 		door:update(dt)
+	end
+	-- atualiza as luzes das portas laterais
+	for _, glow in pairs(self.doorGlows) do
+		glow:update(dt)
 	end
 
 	self.linkManager:update(dt)
@@ -233,18 +240,75 @@ function Room:onPlayerExit(player)
 	end
 end
 
--- Lida com a abertura de portas
+-- lida com a abertura de portas
 function Room:openDoors()
 	for _, d in pairs(self:getDoors()) do
 		d:onInteract()
 	end
+	for d in self:getNeighboringDoors() do
+		d:onInteract()
+	end
 end
 
--- Lida com o fechamento de portas
+-- lida com o fechamento de portas
 function Room:closeDoors()
 	for _, d in pairs(self:getDoors()) do
 		d:customCloseInteract()
 	end
+	for d in self:getNeighboringDoors() do
+		d:customCloseInteract()
+	end
+end
+
+-- iterador que pega as portas de salas adjacentes que levam a esta sala (como a porta de baixo da sala de cima)
+function Room:getNeighboringDoors()
+	-- Deus me perdoe pelo código horrível
+	local roomUp = rooms[self.arrPos.y - 1] and rooms[self.arrPos.y - 1][self.arrPos.x]
+	local roomDown = rooms[self.arrPos.y + 1] and rooms[self.arrPos.y + 1][self.arrPos.x]
+	local roomLeft = rooms[self.arrPos.y] and rooms[self.arrPos.y][self.arrPos.x - 1]
+	local roomRight = rooms[self.arrPos.y] and rooms[self.arrPos.y][self.arrPos.x + 1]
+	local step = 0
+
+	local iterator = function()
+		if roomUp and step < 1 then
+			for _, d in pairs(roomUp:getDoors()) do
+				if d.name == DOOR_DOWN.name then
+					step = 1
+					return d
+				end
+			end
+			step = 1
+		end
+		if roomDown and step < 2 then
+			for _, d in pairs(roomDown:getDoors()) do
+				if d.name == DOOR_UP.name then
+					step = 2
+					return d
+				end
+			end
+			step = 2
+		end
+		if roomLeft and step < 3 then
+			for _, d in pairs(roomLeft:getDoors()) do
+				if d.name == DOOR_RIGHT.name then
+					step = 3
+					return d
+				end
+			end
+			step = 3
+		end
+		if roomRight and step < 4 then
+			for _, d in pairs(roomRight:getDoors()) do
+				if d.name == DOOR_LEFT.name then
+					step = 4
+					return d
+				end
+			end
+			step = 4
+		end
+		return nil
+	end
+	return iterator
 end
 
 ---@param dt number
@@ -298,7 +362,7 @@ function Room:addWallsAndDoors()
 		vec(0, -Room.stdDim.height / 2 - 120),
 		vec(-Room.stdDim.width / 2 - 47, -120),
 		vec(Room.stdDim.width / 2 + 47, -120),
-		vec(0, Room.stdDim.height / 2 + 40),
+		vec(0, Room.stdDim.height / 2 + 108),
 	}
 	local walls = { WALL_UP, WALL_DOWN, WALL_LEFT_BACK, WALL_LEFT_FRONT, WALL_RIGHT_BACK, WALL_RIGHT_FRONT }
 	local wallsRelPos = {
@@ -315,6 +379,13 @@ function Room:addWallsAndDoors()
 	for i = 1, #walls do
 		CONSTRUCTORS[walls[i].type][walls[i].name](addVec(self.pos, wallsRelPos[i]), self)
 	end
+
+	-- uma luz por porta (exceto pela porta de cima, que pode ser vista aberta sem a luz)
+	for _, door in pairs(self:getDoors()) do
+		if door.name ~= DOOR_UP.name then
+			table.insert(self.doorGlows, DoorGlow.new(self, door))
+		end
+	end
 end
 
 ---@param doorName string
@@ -322,13 +393,13 @@ end
 -- retorna o índice na array global de portas de uma porta com nome doorName (uma das 4 direções)
 function Room:getDoorIndex(doorName)
 	if doorName == DOOR_UP.name then
-		return vec(self.arrPos.y * 3 - 1, self.arrPos.x)
+		return vec(self.arrPos.x * 3 - 1, self.arrPos.y * 2)
 	elseif doorName == DOOR_DOWN.name then
-		return vec(self.arrPos.y * 3 + 1, self.arrPos.x)
+		return vec(self.arrPos.x * 3 + 1, self.arrPos.y * 2)
 	elseif doorName == DOOR_LEFT.name then
-		return vec(self.arrPos.y * 3, self.arrPos.x)
+		return vec(self.arrPos.x * 3, self.arrPos.y * 2)
 	elseif doorName == DOOR_RIGHT.name then
-		return vec(self.arrPos.y * 3, self.arrPos.x + 1)
+		return vec(self.arrPos.x * 3, self.arrPos.y * 2 + 1)
 	end
 end
 
