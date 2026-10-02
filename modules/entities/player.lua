@@ -361,7 +361,7 @@ function Player:build()
 			respawnRoom = self.room.arrPos
 			respawnPos = self.building.pos
 		end
-		
+
 		self.controls.blockAttackUntilRelease = true
 		self.building = nil
 	end
@@ -378,21 +378,23 @@ end
 ---@param key any
 -- trata inputs de teclado. Se `key` não fizer parte dos controles do player, é ignorado
 function Player:processInput()
-	-- DEBUG -------------
-	if key == "i" and self.artifact then
-		self.artifact:use()
+	-- inputs que abrem UIs: abrir UI geral e abrir mapa
+	-- importante: o mapa e a UI geral são excludentes, não podem ser abertos ao mesmo tempo
+	if self.controls:checkAction(ACT_OUI) and not self.uiManager:isSceneActive(UI_MAP_SCENE) then
+		-- !TODO: abrir UI unificada ao invés de crafting
+		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
+		stopMovement(self)
+	elseif self.controls:checkAction(ACT_MAP) and not self.uiManager:isSceneActive(UI_CRAFTING_SCENE) then
+		self.uiManager:toggleScene(UI_MAP_SCENE)
+		stopMovement(self)
 	end
-	self:checkSpecialActions()
-	----------------------
-	
-	if self.state == DYING then
+
+	-- basicamente todo input é ignorado se o player está morto ou com uma UI aberta
+	if self.state == DYING or self.uiManager:hasActiveScene() then
 		return
 	end
 
-	if self.uiManager:hasActiveScene() then
-		return
-	end
-
+	-- inputs no modo de construção: confirmar construção ou cancelar
 	if self.building then 
 		if self.controls:checkAction(ACT_CON) then
 			self:build()
@@ -401,7 +403,8 @@ function Player:processInput()
 		end
 		return
 	end
-	
+
+	-- inputs de interação: interagir...
 	if self.interactiveObj and self.controls:checkAction(ACT_INT) then
 		if self.interactiveObj.type == NPC then
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
@@ -412,15 +415,18 @@ function Player:processInput()
 		stopMovement(self)
 	end
 
-	if self.inDialogue and self.controls:checkAction(ACT_CON) then 
+	-- avançando o diálogo ao clicar
+	if self.inDialogue and self.controls:checkAction(ACT_CON) then
 		DialogueManager:getDialogueByPlayer(self):advance()
 		return
 	end
 
-	if self.controls:checkAction(ACT_ATK) then
-		self.weapon:attack()
+	-- input de uso de artefato
+	if self.controls:checkAction(ACT_UA) and self.artifact then
+		self.artifact:use()
 	end
 
+	-- input de defesa
 	if self.controls:checkAction(ACT_DEF) then
 		if not self.defendingDurationTimer.active and not self.defendingDurationTimer.completed and not self.defendingCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
@@ -431,37 +437,24 @@ function Player:processInput()
 			self.defendingCooldownTimer:start()
 			self.defendingDurationTimer:stop()
 		end
-	end
-end
-
--- DEB UG --
----@param key string
--- verifica se o `Player` está pressionando a combinação de teclas para abrir o inventário
-function Player:checkSpecialActions()
-	if self.state == DYING then
 		return
 	end
 
-	if self.controls:checkAction(ACT_OUI) then
-		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
-		stopMovement(self)
+	-- input de ataque
+	if self.controls:checkAction(ACT_ATK) then
+		self.weapon:attack()
 	end
 
-	-- TODO: colocar o controle certo (tecla R por enquanto)
+	-- input de troca de arma
+	if self.controls:checkAction(ACT_PW) then
+		self:prevWeapon()
+	elseif self.controls:checkAction(ACT_NW) then
+		self:nextWeapon()
+	end
+
+	-- input de troca de artefato
 	if self.controls:checkAction(ACT_CA) then
-		self.uiManager:toggleScene(UI_INVENTORY_SCENE)
-		stopMovement(self)
-	end
-	
-	-- TODO: colocar o controle certo (tecla LSHIFT por enquanto)
-	if self.controls:checkAction(ACT_QA) then
-		self.uiManager:toggleScene(UI_EQUIPMENT_SCENE)
-		stopMovement(self)
-	end
-
-	if self.controls:checkAction(ACT_MAP) then
-		self.uiManager:toggleScene(UI_MAP_SCENE)
-		stopMovement(self)
+		self:changeArtifact()
 	end
 end
 
@@ -498,6 +491,26 @@ function Player:hasWeapon(weaponName)
 		end
 	end
 	return false
+end
+
+-- equipa a próxima arma na ordem do inventário
+function Player:nextWeapon()
+	if #self.weapons == 0 then
+		return
+	end
+	local idx = tableIndexOf(self.weapons, self.weapon) or 1
+	local newIdx = math.fmod(idx, #self.weapons) + 1
+	self.weapon = self.weapons[newIdx]
+end
+
+-- equipa a arma anterior na ordem do inventário
+function Player:prevWeapon()
+	if #self.weapons == 0 then
+		return
+	end
+	local idx = tableIndexOf(self.weapons, self.weapon) or 1
+	local newIdx = math.fmod(idx + #self.weapons - 2, #self.weapons) + 1
+	self.weapon = self.weapons[newIdx]
 end
 
 function Player:unequipWeapon()
@@ -540,6 +553,16 @@ end
 
 function Player:unequipArtifact()
 	self.artifact = nil
+end
+
+-- troca qual artefato está equipado (entre os 2 possíveis artefatos do player)
+function Player:changeArtifact()
+	if #self.artifacts < 2 then
+		return
+	end
+	local idx = tableIndexOf(self.artifacts, self.artifact) or 1
+	local newIdx = 3 - idx -- inversão de 2 por 1 e 1 por 2
+	self.artifact = self.artifacts[newIdx]
 end
 
 ---@param resource Resource
