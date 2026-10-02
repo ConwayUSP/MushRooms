@@ -655,7 +655,7 @@ end
 -- diminui a vida do player e treme sua câmera um pouco
 function Player:takeDamage(damage)
 	Mortal.takeDamage(self, damage)
-	cameras[self.id]:shake(damage / 5, 0.5)
+	getCameraByPlayer(self):shake(damage / 5, 0.5)
 end
 
 -- tenta reespawnar quando está morto
@@ -816,7 +816,19 @@ function newPlayer(gamepad)
 	if #players >= 4 then
 		return false
 	end
-	CONSTRUCTORS[PLAYER][#players + 1](gamepad)
+
+	local minID = 1
+	for _, p in pairs(players) do
+		if p.id - minID > 0 then
+			break
+		end
+		minID = p.id + 1
+	end
+
+	CONSTRUCTORS[PLAYER][minID](gamepad)
+	table.sort(players, function (left, right)
+	    return left.id < right.id
+	end)
 	newCameras() -- cria novas câmeras para cada player
 
 	return true
