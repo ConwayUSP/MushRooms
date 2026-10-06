@@ -8,6 +8,7 @@
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
+---@field lastPlayerScene string
 ---@field activeScenes Type[]
 ---@field parentCanvas table
 ---@field parentCanvasPos Vec
@@ -28,6 +29,7 @@ function UIManager.new(player)
 	uimanager.canvasPos = vec(0, 0)
 	uimanager.scenes = {}
 	uimanager.activeScenes = {}
+	uimanager.lastPlayerScene = UI_EQUIPMENT_SCENE
 	return uimanager
 end
 
@@ -56,6 +58,7 @@ end
 -- adiciona uma cena à lista de cenas deste manager
 function UIManager:addScene(scene)
 	self.scenes[scene.subtype] = scene
+	scene.manager = self
 	return self
 end
 
@@ -97,7 +100,7 @@ function UIManager:hasActiveScene()
 	return #self.activeScenes > 0
 end
 
----@param keepOneAlive bool
+---@param keepOneAlive boolean
 -- remove a cena ativa do topo da pilha, a não ser que `keepOneAlive` seja verdadeiro e a cena seja a última
 function UIManager:deactivateActiveScene(keepOneAlive)
 	if #self.activeScenes == 0 or (#self.activeScenes == 1 and keepOneAlive) then
@@ -213,4 +216,16 @@ function UIManager:handleTextInput(t)
 	if activeScene then
 		self.scenes[activeScene]:handleTextInput(t)
 	end
+end
+
+---@param fromScene string
+---@param destScene string
+-- realiza a navegação via botões de UI de uma cena para outra
+function UIManager:applyNavigation(fromScene, destScene)
+	self:deactivateScene(fromScene)
+	self:activateScene(destScene)
+	self.lastPlayerScene = destScene
+	-- muda a seleção para o primeiro elemento que não seja da barra de navegação
+	-- pois ficava estranho entrar em uma UI com um botão de navegação selecionado
+	self.scenes[fromScene]:setSelection(vec(1, 2))
 end

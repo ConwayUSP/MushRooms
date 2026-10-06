@@ -60,6 +60,9 @@ end
 -- marca o elemento de UI como `selected` e seu estado como `SELECTED`
 function UIElement:select()
 	self.selected = true
+	if self.animations[self.state] then
+		self.animations[self.state]:reset()
+	end
 	self.state = SELECTED
 end
 
@@ -87,6 +90,7 @@ function UIElement:draw(camera)
 	end
 	local anim = self.animations[self.state]
 	if not anim then
+		print(self.name)
 		return
 	end
 	local scale = self.size.width / anim.frameDim.width

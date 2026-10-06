@@ -116,18 +116,18 @@ function UIMapElem:setMapScissor()
 end
 
 function UIMapElem:draw(camera)
-	local firstX = self.targetFocus.x - 5
-	local lastX  = self.targetFocus.x + 5
+	local firstX = self.targetFocus.x - 6
+	local lastX = self.targetFocus.x + 6
 
-	local firstY = self.targetFocus.y - 3
-	local lastY  = self.targetFocus.y + 3
+	local firstY = self.targetFocus.y - 4
+	local lastY = self.targetFocus.y + 4
 
 	local viewX = self.pos.x
 	local viewY = self.pos.y
 	self:setMapScissor()
 
 	for roomY = firstY, lastY do
-    for roomX = firstX, lastX do
+		for roomX = firstX, lastX do
 			local room = getRoomAt(vec(roomX, roomY))
 			local roomStatus
 
@@ -150,7 +150,6 @@ function UIMapElem:draw(camera)
 					local bossIcon = room.explored and "boss_visited" or "boss_unvisited"
 					offsetX, offsetY = self:calcOffsets(bossIcon, roomX, roomY)
 					love.graphics.draw(self.sprites[bossIcon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
-
 				elseif room.roomType == NPC_ROOM then
 					for _, npc in ipairs(room.npcs) do
 						if npc.name == "Tenkar" then
@@ -158,18 +157,16 @@ function UIMapElem:draw(camera)
 							love.graphics.draw(self.sprites["Tenkar_icon"], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 						end
 					end
-
 				end
 
 				-- ICON PLAYER
 				for _, player in room.playersInRoom:iter() do
-					local spriteName = player.name.."_icon"
+					local spriteName = player.name .. "_icon"
 					offsetX, offsetY = self:calcOffsets(spriteName, roomX, roomY)
 					offsetX, offsetY = self:calcIconOffsets(offsetX, offsetY, room, player)
 
 					love.graphics.draw(self.sprites[spriteName], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 				end
-
 			end
 		end
 	end

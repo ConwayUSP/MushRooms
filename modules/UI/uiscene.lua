@@ -57,13 +57,11 @@ function UIScene:addElement(element, layer, pos, preserveSelection)
 
 	-- o primeiro elemento começa selecionado
 	if layer == ELEM_LAYER_1 or layer == ELEM_LAYER_2 then
-		if not preserveSelection
+		if
+			not preserveSelection
 			and (pos.y < self.selectionPos.y or (pos.y == self.selectionPos.y and pos.x < self.selectionPos.x))
 		then
 			self:setSelection(pos)
-			if self.onSelectionChange then
-				self:onSelectionChange()
-			end
 		elseif pos.x == self.selectionPos.x and pos.y == self.selectionPos.y then
 			-- mantém elementos sobrepostos, como slot e item, sincronizados
 			element:select()
@@ -90,6 +88,10 @@ function UIScene:setSelection(pos)
 		if selected then
 			selected:select()
 		end
+	end
+
+	if self.onSelectionChange then
+		self:onSelectionChange()
 	end
 end
 
@@ -157,11 +159,6 @@ function UIScene:handleInput(key, controls)
 		if closestEl then
 			self:setSelection(targetPos)
 			globalAudioManager:play(AUDIO_SELECT, self, "pop")
-
-			-- atualiza a cena se necessário
-			if self.onSelectionChange then
-				self:onSelectionChange()
-			end
 		end
 	end
 
@@ -234,4 +231,31 @@ function UIScene:handleTextInput(t)
 			globalAudioManager:play(AUDIO_SELECT, self, "kabum")
 		end
 	end
+end
+
+-- adiciona as abas de navegação. Útil para cenas do player
+function UIScene:addNavTabs()
+	local navAnimSettings = {}
+	navAnimSettings[IDLE] = newAnimSetting(4, size(12, 12), 0.05, true, 4)
+	navAnimSettings[SELECTED] = newAnimSetting(4, size(12, 12), 0.05, true, 4)
+
+	local navEquip = UIButtonElem.new("nav equip", vec(160, 42), size(36, 36), nil, function()
+		self.manager:applyNavigation(self.subtype, UI_EQUIPMENT_SCENE)
+	end)
+	local navInv = UIButtonElem.new("nav inventory", vec(210, 42), size(36, 36), nil, function()
+		self.manager:applyNavigation(self.subtype, UI_INVENTORY_SCENE)
+	end)
+	local navCraft = UIButtonElem.new("nav crafting", vec(260, 42), size(36, 36), nil, function()
+		self.manager:applyNavigation(self.subtype, UI_CRAFTING_SCENE)
+	end)
+
+	navEquip:addAnimations(navAnimSettings)
+	navInv:addAnimations(navAnimSettings)
+	navCraft:addAnimations(navAnimSettings)
+
+	self:addElement(navEquip, ELEM_LAYER_1, vec(1, 1), true)
+	self:addElement(navInv, ELEM_LAYER_1, vec(2, 1), true)
+	self:addElement(navCraft, ELEM_LAYER_1, vec(3, 1), true)
+
+	return self
 end

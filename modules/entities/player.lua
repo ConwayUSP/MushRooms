@@ -375,16 +375,14 @@ function Player:endBuildingMode()
 	end
 end
 
----@param key any
 -- trata inputs de teclado. Se `key` não fizer parte dos controles do player, é ignorado
 function Player:processInput()
 	-- inputs que abrem UIs: abrir UI geral e abrir mapa
 	-- importante: o mapa e a UI geral são excludentes, não podem ser abertos ao mesmo tempo
 	if self.controls:checkAction(ACT_OUI) and not self.uiManager:isSceneActive(UI_MAP_SCENE) then
-		-- !TODO: abrir UI unificada ao invés de crafting
-		self.uiManager:toggleScene(UI_CRAFTING_SCENE)
+		self.uiManager:toggleScene(self.uiManager.lastPlayerScene)
 		stopMovement(self)
-	elseif self.controls:checkAction(ACT_MAP) and not self.uiManager:isSceneActive(UI_CRAFTING_SCENE) then
+	elseif self.controls:checkAction(ACT_MAP) and not self.uiManager:isSceneActive(self.uiManager.lastPlayerScene) then
 		self.uiManager:toggleScene(UI_MAP_SCENE)
 		stopMovement(self)
 	end

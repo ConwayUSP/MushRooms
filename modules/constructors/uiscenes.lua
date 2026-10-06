@@ -141,16 +141,16 @@ end
 ----------------------------------------
 
 function newResourceInventoryScene(player)
-	local invScene = UIScene.new(UI_INVENTORY_SCENE, player)
+	local invScene = UIScene.new(UI_INVENTORY_SCENE, player):addNavTabs()
 	local canvasCenter = vec(640, 360)
-	local slotsCenter = addVec(canvasCenter, vec(-111, 0))
-	local infoCenterX = canvasCenter.x + 250.5
+	local slotsCenter = addVec(canvasCenter, vec(-200, 0))
+	local infoCenterX = canvasCenter.x + 300
 
 	local COLS = 4
 	local ROWS = 3
 	local ITEMS_PER_PAGE = COLS * ROWS
-	local slotSize = size(96, 96)
-	local slotSpacing = 108
+	local slotSize = size(114, 114)
+	local slotSpacing = 132
 	local firstSlotPos = vec(
 		slotsCenter.x - ((COLS - 1) * slotSpacing) / 2,
 		slotsCenter.y - ((ROWS - 1) * slotSpacing) / 2
@@ -161,33 +161,33 @@ function newResourceInventoryScene(player)
 
 	-- ANIMAÇÕES
 	local slotAnimSettings = {}
-	slotAnimSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
-	slotAnimSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	slotAnimSettings[IDLE] = newAnimSetting(1, size(38, 38), 1, true, 1)
+	slotAnimSettings[SELECTED] = newAnimSetting(1, size(38, 38), 1, true, 1)
 
 	local bgAnimSettings = {}
-	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(360, 200), 1, true, 1)
 
 	local arrowAnimSettings = {}
 	arrowAnimSettings[IDLE] = newAnimSetting(1, size(10, 8), 1, true, 1)
 	arrowAnimSettings[SELECTED] = newAnimSetting(1, size(10, 8), 1, true, 1)
 
 	local infoHeadAnimSettings = {}
-	infoHeadAnimSettings[IDLE] = newAnimSetting(1, size(69, 16), 1, true, 1)
+	infoHeadAnimSettings[IDLE] = newAnimSetting(1, size(100, 16), 1, true, 1)
 
 	local infoFootAnimSettings = {}
-	infoFootAnimSettings[IDLE] = newAnimSetting(1, size(69, 5), 1, true, 1)
+	infoFootAnimSettings[IDLE] = newAnimSetting(1, size(100, 5), 1, true, 1)
 
 	-- BACKGROUND
-	local invBg = UIImageElem.new("inventory bg", canvasCenter, size(768, 420))
+	local invBg = UIImageElem.new("inventory bg", canvasCenter, size(1080, 600))
 	invBg:addAnimations(bgAnimSettings)
 	invScene:addElement(invBg, BG_LAYER_1, vec(1, 1))
 
 	-- DECORAÇÕES DO PAINEL DE INFORMAÇÕES
-	local infoHead = UIImageElem.new("inventory info head", vec(infoCenterX, canvasCenter.y - 168), size(207, 48))
+	local infoHead = UIImageElem.new("inventory info head", vec(infoCenterX, canvasCenter.y - 222), size(300, 48))
 	infoHead:addAnimations(infoHeadAnimSettings)
 	invScene:addElement(infoHead, BG_LAYER_2, vec(1, 1))
 
-	local infoFoot = UIImageElem.new("inventory info foot", vec(infoCenterX, canvasCenter.y + 160.5), size(207, 15))
+	local infoFoot = UIImageElem.new("inventory info foot", vec(infoCenterX, canvasCenter.y + 222), size(300, 15))
 	infoFoot:addAnimations(infoFootAnimSettings)
 	invScene:addElement(infoFoot, BG_LAYER_2, vec(1, 2))
 
@@ -196,7 +196,7 @@ function newResourceInventoryScene(player)
 		local col = (idx - 1) % COLS
 		local row = math.floor((idx - 1) / COLS)
 
-		return vec(firstSlotPos.x + col * slotSpacing, firstSlotPos.y + row * slotSpacing), vec(col + 1, row + 1)
+		return vec(firstSlotPos.x + col * slotSpacing, firstSlotPos.y + row * slotSpacing), vec(col + 1, row + 2)
 	end
 
 	-- SLOTS
@@ -222,19 +222,19 @@ function newResourceInventoryScene(player)
 	end
 
 	-- SETAS DE NAVEGAÇÃO
-	local leftArrow = UIButtonElem.new("inventory nav arrow left", vec(slotsCenter.x - 234, slotsCenter.y), size(30, 24), nil, function()
+	local leftArrow = UIButtonElem.new("inventory nav arrow left", vec(slotsCenter.x - 291, slotsCenter.y), size(30, 24), nil, function()
 		print("left arrow pressed")
 		invScene:setInventoryPage(invScene.currentPage - 1)
 	end)
 	leftArrow:addAnimations(arrowAnimSettings)
-	invScene:addElement(leftArrow, ELEM_LAYER_1, vec(0, 2))
+	invScene:addElement(leftArrow, ELEM_LAYER_1, vec(0, 3))
 
-	local rightArrow = UIButtonElem.new("inventory nav arrow right", vec(slotsCenter.x + 234, slotsCenter.y), size(30, 24), nil, function()
+	local rightArrow = UIButtonElem.new("inventory nav arrow right", vec(slotsCenter.x + 291, slotsCenter.y), size(30, 24), nil, function()
 		print("right arrow pressed")
 		invScene:setInventoryPage(invScene.currentPage + 1)
 	end)
 	rightArrow:addAnimations(arrowAnimSettings)
-	invScene:addElement(rightArrow, ELEM_LAYER_1, vec(COLS + 1, 2))
+	invScene:addElement(rightArrow, ELEM_LAYER_1, vec(COLS + 1, 3))
 
 	-- sincroniza o inventário do player com os itens exibidos na página atual
 	function invScene:syncInventory()
@@ -273,11 +273,11 @@ function newResourceInventoryScene(player)
 end
 
 function newEquipmentScene(player)
-	local equipScene = UIScene.new(UI_EQUIPMENT_SCENE, player)
+	local equipScene = UIScene.new(UI_EQUIPMENT_SCENE, player):addNavTabs()
 	local canvasCenter = vec(640, 360)
 
 	local bgAnimSettings = {}
-	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(360, 200), 1, true, 1)
 
 	local signatureSettings = {}
 	signatureSettings[IDLE] = newAnimSetting(1, size(56, 56), 1, true, 1)
@@ -289,12 +289,8 @@ function newEquipmentScene(player)
 	local decorationSettings = {}
 	decorationSettings[IDLE] = newAnimSetting(1, size(15, 39), 1, true, 1)
 
-	-- local ref = UIImageElem.new("equip ref", canvasCenter, size(768, 768))
-	-- ref:addAnimations(bgAnimSettings)
-	-- equipScene:addElement(ref, BG_LAYER_1, vec(1, 1))
-
 	-- BACKGROUND
-	local bg = UIImageElem.new("equip bg", canvasCenter, size(768, 768))
+	local bg = UIImageElem.new("equip bg", canvasCenter, size(1080, 600))
 	bg:addAnimations(bgAnimSettings)
 	equipScene:addElement(bg, BG_LAYER_1, vec(1, 2))
 
@@ -309,10 +305,10 @@ function newEquipmentScene(player)
 	---------------
 
 	-- SLOTS DE ARMAS
-	local weaponCenter = vec(canvasCenter.x - 240, canvasCenter.y)
+	local weaponCenter = vec(canvasCenter.x - 320, canvasCenter.y)
 	local padding = 60
-	local artifactCenter = vec(canvasCenter.x, canvasCenter.y - 65)
-	local blessingCenter = vec(canvasCenter.x + 240, canvasCenter.y)
+	local artifactCenter = vec(canvasCenter.x, canvasCenter.y - 105)
+	local blessingCenter = vec(canvasCenter.x + 320, canvasCenter.y)
 
 	-- retorna a posição visual e a posição nas camadas da UI de acordo com o tipo de equipamento
 	function equipScene:getEquipmentSlotPosition(equipmentType, idx)
@@ -321,16 +317,16 @@ function newEquipmentScene(player)
 			local row = math.floor((idx - 1) / 2)
 
 			return vec(weaponCenter.x + (-1 + col * 2) * padding, weaponCenter.y + (row - 1) * padding * 2),
-				vec(col, row + 1)
+				vec(col, row + 2)
 		elseif equipmentType == ARTIFACT then
 			local col = idx - 1
 
-			return vec(artifactCenter.x + (-1 + col * 2) * 65, artifactCenter.y), vec(col + 2, 1)
+			return vec(artifactCenter.x + (-1 + col * 2) * 65, artifactCenter.y), vec(col + 2, 2)
 		elseif equipmentType == BLESSING then
 			local row = idx - 1
 			local col = row % 2 == 0 and 1 or -1
 
-			return vec(blessingCenter.x + col * 40, blessingCenter.y + (row - 2) * 60), vec((col + 1) / 2 + 4, idx)
+			return vec(blessingCenter.x + col * 40, blessingCenter.y + (row - 2) * 60), vec(4, idx + 1)
 		end
 	end
 
@@ -382,7 +378,7 @@ function newEquipmentScene(player)
 
 	local lifebar = UILifeBarElem.new(
 		"equip player lifebar",
-		vec(canvasCenter.x, canvasCenter.y - 170),
+		vec(canvasCenter.x, canvasCenter.y - 220),
 		size(74, 14),
 		calcFunc,
 		offset,
@@ -479,52 +475,40 @@ function newEquipmentScene(player)
 end
 
 function newCraftingScene(player)
-	local invScene = UIScene.new(UI_CRAFTING_SCENE, player)
+	local invScene = UIScene.new(UI_CRAFTING_SCENE, player):addNavTabs()
 	local canvasCenter = vec(640, 360)
 
 	local COLS = 3
 	local ROWS = 4
 
-	local sizeSlot = size(96, 96)
+	local sizeSlot = size(106, 106)
 	local slotOffset = vec(sizeSlot.width + 12, sizeSlot.height + 12)
 	local marginOffset = vec(300, 100)
-	local leftMargin = canvasCenter.x - marginOffset.x
-	local topMargin = canvasCenter.y - marginOffset.y
+	local leftMargin = canvasCenter.x - marginOffset.x - 118
+	local topMargin = canvasCenter.y - marginOffset.y - 72
 
 	-- ANIMAÇÕES
 	local animSettings = {}
-	animSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
-	animSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	animSettings[IDLE] = newAnimSetting(1, size(35, 35), 1, true, 1)
+	animSettings[SELECTED] = newAnimSetting(1, size(35, 35), 1, true, 1)
+
+	local outputAnimSettings = {}
+	outputAnimSettings[IDLE] = newAnimSetting(1, size(37, 37), 1, true, 1)
 
 	local bgAnimSettings = {}
-	bgAnimSettings[IDLE] = newAnimSetting(1, size(128, 128), 1, true, 1)
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(360, 200), 1, true, 1)
 
 	-- BACKGROUND
-	local pos = subVec(canvasCenter, vec(256, 256))
-	local invBg = UIImageElem.new("crafting bg", canvasCenter, size(768, 768))
+	local invBg = UIImageElem.new("crafting bg", canvasCenter, size(1080, 600))
 	invBg:addAnimations(bgAnimSettings)
 	invScene:addElement(invBg, BG_LAYER_1, vec(1, 1))
-
-	-- ARROWS
-	local arrowSize = size(32, 32)
-	local secondColX = leftMargin + slotOffset.x
-	local arrowUpY = topMargin - (sizeSlot.height / 2) - (arrowSize.height / 2) - 8
-	local lastRowY = topMargin + (ROWS - 1) * slotOffset.y + (sizeSlot.height / 2) + (arrowSize.height / 2) + 8
-
-	local arrowUp = UIButtonElem.new("crafting arrow up", vec(secondColX, arrowUpY), arrowSize, nil, function() end)
-	local arrowDown = UIButtonElem.new("crafting arrow down", vec(secondColX, lastRowY), arrowSize, nil, function() end)
-	arrowUp:addAnimations(animSettings)
-	arrowDown:addAnimations(animSettings)
-
-	invScene:addElement(arrowUp, ELEM_LAYER_1, vec(2, 1))
-	invScene:addElement(arrowDown, ELEM_LAYER_1, vec(2, ROWS + 2))
 
 	-- SLOTS
 	for row = 0, ROWS - 1 do
 		for col = 0, COLS - 1 do
 			local posX = leftMargin + col * slotOffset.x
 			local posY = topMargin + row * slotOffset.y
-			local slot = UIImageElem.new("resource slot", vec(posX, posY), sizeSlot)
+			local slot = UIImageElem.new("crafting slot", vec(posX, posY), sizeSlot)
 			slot:addAnimations(animSettings)
 			invScene:addElement(slot, ELEM_LAYER_1, vec(col + 1, row + 2))
 		end
@@ -540,27 +524,27 @@ function newCraftingScene(player)
 	end
 
 	-- SELECTED ITEM SLOT
-	local selectedSlotPos = vec(canvasCenter.x + marginOffset.x - slotOffset.x, canvasCenter.y - 100)
+	local selectedSlotPos = vec(canvasCenter.x + 312, canvasCenter.y - 213)
 	function invScene:addSelectedItemPreviewSlot()
-		local selectedSlotSize = size(128, 128)
-		local selectedSlot = UIImageElem.new("resource slot", selectedSlotPos, selectedSlotSize)
-		selectedSlot:addAnimations(animSettings)
+		local selectedSlotSize = size(112, 112)
+		local selectedSlot = UIImageElem.new("crafting output slot", selectedSlotPos, selectedSlotSize)
+		selectedSlot:addAnimations(outputAnimSettings)
 		invScene:addElement(selectedSlot, VISUAL_LAYER_1, vec(4, 3))
 	end
 
-	-- -- SLOTS RESOURCES REQUIRED FOR CRAFTING
-	local sizeMiniSlot = size(72, 72)
+	-- SLOTS RESOURCES REQUIRED FOR CRAFTING
+	local sizeMiniSlot = size(106, 106)
 	local miniSlotOffset = sizeMiniSlot.width + 8
 	function invScene:addRecipeIngredientSlot(col)
 		local posX = selectedSlotPos.x - miniSlotOffset * 1.5 + col * miniSlotOffset
 		local posY = canvasCenter.y + 200
-		local slot = UIImageElem.new("resource slot", vec(posX, posY), sizeMiniSlot)
+		local slot = UIImageElem.new("crafting slot", vec(posX, posY), sizeMiniSlot)
 		slot:addAnimations(animSettings)
 		invScene:addElement(slot, VISUAL_LAYER_1, vec(4 + col, 4))
 	end
 
 	-- ATUALIZAÇÃO AUTOMÁTICA DOS DETALHES AO MUDAR A SELEÇÃO
-	local previewPos = vec(canvasCenter.x + 190, canvasCenter.y - 100)
+	local previewPos = vec(canvasCenter.x + 312, canvasCenter.y - 213)
 	local ingredientsY = canvasCenter.y + 200
 	function invScene:onSelectionChange()
 		-- limpa a área de detalhes (Camadas Visuais onde colocaremos o preview)
@@ -583,25 +567,25 @@ function newCraftingScene(player)
 			self:addElement(previewImg, VISUAL_LAYER_2, vec(1, 1))
 
 			-- textos
-			local namePos = vec(previewPos.x - 200, previewPos.y + 72)
+			local namePos = vec(previewPos.x - 160, previewPos.y + 92)
 			local nameText = UITextElem.new(
 				"product name text",
 				namePos,
-				size(200, 400),
+				size(160, 400),
 				2,
 				nil,
-				rgba(0, 0, 0, 255),
+				rgba(255, 255, 255, 255),
 				recipe.output.name
 			)
 			self:addElement(nameText, VISUAL_LAYER_2, vec(1, 2))
-			local descPos = vec(previewPos.x - 150, previewPos.y + 112)
+			local descPos = vec(previewPos.x - 210, previewPos.y + 132)
 			local descText = UITextElem.new(
 				"product desc text",
 				descPos,
-				size(240, 400),
-				1.26,
+				size(266, 400),
+				1.5,
 				nil,
-				rgba(0, 0, 0, 255),
+				rgba(255, 255, 255, 255),
 				recipe.output.description
 			)
 			self:addElement(descText, VISUAL_LAYER_2, vec(1, 3))
@@ -612,7 +596,7 @@ function newCraftingScene(player)
 				local resName = input[1].name
 				local qty = input[2]
 
-				local slotX = previewPos.x - 38 + (i - 1) * 80
+				local slotX = previewPos.x - 55 + (i - 1) * 111
 				local spritePath = pngPathFormat({ "assets", "sprites", "resources", resName })
 				local ingredientEl =
 					newCraftingItemPreviewElement(resName, vec(slotX, ingredientsY), size(96, 96), spritePath, 32)
@@ -632,19 +616,15 @@ function newMapScene(player)
 	local canvasCenter = vec(640, 360)
 
 	local bgAnimSettings = {}
-	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 140), 1, true, 1)
-
-	-- local ref = UIImageElem.new("map ref", canvasCenter, size(768, 768))
-	-- ref:addAnimations(bgAnimSettings)
-	-- mapScene:addElement(ref, BG_LAYER_1, vec(1, 1))
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(360, 200), 1, true, 1)
 
 	-- BACKGROUND
-	local bg = UIImageElem.new("map bg", canvasCenter, size(768, 768))
+	local bg = UIImageElem.new("map bg", canvasCenter, size(1080, 600))
 	bg:addAnimations(bgAnimSettings)
 	mapScene:addElement(bg, BG_LAYER_1, vec(1, 2))
 
 	-- MAP
-	local map = UIMapElem.new("map", canvasCenter, size(768, 768), player)
+	local map = UIMapElem.new("map", canvasCenter, size(1080, 600), player)
 	mapScene:addElement(map, ELEM_LAYER_1, vec(1, 1))
 
 	mapScene.onActive = function(self)
@@ -687,7 +667,7 @@ function newChestScene(player)
 	local ROWS = 3
 	local ITEMS_PER_SIDE = COLS * ROWS
 	local slotSpacing = 132
-	local slotSize = size(120, 120)
+	local slotSize = size(114, 114)
 	local playerSlotsStart = addVec(canvasCenter, vec(-382, -124))
 	local chestSlotsStart = addVec(canvasCenter, vec(108, -124))
 
@@ -697,14 +677,14 @@ function newChestScene(player)
 
 	-- ANIMAÇÕES
 	local slotAnimSettings = {}
-	slotAnimSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
-	slotAnimSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	slotAnimSettings[IDLE] = newAnimSetting(1, size(38, 38), 1, true, 1)
+	slotAnimSettings[SELECTED] = newAnimSetting(1, size(38, 38), 1, true, 1)
 
 	local bgAnimSettings = {}
-	bgAnimSettings[IDLE] = newAnimSetting(1, size(256, 128), 1, true, 1)
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(360, 200), 1, true, 1)
 
 	-- BACKGROUND
-	local chestBg = UIImageElem.new("chest bg", canvasCenter, size(1024, 512))
+	local chestBg = UIImageElem.new("chest bg", canvasCenter, size(1080, 600))
 	chestBg:addAnimations(bgAnimSettings)
 	chestScene:addElement(chestBg, BG_LAYER_1, vec(1, 1))
 

@@ -37,17 +37,17 @@ function newResourceItemElement(resource, pos, onClick, quantityBounds)
 
 		local quantity = tostring(self.resource.quantity or 1)
 		local padding = 6
-		local textX = viewX - self.quantityBounds.width / 2
+		local textX = viewX - self.quantityBounds.width / 2 + 12
 		local textY = viewY + self.quantityBounds.height / 2 - mushFont:getHeight() - padding
 		local textWidth = self.quantityBounds.width - padding * 2
 		local previousFont = love.graphics.getFont()
 		local r, g, b, a = love.graphics.getColor()
 
-		love.graphics.setFont(mushFont)
+		love.graphics.setFont(mushBigFont)
 		love.graphics.setColor(0, 0, 0, 0.85)
-		love.graphics.printf(quantity, textX + 2, textY + 2, textWidth, "right") -- texto sombreado
+		love.graphics.printf(quantity, textX + 3, textY - 3, textWidth, "right") -- texto sombreado
 		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.printf(quantity, textX, textY, textWidth, "right") -- texto normal
+		love.graphics.printf(quantity, textX, textY, textWidth, "right")   -- texto normal
 
 		love.graphics.setFont(previousFont)
 		love.graphics.setColor(r, g, b, a)
