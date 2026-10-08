@@ -179,21 +179,18 @@ function Player:update(dt)
 		self.uiManager:update(dt)
 	end
 
+	if self.weapon then
+		local aimDir = self.controls:getAimDir()
+		if aimDir then
+			self.weapon:updateOrientation(aimDir)
+		end
+	end
+
 	self:processInput()
 	self:checkEndDefense(dt)
 	Mortal.update(self, dt)
 	self.age = self.age + dt
 	self.animations[self.state]:update(dt)
-
-	-- controla a mira do personagem
-	if self.weapon then
-		if self.controls.gamepad then
-			local x, y = self.controls:getStickDir("right")
-			x = x or 0
-			y = y or 0
-			self.weapon:updateOrientation({x = x, y = y})
-		end
-	end
 
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
@@ -258,16 +255,6 @@ function Player:move(dt)
 
 	-- atualizando objetos cujo movimento depende do Player
 	self:updateBuildingPos()
-	if self.weapon then
-		if not self.controls.gamepad then
-			-- separa a orientação da arma em dois casos para amenizar o bug ao colidir com paredes
-			if not nullVec(self.vel) then
-				self.weapon:updateOrientation({ x = self.vel.x, y = self.vel.y })
-			else
-				self.weapon:updateOrientation(movementDir)
-			end
-		end
-	end
 end
 
 function Player:checkEndDefense(dt)
@@ -453,6 +440,21 @@ function Player:processInput()
 	-- input de troca de artefato
 	if self.controls:checkAction(ACT_CA) then
 		self:changeArtifact()
+	end
+end
+
+---@param dy number
+function Player:wheelmoved(dy)
+	if self.weapon
+		and self.state ~= DYING
+		and not self.uiManager:hasActiveScene()
+		and not self.inDialogue
+	then
+		if dy > 0 then
+			self:nextWeapon()
+		else
+			self:prevWeapon()
+		end
 	end
 end
 

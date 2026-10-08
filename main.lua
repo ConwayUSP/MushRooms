@@ -6,6 +6,7 @@ require("modules.constructors.uimanagers")
 require("modules.constructors.vfxs")
 require("modules.engine.animation")
 require("modules.engine.camera")
+require("modules.engine.mouse")
 require("modules.engine.collisionmanager")
 require("modules.engine.renderization")
 require("modules.engine.assetmanager")
@@ -128,6 +129,73 @@ function love.textinput(t)
 	end
 end
 
+---@return Player|nil
+-- primeiro jogador de teclado/mouse (dono do mouse)
+local function getKeyboardPlayer()
+	for _, p in pairs(players) do
+		if p.controls and not p.controls.gamepad then
+			return p
+		end
+	end
+	return nil
+end
+
+function love.mousepressed(x, y, button, istouch, presses)
+	if button ~= 1 then
+		return
+	end
+
+	-- fora da gameplay o clique vale para a UI global (menu, settings...)
+	if gameCtx ~= GAMEPLAY_CTX then
+		globalUIManager:handleMouseClick(x, y)
+		return
+	end
+
+	-- durante a gameplay o mouse pertence ao jogador de teclado/mouse
+	local player = getKeyboardPlayer()
+	if not player or player.state == DYING then
+		return
+	end
+
+	-- UI aberta: o clique ativa o elemento sob o cursor
+	if player.uiManager:hasActiveScene() then
+		player.uiManager:handleMouseClick(x, y)
+		return
+	end
+
+	-- em diálogo: o clique avança a fala
+	if player.inDialogue then
+		local dialogue = DialogueManager:getDialogueByPlayer(player)
+		if dialogue then
+			dialogue:advance()
+		end
+	end
+end
+
+function love.wheelmoved(dx, dy)
+	if gameCtx ~= GAMEPLAY_CTX or dy == 0 then
+		return
+	end
+
+	-- troca de arma com a roda do mouse (só para jogadores de teclado/mouse)
+	for _, p in pairs(players) do
+		local c = p.controls
+		if not c.gamepad then
+			p:wheelmoved(dy)
+		end
+	end
+end
+
+function love.focus(f)
+	if f then
+		-- reaplica escondimento e confinamento do ponteiro
+		mouseManager:onFocus()
+	else
+		-- solta a captura para não prender o ponteiro de outros aplicativos
+		mouseManager:onBlur()
+	end
+end
+
 function love.resize(w, h)
 	local sx = w / window.initialW
 	local sy = h / window.initialH
@@ -151,7 +219,6 @@ function love.load()
 
 	-- carregando o gerenciador de áudios
 	globalAudioManager = AudioManager.init()
-
 	globalAudioManager:play(MUSIC_MENU)
 
 	-- carregando a biblioteca de UI
@@ -159,6 +226,9 @@ function love.load()
 
 	-- carregando o gerenciador de partículas
 	globalVFXManager = initGlobalVFXManager()
+
+	-- carregando o gerenciador de mouse
+	mouseManager = MouseManager.init()
 
 	-- definindo a seed de aleatoriedade
 	math.randomseed(os.time())
@@ -189,6 +259,10 @@ function love.update(dt)
 
 	dt = math.min(dt, 1/30)
 
+	-- atualiza o modo do mouse (menu = livre, gameplay = confinado ao
+	-- viewport) e a posição do cursor de cada jogador de teclado/mouse
+	mouseManager:update(dt)
+
 	-- pulando o update de gameplay enquanto está no menu
 	if gameCtx == MENU_CTX then
 		goto skipgameplay
@@ -201,16 +275,18 @@ function love.update(dt)
 	end
 	----------- Colisões ----------
 	collisionManager:update(dt)
+	----------- Cameras -----------
+	-- antes dos players para que a mira (que depende da transformação
+	-- da câmera) seja calculada com o estado da câmera do frame atual
+	for _, c in pairs(cameras) do
+		c:updatePosition(dt)
+	end
 	---------- Jogadores ----------
 	for _, p in pairs(players) do
 		p:update(dt)
 	end
 	---------- Partículas ---------
 	globalVFXManager:update(dt)
-	----------- Cameras -----------
-	for _, c in pairs(cameras) do
-		c:updatePosition(dt)
-	end
 
 	::skipgameplay::
 	-------------- UI -------------

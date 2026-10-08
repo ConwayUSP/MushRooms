@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.entities.player")
+require("modules.engine.mouse")
 require("modules.utils.easing")
 require("modules.utils.utils")
 
@@ -200,6 +201,30 @@ function Camera:viewPos(entityPos)
 	return vx, vy
 end
 
+---@param lx number coordenada em unidades lógicas da janela (pixels / window.scale)
+---@param ly number
+---@return Vec|nil
+-- transforma um ponto do espaço da janela em um ponto do espaço de mundo,
+-- desfazendo o deslocamento do canvas, o zoom centralizado e o `viewPos`
+function Camera:screenToWorld(lx, ly)
+	local vx = lx - self.canvasPos.x
+	local vy = ly - self.canvasPos.y
+	if vx < 0 or vy < 0 or vx > self.viewport.width or vy > self.viewport.height then
+		return nil
+	end
+
+	-- desfaz a transformação de zoom aplicada em draw():
+	-- screen = (p - viewport/2) * zoom + viewport/2
+	local px = (vx - self.viewport.width / 2) / self.zoom + self.viewport.width / 2
+	local py = (vy - self.viewport.height / 2) / self.zoom + self.viewport.height / 2
+
+	-- desfaz o viewPos(): world = p + (cx, cy) - viewport/2
+	return vec(
+		px + self.cx - self.viewport.width / 2,
+		py + self.cy - self.viewport.height / 2
+	)
+end
+
 ----------------------------------------
 -- Função de Renderização
 ----------------------------------------
@@ -235,6 +260,8 @@ function Camera:draw()
 	renderBlackBars(self)
 	-- renderiza a UI do jogador associado
 	renderPlayerUIs(self)
+	-- renderiza o cursor de mira por cima de tudo
+	renderAimCursor(self)
 
 	love.graphics.setCanvas()
 
@@ -281,6 +308,36 @@ function getCameraByPlayer(player)
 		end
 	end
 	return nil
+end
+
+---@param camera Camera
+-- desenha o cursor de mira do jogador de teclado/mouse, se houver,
+-- no espaço do viewport desta câmera (por cima da UI)
+function renderAimCursor(camera)
+	if not mouseManager or not mouseManager:isActive() then
+		return
+	end
+
+	local player = camera.playerAttached
+	if not player or not player.controls or player.controls.gamepad then
+		return
+	end
+
+	local cursor = mouseManager:get(player)
+	if not cursor then
+		return
+	end
+
+	local img = assetManager:getImage("assets/sprites/cursor_aim.png")
+	local scale = 3
+	local w = img:getWidth() * scale
+	local h = img:getHeight() * scale
+	-- pixels da janela -> unidades lógicas -> coordenadas do viewport
+	local vx = cursor.pos.x / window.scale - camera.canvasPos.x
+	local vy = cursor.pos.y / window.scale - camera.canvasPos.y
+
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(img, vx - w / 2, vy - h / 2, 0, scale, scale)
 end
 
 ---@param oldCamera Camera
