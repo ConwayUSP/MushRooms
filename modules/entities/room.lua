@@ -240,6 +240,18 @@ function Room:onPlayerExit(player)
 	end
 end
 
+function Room:onPlayerDieInside()
+	local noPlayersAlive = true
+	for _, p in self.playersInRoom:iter() do
+		if p.hp > 0 then
+			noPlayersAlive = false
+		end
+	end
+	if noPlayersAlive then
+		self:openDoors()
+	end
+end
+
 -- lida com a abertura de portas
 function Room:openDoors()
 	for _, d in pairs(self:getDoors()) do
@@ -463,7 +475,7 @@ function Room:isInCombat()
 		return false
 	end
 	for _, e in pairs(self.enemies) do
-		if not e.isReallyDead then
+		if not (e.hp <= 0) then
 			return true
 		end
 	end

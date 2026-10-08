@@ -131,6 +131,7 @@ function Mortal:die()
 			self.activeInteraction:onExit(self.activeInteraction, self)
 			self.uiManager:deactivateAllScenes()
 		end
+		self.room:onPlayerDieInside()
 	end
 
 	self.state = DYING
@@ -151,7 +152,6 @@ function Mortal:die()
 	if self.weapon then
 		self:unequipWeapon()
 	end
-	---@diagnostic enable
 end
 
 function Mortal:getQuadInfo()
