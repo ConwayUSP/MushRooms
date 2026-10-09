@@ -1,4 +1,7 @@
 *.html
 *.css
 
-game.lua
+dist/
+.build/
+__pycache__/
+*.pyc
