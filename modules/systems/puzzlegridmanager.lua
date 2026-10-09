@@ -3,6 +3,8 @@
 ----------------------------------------
 require("modules.entities.puzzlepin")
 require("modules.entities.puzzlestone")
+require("modules.systems.links")
+require("modules.utils.timer")
 require("modules.utils.vec")
 
 ----------------------------------------
@@ -22,14 +24,29 @@ require("modules.utils.vec")
 ---@field size Vec
 ---@field centerSize Vec
 ---@field grid table<number, table<number, PuzzleStone | false>>
+---@field reservedCells table<number, table<number, PuzzleStone | false>>
 ---@field pieces PuzzlePiece[]
 ---@field piecesById table<string, PuzzlePiece>
 ---@field pins PuzzlePin[]
 ---@field stones PuzzleStone[]
+---@field pendingPinsByPlayer table<Player, PendingPuzzlePin>
+
+---@class PendingPuzzlePin
+---@field pin PuzzlePin
+---@field timer Timer
+
+---@class PuzzleCenterBounds
+---@field left number
+---@field right number
+---@field top number
+---@field bottom number
 
 PuzzleGridManager = {}
 PuzzleGridManager.__index = PuzzleGridManager
 PuzzleGridManager.TILE_SIZE = 150
+PuzzleGridManager.PENDING_LINK_DURATION = 5
+PuzzleGridManager.GRID_LINK_DURATION = 5
+PuzzleGridManager.STONE_MOVE_DURATION = 1.0
 PuzzleGridManager.GRID_COLOR = { 19 / 255, 15 / 255, 63 / 255, 1 }
 PuzzleGridManager.CENTER_COLOR = { 14 / 255, 11 / 255, 47 / 255, 1 }
 PuzzleGridManager.BORDER_COLOR = { 67 / 255, 68 / 255, 155 / 255, 1 }
@@ -47,15 +64,20 @@ function PuzzleGridManager.new(room, settings)
 	manager.size = vec(settings.size.x, settings.size.y)
 	manager.centerSize = vec(settings.centerSize.x, settings.centerSize.y)
 	manager.grid = {}
+	manager.reservedCells = {}
 	manager.pieces = {}
 	manager.piecesById = {}
 	manager.pins = {}
 	manager.stones = {}
+	manager.pendingPinsByPlayer = {}
+	manager.completed = false
 
 	for y = 1, manager.size.y do
 		manager.grid[y] = {}
+		manager.reservedCells[y] = {}
 		for x = 1, manager.size.x do
 			manager.grid[y][x] = false
+			manager.reservedCells[y][x] = false
 		end
 	end
 
@@ -100,6 +122,151 @@ function PuzzleGridManager:addStone(settings)
 	return stone
 end
 
+---@param player Player
+---@param pin PuzzlePin
+function PuzzleGridManager:selectPendingPin(player, pin)
+	local current = self.pendingPinsByPlayer[player]
+
+	if current then
+		if current.pin == pin then
+			current.timer:restart()
+			return
+		end
+
+		current.pin:deselect(player)
+	end
+
+	local timer = Timer.new(self.PENDING_LINK_DURATION, true)
+	timer:start()
+	self.pendingPinsByPlayer[player] = { pin = pin, timer = timer }
+	pin:select(player)
+end
+
+---@param player Player
+function PuzzleGridManager:clearPendingPin(player)
+	local pending = self.pendingPinsByPlayer[player]
+	if not pending then
+		return
+	end
+
+	pending.pin:deselect(player)
+	self.pendingPinsByPlayer[player] = nil
+end
+
+---@param stone PuzzleStone
+---@param direction Vec
+---@return boolean
+function PuzzleGridManager:moveStoneOneCell(stone, direction)
+	if stone.moving then
+		return false
+	end
+
+	local targetCell = addVec(stone.cell, direction)
+	if not self:isCellFree(targetCell) then
+		return false
+	end
+
+	local previousCell = stone.cell
+	local targetPos = self:cellToWorld(targetCell)
+	if not stone:moveToCell(targetCell, targetPos, self.STONE_MOVE_DURATION) then
+		return false
+	end
+
+	-- O destino passa a ser a posição lógica da pedra, enquanto a origem fica
+	-- reservada até o fim da interpolação. Assim nenhuma outra pedra pode ocupar
+	-- qualquer um dos dois tiles durante o deslocamento.
+	self.grid[previousCell.y][previousCell.x] = false
+	self.reservedCells[previousCell.y][previousCell.x] = stone
+	self.grid[targetCell.y][targetCell.x] = stone
+
+	return true
+end
+
+---@param stone PuzzleStone
+---@param previousCell Vec
+function PuzzleGridManager:onStoneMoveFinished(stone, previousCell)
+	if self.reservedCells[previousCell.y][previousCell.x] == stone then
+		self.reservedCells[previousCell.y][previousCell.x] = false
+	end
+
+	if stone.moveLink then
+		self.room.linkManager:removeLink(stone.moveLink)
+		stone.moveLink = nil
+	end
+
+	self:checkCompletion()
+end
+
+---@return PuzzleCenterBounds
+function PuzzleGridManager:getCenterBounds()
+	local left = (self.size.x - self.centerSize.x) / 2 + 1
+	local top = (self.size.y - self.centerSize.y) / 2 + 1
+
+	return {
+		left = left,
+		right = left + self.centerSize.x - 1,
+		top = top,
+		bottom = top + self.centerSize.y - 1,
+	}
+end
+
+---@return boolean
+function PuzzleGridManager:isPuzzleComplete()
+	local bounds = self:getCenterBounds()
+
+	for y = bounds.top, bounds.bottom do
+		for x = bounds.left, bounds.right do
+			local isBorder = x == bounds.left or x == bounds.right or y == bounds.top or y == bounds.bottom
+			if isBorder then
+				local piece = self:getStoneAt(vec(x, y))
+				if not piece or piece.moving or not piece:isCorrectlyPlaced(bounds) then
+					return false
+				end
+			end
+		end
+	end
+
+	return true
+end
+
+function PuzzleGridManager:checkCompletion()
+	local isComplete = self:isPuzzleComplete()
+	if isComplete and not self.completed then
+		self.completed = true
+		print("Completou o puzzle")
+		-- TODO: substituir o print pelo efeito definitivo de conclusão do puzzle.
+	elseif not isComplete then
+		self.completed = false
+	end
+end
+
+---@param player Player
+---@param piece PuzzlePiece
+function PuzzleGridManager:onPieceHit(player, piece)
+	if piece.kind == PuzzlePin.KIND then
+		self:selectPendingPin(player, piece)
+		return
+	end
+
+	if piece.kind ~= PuzzleStone.KIND then
+		return
+	end
+
+	local pending = self.pendingPinsByPlayer[player]
+	if not pending then
+		return
+	end
+
+	if self:moveStoneOneCell(piece, pending.pin.pullDirection) then
+		local link = GridLink.new(pending.pin, piece, self.GRID_LINK_DURATION)
+		local activeLink = self.room.linkManager:addLink(link)
+		if activeLink then
+			piece.moveLink = activeLink
+			self:clearPendingPin(player)
+		end
+	end
+end
+
 ---@param cell Vec
 ---@return boolean
 function PuzzleGridManager:isCellInside(cell)
@@ -118,13 +285,15 @@ function PuzzleGridManager:getStoneAt(cell)
 		return nil
 	end
 
-	return self.grid[cell.y][cell.x] or nil
+	return self.grid[cell.y][cell.x] or self.reservedCells[cell.y][cell.x] or nil
 end
 
 ---@param cell Vec
 ---@return boolean
 function PuzzleGridManager:isCellFree(cell)
-	return self:isCellInside(cell) and self.grid[cell.y][cell.x] == false
+	return self:isCellInside(cell)
+		and self.grid[cell.y][cell.x] == false
+		and self.reservedCells[cell.y][cell.x] == false
 end
 
 ---@param cell Vec
@@ -158,6 +327,18 @@ end
 function PuzzleGridManager:update(dt)
 	for _, piece in ipairs(self.pieces) do
 		piece:update(dt)
+	end
+
+	local expiredPlayers = {}
+	for player, pending in pairs(self.pendingPinsByPlayer) do
+		pending.timer:update(dt)
+		if not pending.timer.active then
+			table.insert(expiredPlayers, player)
+		end
+	end
+
+	for _, player in ipairs(expiredPlayers) do
+		self:clearPendingPin(player)
 	end
 end
 

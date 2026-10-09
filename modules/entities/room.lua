@@ -234,6 +234,10 @@ end
 ---@param player Player
 -- lida com a saída do player de salas
 function Room:onPlayerExit(player)
+	if self.puzzleGridManager then
+		self.puzzleGridManager:clearPendingPin(player)
+	end
+
 	self.playersInRoom:remove(player.id)
 
 	if self.playersInRoom:size() == 0 then

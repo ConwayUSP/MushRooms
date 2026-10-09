@@ -14,6 +14,7 @@ require("modules.utils.vec")
 
 PuzzlePin = setmetatable({}, { __index = PuzzlePiece })
 PuzzlePin.__index = PuzzlePin
+PuzzlePin.KIND = "pin"
 PuzzlePin.SPRITE_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Pin" })
 PuzzlePin.FRAME_DIM = { width = 49, height = 49 }
 
@@ -41,6 +42,7 @@ function PuzzlePin.new(settings, puzzleGridManager)
 	local hbs = hitboxes({ defaultHb }, { solidHb }, {})
 
 	PuzzlePiece.init(pin, settings.id, pos, puzzleGridManager, hbs)
+	pin.kind = PuzzlePin.KIND
 	pin.offset = offset
 	pin.pullDirection = vec(settings.pullDirection.x, settings.pullDirection.y)
 	pin:addIdleAnimation(PuzzlePin.spritePathForState(IDLE), PuzzlePin.FRAME_DIM)

@@ -43,8 +43,8 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		accFactor = -speed / 2,
 		restitution = 1,
 		friction = 0,
-		bounces = 3,
-		pierces = 2,
+		bounces = 0,
+		pierces = 1,
 		-- tick = 0.5
 	})
 

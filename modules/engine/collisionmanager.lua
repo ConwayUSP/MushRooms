@@ -15,6 +15,7 @@ require("modules.utils.vec")
 ---@field solids table<Entity, Hitbox[]>
 ---@field roomsDirty boolean
 ---@field activeRoomsCopy Set<Room>
+---@field puzzlePiecesHit table<AtkEvent, table<PuzzlePiece, boolean>>
 
 CollisionManager = {}
 CollisionManager.__index = CollisionManager
@@ -28,6 +29,7 @@ function CollisionManager.init()
 	cm.solids = {} -- tabela que liga entidades com seus hitboxes sólidos
 	cm.solidList = {} -- lista com índices numéricos de hitboxes sólidas
 	cm.solidIndices = {} -- mapa de entidade para índice da lista `solids`
+	cm.puzzlePiecesHit = {} -- peças de puzzle já processadas por cada ataque
 
 	-- otimização: manter uma cópia das salas ativas
 	-- para minimizar o número de colisões checadas
@@ -252,6 +254,10 @@ end
 ---@param entity Entity | Room
 -- remove a hitbox da entidade `entity` das listas do `CollisionManager`
 function CollisionManager:unregister(entity)
+	if entity.type == ATTACK_EVENT then
+		self.puzzlePiecesHit[entity] = nil
+	end
+
 	local data = self.registry[entityKey(entity)][entity]
 	if not data then
 		return
@@ -453,9 +459,13 @@ function CollisionManager:handleCollisions()
 end
 
 function CollisionManager:handleSolidCollisions(entityA, entityB)
-	if entityA.type == ATTACK_EVENT and (entityB.type == OBSTACLE or entityB.type == PUZZLE_PIECE) then
+	if entityA.type == ATTACK_EVENT and entityB.type == PUZZLE_PIECE then
+		self:onAttackPuzzlePiece(entityA, entityB)
+	elseif entityA.type == PUZZLE_PIECE and entityB.type == ATTACK_EVENT then
+		self:onAttackPuzzlePiece(entityB, entityA)
+	elseif entityA.type == ATTACK_EVENT and entityB.type == OBSTACLE then
 		self:onAttackObstacle(entityA, entityB)
-	elseif (entityA.type == OBSTACLE or entityA.type == PUZZLE_PIECE) and entityB.type == ATTACK_EVENT then
+	elseif entityA.type == OBSTACLE and entityB.type == ATTACK_EVENT then
 		self:onAttackObstacle(entityB, entityA)
 	elseif entityA.type == ENEMY then
 		if entityA.onSolidHit then
@@ -756,4 +766,23 @@ end
 -- trata a colisão entre um ataque e um obstáculo
 function CollisionManager:onAttackObstacle(attack, obstacle)
 	attack:reduceBounces()
+end
+
+---@param attack AtkEvent
+---@param piece PuzzlePiece
+-- trata separadamente a colisão entre projéteis e peças de puzzle
+function CollisionManager:onAttackPuzzlePiece(attack, piece)
+	local piecesHit = self.puzzlePiecesHit[attack]
+	if not piecesHit then
+		piecesHit = {}
+		self.puzzlePiecesHit[attack] = piecesHit
+	end
+
+	if not attack.active or piecesHit[piece] then
+		return
+	end
+
+	piecesHit[piece] = true
+	attack:reduceBounces()
+	attack:onHit(piece)
 end

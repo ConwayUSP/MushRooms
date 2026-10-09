@@ -42,22 +42,40 @@ function LinkManager:addLink(link)
 
 	self.linksMap[entityA][entityB] = link
 	self.linksMap[entityB][entityA] = link
+	link:onAdded()
 
 	return link
+end
+
+---@param link Link
+function LinkManager:removeLink(link)
+	for i = #self.links, 1, -1 do
+		if self.links[i] == link then
+			local a = link.entityA
+			local b = link.entityB
+			link:stop()
+
+			if self.linksMap[a] and self.linksMap[a][b] == link then
+				self.linksMap[a][b] = nil
+			end
+			if self.linksMap[b] and self.linksMap[b][a] == link then
+				self.linksMap[b][a] = nil
+			end
+
+			link:onRemoved()
+			table.remove(self.links, i)
+			return
+		end
+	end
 end
 
 function LinkManager:update(dt)
 	for i = #self.links, 1, -1 do
 		local link = self.links[i]
-		if not link:isActive() then
-			local a = link.entityA
-			local b = link.entityB
-			self.linksMap[a][b] = nil
-			self.linksMap[b][a] = nil
+		link:update(dt)
 
-			table.remove(self.links, i)
-		else
-			link:update(dt)
+		if not link:isActive() then
+			self:removeLink(link)
 		end
 	end
 end
@@ -121,6 +139,11 @@ function Link:stop()
 		self.timer:stop()
 	end
 end
+
+-- Hooks de ciclo de vida chamados pelo LinkManager.
+function Link:onAdded() end
+
+function Link:onRemoved() end
 
 ---@param newLink Link
 function Link:refresh(newLink)
@@ -192,6 +215,9 @@ function SpringLink:update(dt)
 	end
 
 	Link.update(self, dt)
+	if not self:isActive() then
+		return
+	end
 
 	local dir = subVec(self.entityB.pos, self.entityA.pos)
 	local d = lenVec(dir)
@@ -210,14 +236,28 @@ end
 GridLink = setmetatable({}, { __index = Link })
 GridLink.__index = GridLink
 
----@param entityA Entity
----@param entityB Entity
+---@param entityA PuzzlePin
+---@param entityB PuzzleStone
+---@param duration number
 ---@return GridLink
-function GridLink.new(entityA, entityB)
+function GridLink.new(entityA, entityB, duration)
 	---@type GridLink
 	local self = setmetatable({}, GridLink)
-	Link.init(self, entityA, entityB)
+	Link.init(self, entityA, entityB, duration)
 	return self
 end
 
--- O comportamento de movimentação em grade será implementado nesta classe.
+function GridLink:onAdded()
+	self.entityA:select(self)
+	self.entityB:select(self)
+end
+
+function GridLink:onRemoved()
+	self.entityA:deselect(self)
+	self.entityB:deselect(self)
+end
+
+function GridLink:draw()
+	-- Linhas desenhadas não ficaram com um resultado legal no final das contas
+	-- Talvez adicionar umas partículas ao se mover fique interessante
+end

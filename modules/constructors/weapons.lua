@@ -112,9 +112,23 @@ end
 ------------------------------
 
 ---@param atkEvent AtkEvent
----@param enemy Enemy
--- função de onHit para o ataque do estilingue, que cria um link entre o
-function onHitLinkTwoEnemies(atkEvent, enemy)
+---@param hitEntity Entity
+-- função de onHit para o ataque do estilingue, que cria o tipo de link
+-- correspondente à entidade atingida
+function onHitLinkTwoEnemies(atkEvent, hitEntity)
+	if hitEntity.type == PUZZLE_PIECE then
+		local manager = hitEntity.puzzleGridManager
+		if manager then
+			manager:onPieceHit(atkEvent.attacker, hitEntity)
+		end
+		return
+	end
+
+	if hitEntity.type ~= ENEMY then
+		return
+	end
+
+	local enemy = hitEntity
 	local target = enemy:nearestEnemy()
 	local room = enemy.room
 
@@ -123,6 +137,10 @@ function onHitLinkTwoEnemies(atkEvent, enemy)
 	end
 end
 
-function onHitApplyFear(atkEvent, enemy)
-	enemy:applyFear(atkEvent.attacker, 3)
+---@param atkEvent AtkEvent
+---@param hitEntity Entity
+function onHitApplyFear(atkEvent, hitEntity)
+	if hitEntity.type == ENEMY then
+		hitEntity:applyFear(atkEvent.attacker, 3)
+	end
 end

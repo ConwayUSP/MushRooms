@@ -16,12 +16,14 @@ require("modules.utils.types")
 
 ---@class PuzzlePiece : Entity
 ---@field id string
+---@field kind string
 ---@field puzzleGridManager PuzzleGridManager
 ---@field solid boolean
 ---@field state string
 ---@field scale number
 ---@field animations table<string, Animation>
 ---@field spriteSheets table<string, table>
+---@field selectedBy table<any, boolean>
 
 PuzzlePiece = setmetatable({}, { __index = Entity })
 PuzzlePiece.__index = PuzzlePiece
@@ -42,6 +44,33 @@ function PuzzlePiece:init(id, pos, puzzleGridManager, hbs)
 	self.scale = 1
 	self.animations = {}
 	self.spriteSheets = {}
+	self.selectedBy = {}
+end
+
+---@param source any fonte responsável por manter a peça selecionada
+function PuzzlePiece:select(source)
+	self.selectedBy[source] = true
+	self.state = SELECTED
+end
+
+---@param source any fonte que deixou de selecionar a peça
+function PuzzlePiece:deselect(source)
+	self.selectedBy[source] = nil
+
+	if not next(self.selectedBy) then
+		self.state = IDLE
+	end
+end
+
+---@return boolean
+function PuzzlePiece:isSelected()
+	return next(self.selectedBy) ~= nil
+end
+
+---@param centerBounds PuzzleCenterBounds
+---@return boolean
+function PuzzlePiece:isCorrectlyPlaced(centerBounds)
+	return false
 end
 
 ---@param path string
