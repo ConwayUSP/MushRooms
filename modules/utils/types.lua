@@ -13,6 +13,7 @@ DESTRUCTIBLE = "destructible"
 INTERACTIVE = "interactive"
 OBSTACLE = "obstacle"
 ARTIFACT = "artifact"
+PUZZLE_PIECE = "puzzle piece"
 
 ----------- SALAS -----------
 PUZZLE_ROOM = "puzzle room"

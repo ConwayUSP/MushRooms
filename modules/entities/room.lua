@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.entities.doorglow")
 require("modules.systems.blueprint")
+require("modules.systems.puzzlegridmanager")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
 require("modules.utils.types")
@@ -46,6 +47,7 @@ walls = BiList.new()
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
+---@field puzzleGridManager? PuzzleGridManager presente apenas em salas configuradas com PuzzleGridSettings
 ---@field doorGlows DoorGlow[]
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
@@ -114,6 +116,9 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
 
 	room:addWallsAndDoors()
+	if blueprint.puzzleGridSettings then
+		PuzzleGridManager.new(room, blueprint.puzzleGridSettings)
+	end
 
 	return room
 end
@@ -152,6 +157,9 @@ function Room:update(dt)
 	-- atualiza as luzes das portas laterais
 	for _, glow in pairs(self.doorGlows) do
 		glow:update(dt)
+	end
+	if self.puzzleGridManager then
+		self.puzzleGridManager:update(dt)
 	end
 
 	self.linkManager:update(dt)

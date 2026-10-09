@@ -1,8 +1,31 @@
 ---@return Blueprint
--- sala de puzzle 1: contém nada de mais
+-- sala de puzzle 1: grid 4x4 com uma pedra em cada canto e um pino em cada lado
 function newPuzzleRoom1(rng)
 	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room", rgba8(12, 253, 255, 255))
-	insertGeneralDecorations(bp, rng)
+	-- insertGeneralDecorations(bp, rng)
+
+	local gridSize = vec(4, 4)
+	local pinHalfExtent = PuzzlePin.FRAME_DIM.width / 2
+	local horizontalPinOffset = gridSize.x * PuzzleGridManager.TILE_SIZE / 2 + 30 + pinHalfExtent
+	local verticalPinOffset = gridSize.y * PuzzleGridManager.TILE_SIZE / 2 + 30 + pinHalfExtent
+
+	bp:setPuzzleGrid({
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = {
+			{ id = "pin-up", offset = vec(0, -verticalPinOffset), pullDirection = vec(0, -1) },
+			{ id = "pin-right", offset = vec(horizontalPinOffset, 0), pullDirection = vec(1, 0) },
+			{ id = "pin-down", offset = vec(0, verticalPinOffset), pullDirection = vec(0, 1) },
+			{ id = "pin-left", offset = vec(-horizontalPinOffset, 0), pullDirection = vec(-1, 0) },
+		},
+		stones = {
+			{ id = "stone-up-left", cell = vec(1, 1), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(gridSize.x, 1), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(1, gridSize.y), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(gridSize.x, gridSize.y), direction = vec(-1, -1) },
+		},
+	})
+
 	return bp
 end
 

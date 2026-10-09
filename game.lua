@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.systems.collision")
 require("modules.systems.links")
+require("modules.systems.puzzlegridmanager")
 require("modules.entities.player")
 require("modules.entities.room")
 require("modules.utils.seeds")

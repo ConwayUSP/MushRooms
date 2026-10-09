@@ -10,7 +10,8 @@ require("modules.utils.types")
 
 local BLUEPRINTS = {}
 
-BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2 }
+-- BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2 }
+BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1 }
 BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
 BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
 BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
@@ -85,7 +86,9 @@ end
 ---@field roomName string
 ---@field color Color
 ---@field spawnpoints SpawnPoint[]
+---@field puzzleGridSettings? PuzzleGridSettings
 ---@field insert fun(self: Blueprint, spawnpoint: SpawnPoint): Blueprint
+---@field setPuzzleGrid fun(self: Blueprint, settings: PuzzleGridSettings): Blueprint
 
 Blueprint = {}
 Blueprint.__index = Blueprint
@@ -114,6 +117,13 @@ function Blueprint:insert(spawnpoint)
 		return
 	end
 	table.insert(self.spawnpoints, spawnpoint)
+	return self
+end
+
+---@param settings PuzzleGridSettings
+---@return Blueprint
+function Blueprint:setPuzzleGrid(settings)
+	self.puzzleGridSettings = settings
 	return self
 end
 

@@ -98,6 +98,17 @@ function renderRooms(camera)
 			::nextroom::
 		end
 	end
+
+	-- Os fundos específicos precisam ser desenhados somente depois dos fundos
+	-- de todas as salas, para que salas vizinhas não os sobrescrevam.
+	for i = rooms.minIndex, rooms.maxIndex do
+		for j = rooms[i].minIndex, rooms[i].maxIndex do
+			local r = rooms[i][j]
+			if r and r.puzzleGridManager then
+				r.puzzleGridManager:drawBackground(camera)
+			end
+		end
+	end
 end
 
 ----------------------------------------
@@ -130,6 +141,13 @@ function renderEntities(camera)
 	end
 
 	for _, r in activeRooms:iter() do
+		if r.puzzleGridManager then
+			for _, piece in ipairs(r.puzzleGridManager.pieces) do
+				local animation = piece.animations[piece.state]
+				local floorAnchor = animation.frameDim.height * piece.scale / 2
+				addEntityToDrawList(piece, piece.pos.y + floorAnchor)
+			end
+		end
 		-- adiciona destrutíveis
 		for _, d in pairs(r.destructibles) do
 			addEntityToDrawList(d, d.pos.y + getAnchor(d, FLOOR))
