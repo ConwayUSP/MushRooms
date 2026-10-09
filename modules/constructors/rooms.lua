@@ -1,23 +1,57 @@
+local PIN_GRID_MARGIN = 30
+local pinDirectionNames = {
+	["0;-1"] = "up",
+	["1;0"] = "right",
+	["0;1"] = "down",
+	["-1;0"] = "left",
+}
+
+---@param size Vec dimensões do grid em tiles
+---@return PuzzlePinSettings[]
+-- cria um pino alinhado a cada tile dos quatro lados do grid
+local function fullPerimeterWithPins(size)
+	local pins = {}
+	local pinHalfExtent = PuzzlePin.FRAME_DIM.width / 2
+
+	for i = 0, 3 do
+		local x = math.floor(math.sin(math.pi / 2 * i) + 0.5)
+		local y = math.floor(-math.cos(math.pi / 2 * i) + 0.5)
+
+		local direction = vec(x, y)
+		local directionName = pinDirectionNames[x .. ";" .. y]
+		
+		local isHorizontalSide = x == 0
+		local pinCount = isHorizontalSide and size.x or size.y
+		local gridHalfExtent = (isHorizontalSide and size.y or size.x) * PuzzleGridManager.TILE_SIZE / 2
+		local distanceFromCenter = gridHalfExtent + PIN_GRID_MARGIN + pinHalfExtent
+		local sideCenter = scaleVec(direction, distanceFromCenter)
+		local tangent = vec(-y, x)
+
+		for k = 1, pinCount do
+			local distanceAlongSide = (k - (pinCount + 1) / 2) * PuzzleGridManager.TILE_SIZE
+			table.insert(pins, {
+				id = "pin-" .. directionName .. "-" .. k,
+				offset = addVec(sideCenter, scaleVec(tangent, distanceAlongSide)),
+				pullDirection = vec(x, y),
+			})
+		end
+	end
+
+	return pins
+end
+
 ---@return Blueprint
--- sala de puzzle 1: grid 4x4 com uma pedra em cada canto e um pino em cada lado
+-- sala de puzzle 1: grid 4x4 com uma pedra em cada canto e pinos em todo o perímetro
 function newPuzzleRoom1(rng)
 	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room", rgba8(12, 253, 255, 255))
 	-- insertGeneralDecorations(bp, rng)
 
 	local gridSize = vec(4, 4)
-	local pinHalfExtent = PuzzlePin.FRAME_DIM.width / 2
-	local horizontalPinOffset = gridSize.x * PuzzleGridManager.TILE_SIZE / 2 + 30 + pinHalfExtent
-	local verticalPinOffset = gridSize.y * PuzzleGridManager.TILE_SIZE / 2 + 30 + pinHalfExtent
 
 	bp:setPuzzleGrid({
 		size = gridSize,
 		centerSize = vec(2, 2),
-		pins = {
-			{ id = "pin-up", offset = vec(0, -verticalPinOffset), pullDirection = vec(0, -1) },
-			{ id = "pin-right", offset = vec(horizontalPinOffset, 0), pullDirection = vec(1, 0) },
-			{ id = "pin-down", offset = vec(0, verticalPinOffset), pullDirection = vec(0, 1) },
-			{ id = "pin-left", offset = vec(-horizontalPinOffset, 0), pullDirection = vec(-1, 0) },
-		},
+		pins = fullPerimeterWithPins(gridSize),
 		stones = {
 			{ id = "stone-up-left", cell = vec(1, 1), direction = vec(1, 1) },
 			{ id = "stone-up-right", cell = vec(gridSize.x, 1), direction = vec(-1, 1) },

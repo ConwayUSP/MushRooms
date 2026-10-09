@@ -47,6 +47,27 @@ function newWalkingParticles()
 end
 
 ---@return ParticleSystem
+-- variante independente da poeira de caminhada para o movimento das pedras do puzzle
+function newPuzzleStoneMovingParticles()
+	local particleImg = assetManager:getImage(pngPathFormat({ "assets", "sprites", "circle" }))
+	local particles = love.graphics.newParticleSystem(particleImg, 250)
+	particles:setPosition(0, 0)
+	particles:setParticleLifetime(0.3, 0.6)
+	particles:setEmissionRate(6)
+	particles:setSizes(0.05, 0.15)
+	particles:setSizeVariation(0.1)
+	particles:setSpin(math.pi)
+	particles:setSpinVariation(0.5)
+	particles:setColors(1.0, 1.0, 1.0, 0.5, 0.8, 0.8, 0.8, 0.0)
+	particles:setLinearAcceleration(0, -100)
+	particles:setSpread(math.pi / 4)
+	particles:setEmissionArea("normal", 10, 2)
+	particles:setSpeed(70)
+	particles:stop()
+	return particles
+end
+
+---@return ParticleSystem
 function newBreakingParticles()
 	local particleImg = assetManager:getImage("assets/sprites/circle.png")
 	local ps = love.graphics.newParticleSystem(particleImg, 12)

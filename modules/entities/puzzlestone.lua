@@ -93,6 +93,18 @@ function PuzzleStone:moveToCell(targetCell, targetPos, duration)
 	self.vel = vec(0, 0)
 	self.acc = vec(0, 0)
 
+	local moveDirection = normalize(subVec(targetPos, self.pos))
+	local particleOffset = scaleVec(moveDirection, -PuzzleGridManager.TILE_SIZE / 2)
+	local particle = globalVFXManager:playParticle(
+		PARTICLE_PUZZLE_STONE_MOVING,
+		self,
+		particleOffset,
+		true
+	)
+	if particle then
+		particle:setDirection(math.atan2(-moveDirection.y, -moveDirection.x))
+	end
+
 	return true
 end
 
@@ -113,6 +125,7 @@ function PuzzleStone:update(dt)
 		self.pos = vec(self.moveTarget.x, self.moveTarget.y)
 		self.cell = vec(self.targetCell.x, self.targetCell.y)
 		self.moving = false
+		globalVFXManager:stopParticle(PARTICLE_PUZZLE_STONE_MOVING, self)
 		self.puzzleGridManager:onStoneMoveFinished(self, self.moveFromCell)
 		self.moveStart = nil
 		self.moveTarget = nil

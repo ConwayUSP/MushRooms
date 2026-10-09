@@ -122,6 +122,7 @@ PARTICLE_KATANA = "katana particle"
 PARTICLE_EXPLOSION = "explosion particle"
 PARTICLE_BLACK_HOLE = "black hole particle"
 PARTICLE_FLOWER_SHOT = "flower shot particle"
+PARTICLE_PUZZLE_STONE_MOVING = "puzzle stone moving particle"
 
 ---------- ACTIONS ----------
 ACT_ML = "action move left"
