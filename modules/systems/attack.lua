@@ -236,7 +236,7 @@ end
 ---@field animDir rad
 ---@field age number
 ---@field active boolean
----@field targetsDamaged any[]
+---@field targetsHit table<Entity, { timer: number? }>
 ---@field state string
 ---@field spriteSheets table<string, table>
 ---@field animations table<string, Animation>
@@ -300,7 +300,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.age = 0 -- tempo desde a criação do ataque
 	atkEvent.active = true -- se o ataque atualmente pode dar dano
 	atkEvent.breakingFinished = false
-	atkEvent.targetsDamaged = {} -- lista de alvos feridos pelo ataque
+	atkEvent.targetsHit = {} -- alvos já atingidos, com cooldown opcional para permitir novos acertos
 	atkEvent.spriteSheets = {}
 	atkEvent.animations = {}
 
@@ -330,12 +330,34 @@ function AttackEvent:baseUpdate(dt)
 		self.trajectoryFunc(self, dt)
 	end
 
-	for key, e in pairs(self.targetsDamaged) do
-		e.timer = e.timer - dt
-		if e.timer <= 0 then
-			self.targetsDamaged[key] = nil
+	for target, hit in pairs(self.targetsHit) do
+		if hit.timer then
+			hit.timer = hit.timer - dt
+			if hit.timer <= 0 then
+				self.targetsHit[target] = nil
+			end
 		end
 	end
+end
+
+---@param target Entity
+---@return boolean
+-- verifica se este ataque ainda considera o alvo como atingido
+function AttackEvent:hasHit(target)
+	return self.targetsHit[target] ~= nil
+end
+
+---@param target Entity
+---@param cooldown? number tempo até o alvo poder ser atingido novamente; sem valor, o registro é permanente
+---@return boolean registered
+-- registra um alvo atingido e informa se este é um novo acerto válido
+function AttackEvent:registerHit(target, cooldown)
+	if self:hasHit(target) then
+		return false
+	end
+
+	self.targetsHit[target] = { timer = cooldown }
+	return true
 end
 
 function AttackEvent:reflect(newOwner)

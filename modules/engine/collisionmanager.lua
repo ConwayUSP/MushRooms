@@ -15,7 +15,6 @@ require("modules.utils.vec")
 ---@field solids table<Entity, Hitbox[]>
 ---@field roomsDirty boolean
 ---@field activeRoomsCopy Set<Room>
----@field puzzlePiecesHit table<AtkEvent, table<PuzzlePiece, boolean>>
 
 CollisionManager = {}
 CollisionManager.__index = CollisionManager
@@ -29,7 +28,6 @@ function CollisionManager.init()
 	cm.solids = {} -- tabela que liga entidades com seus hitboxes sólidos
 	cm.solidList = {} -- lista com índices numéricos de hitboxes sólidas
 	cm.solidIndices = {} -- mapa de entidade para índice da lista `solids`
-	cm.puzzlePiecesHit = {} -- peças de puzzle já processadas por cada ataque
 
 	-- otimização: manter uma cópia das salas ativas
 	-- para minimizar o número de colisões checadas
@@ -254,10 +252,6 @@ end
 ---@param entity Entity | Room
 -- remove a hitbox da entidade `entity` das listas do `CollisionManager`
 function CollisionManager:unregister(entity)
-	if entity.type == ATTACK_EVENT then
-		self.puzzlePiecesHit[entity] = nil
-	end
-
 	local data = self.registry[entityKey(entity)][entity]
 	if not data then
 		return
@@ -642,11 +636,10 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 	if not attack.active then
 		return
 	end
-	if attack.targetsDamaged[enemy] then
+	if not attack:registerHit(enemy, attack.tick) then
 		return
 	end
 
-	attack.targetsDamaged[enemy] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if enemy.invulnerableTimer > 0 then
@@ -688,11 +681,10 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 		return
 	end
 
-	if attack.targetsDamaged[player] then
+	if not attack:registerHit(player, attack.tick) then
 		return
 	end
 
-	attack.targetsDamaged[player] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if not player:takeDamage(attack.dmg) then
@@ -772,17 +764,10 @@ end
 ---@param piece PuzzlePiece
 -- trata separadamente a colisão entre projéteis e peças de puzzle
 function CollisionManager:onAttackPuzzlePiece(attack, piece)
-	local piecesHit = self.puzzlePiecesHit[attack]
-	if not piecesHit then
-		piecesHit = {}
-		self.puzzlePiecesHit[attack] = piecesHit
-	end
-
-	if not attack.active or piecesHit[piece] then
+	if not attack.active or not attack:registerHit(piece) then
 		return
 	end
 
-	piecesHit[piece] = true
 	attack:reduceBounces()
 	attack:onHit(piece)
 end
