@@ -113,17 +113,9 @@ end
 
 ---@param atkEvent AtkEvent
 ---@param hitEntity Entity
--- função de onHit para o ataque do estilingue, que cria o tipo de link
--- correspondente à entidade atingida
+-- função de onHit para o ataque do estilingue, que conecta o inimigo atingido
+-- ao inimigo mais próximo
 function onHitLinkTwoEnemies(atkEvent, hitEntity)
-	if hitEntity.type == PUZZLE_PIECE then
-		local manager = hitEntity.puzzleGridManager
-		if manager then
-			manager:onPieceHit(atkEvent.attacker, hitEntity)
-		end
-		return
-	end
-
 	if hitEntity.type ~= ENEMY then
 		return
 	end

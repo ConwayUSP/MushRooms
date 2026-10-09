@@ -67,6 +67,14 @@ function PuzzlePiece:isSelected()
 	return next(self.selectedBy) ~= nil
 end
 
+---@param attack AtkEvent
+-- encaminha qualquer ataque recebido para o puzzle responsável pela peça
+function PuzzlePiece:onAttackHit(attack)
+	if self.puzzleGridManager then
+		self.puzzleGridManager:onPieceHit(attack.attacker, self)
+	end
+end
+
 ---@param centerBounds PuzzleCenterBounds
 ---@return boolean
 function PuzzlePiece:isCorrectlyPlaced(centerBounds)

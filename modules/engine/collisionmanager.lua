@@ -450,6 +450,25 @@ function CollisionManager:handleCollisions()
 			end
 		end
 	end
+
+	-------- ATAQUE / PEÇA DE PUZZLE --------
+	for piece, pieceHb in pairs(registry[PUZZLE_PIECE]) do
+		for attack, attackHb in pairs(registry[PLAYER_ATTACK]) do
+			local hit = checkColision(attackHb.default, attack, pieceHb.default, piece)
+
+			if hit then
+				self:onAttackPuzzlePiece(attack, piece)
+			end
+		end
+
+		for attack, attackHb in pairs(registry[ENEMY_ATTACK]) do
+			local hit = checkColision(attackHb.default, attack, pieceHb.default, piece)
+
+			if hit then
+				self:onAttackPuzzlePiece(attack, piece)
+			end
+		end
+	end
 end
 
 function CollisionManager:handleSolidCollisions(entityA, entityB)
@@ -769,5 +788,6 @@ function CollisionManager:onAttackPuzzlePiece(attack, piece)
 	end
 
 	attack:reduceBounces()
+	piece:onAttackHit(attack)
 	attack:onHit(piece)
 end

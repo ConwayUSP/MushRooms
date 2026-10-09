@@ -29,7 +29,7 @@ require("modules.utils.vec")
 ---@field piecesById table<string, PuzzlePiece>
 ---@field pins PuzzlePin[]
 ---@field stones PuzzleStone[]
----@field pendingPinsByPlayer table<Player, PendingPuzzlePin>
+---@field pendingPinsByAttacker table<Entity, PendingPuzzlePin>
 
 ---@class PendingPuzzlePin
 ---@field pin PuzzlePin
@@ -69,7 +69,7 @@ function PuzzleGridManager.new(room, settings)
 	manager.piecesById = {}
 	manager.pins = {}
 	manager.stones = {}
-	manager.pendingPinsByPlayer = {}
+	manager.pendingPinsByAttacker = {}
 	manager.completed = false
 
 	for y = 1, manager.size.y do
@@ -122,10 +122,10 @@ function PuzzleGridManager:addStone(settings)
 	return stone
 end
 
----@param player Player
+---@param attacker Entity
 ---@param pin PuzzlePin
-function PuzzleGridManager:selectPendingPin(player, pin)
-	local current = self.pendingPinsByPlayer[player]
+function PuzzleGridManager:selectPendingPin(attacker, pin)
+	local current = self.pendingPinsByAttacker[attacker]
 
 	if current then
 		if current.pin == pin then
@@ -133,24 +133,24 @@ function PuzzleGridManager:selectPendingPin(player, pin)
 			return
 		end
 
-		current.pin:deselect(player)
+		current.pin:deselect(attacker)
 	end
 
 	local timer = Timer.new(self.PENDING_LINK_DURATION, true)
 	timer:start()
-	self.pendingPinsByPlayer[player] = { pin = pin, timer = timer }
-	pin:select(player)
+	self.pendingPinsByAttacker[attacker] = { pin = pin, timer = timer }
+	pin:select(attacker)
 end
 
----@param player Player
-function PuzzleGridManager:clearPendingPin(player)
-	local pending = self.pendingPinsByPlayer[player]
+---@param attacker Entity
+function PuzzleGridManager:clearPendingPin(attacker)
+	local pending = self.pendingPinsByAttacker[attacker]
 	if not pending then
 		return
 	end
 
-	pending.pin:deselect(player)
-	self.pendingPinsByPlayer[player] = nil
+	pending.pin:deselect(attacker)
+	self.pendingPinsByAttacker[attacker] = nil
 end
 
 ---@param stone PuzzleStone
@@ -240,11 +240,11 @@ function PuzzleGridManager:checkCompletion()
 	end
 end
 
----@param player Player
+---@param attacker Entity
 ---@param piece PuzzlePiece
-function PuzzleGridManager:onPieceHit(player, piece)
+function PuzzleGridManager:onPieceHit(attacker, piece)
 	if piece.kind == PuzzlePin.KIND then
-		self:selectPendingPin(player, piece)
+		self:selectPendingPin(attacker, piece)
 		return
 	end
 
@@ -252,7 +252,7 @@ function PuzzleGridManager:onPieceHit(player, piece)
 		return
 	end
 
-	local pending = self.pendingPinsByPlayer[player]
+	local pending = self.pendingPinsByAttacker[attacker]
 	if not pending then
 		return
 	end
@@ -262,7 +262,7 @@ function PuzzleGridManager:onPieceHit(player, piece)
 		local activeLink = self.room.linkManager:addLink(link)
 		if activeLink then
 			piece.moveLink = activeLink
-			self:clearPendingPin(player)
+			self:clearPendingPin(attacker)
 		end
 	end
 end
@@ -329,16 +329,16 @@ function PuzzleGridManager:update(dt)
 		piece:update(dt)
 	end
 
-	local expiredPlayers = {}
-	for player, pending in pairs(self.pendingPinsByPlayer) do
+	local expiredAttackers = {}
+	for attacker, pending in pairs(self.pendingPinsByAttacker) do
 		pending.timer:update(dt)
 		if not pending.timer.active then
-			table.insert(expiredPlayers, player)
+			table.insert(expiredAttackers, attacker)
 		end
 	end
 
-	for _, player in ipairs(expiredPlayers) do
-		self:clearPendingPin(player)
+	for _, attacker in ipairs(expiredAttackers) do
+		self:clearPendingPin(attacker)
 	end
 end
 
