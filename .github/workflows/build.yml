@@ -1,0 +1,95 @@
+name: Build game
+
+run-name: Build ${{ github.ref_name }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+# To publish automatically from tags in the future, add:
+#   push:
+#     tags:
+#       - "v*"
+
+permissions:
+  contents: read
+
+env:
+  GAME_NAME: MushRooms
+  LOVE_VERSION: "11.5"
+  LOVE_WIN64_SHA256: BA6E56BE2685E53C817749C4A5007F51137136FE5A3AB64920508BABC2E74369
+  LOVE_WIN32_SHA256: 910C88CEBC6A3B91F9104BE505F5FFFAC0C91C95B072394AA67EB3CC63AA0A3B
+
+jobs:
+  build:
+    name: Build distributable packages
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download and verify official LÖVE runtimes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path ".build" | Out-Null
+
+          $expectedHashes = @{
+            win64 = $env:LOVE_WIN64_SHA256
+            win32 = $env:LOVE_WIN32_SHA256
+          }
+
+          foreach ($architecture in @("win64", "win32")) {
+            $archive = ".build/love-$architecture.zip"
+            $url = "https://github.com/love2d/love/releases/download/$env:LOVE_VERSION/love-$env:LOVE_VERSION-$architecture.zip"
+
+            Write-Host "Downloading $url"
+            Invoke-WebRequest -Uri $url -OutFile $archive
+
+            $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash
+            if ($actualHash -ne $expectedHashes[$architecture]) {
+              throw "SHA-256 mismatch for $architecture LÖVE runtime."
+            }
+
+            Expand-Archive -LiteralPath $archive -DestinationPath ".build" -Force
+          }
+
+      - name: Build packages
+        shell: pwsh
+        run: |
+          python tools/compiler.py `
+            --name "$env:GAME_NAME" `
+            --game-dir "." `
+            --output-dir "dist" `
+            --love-version "$env:LOVE_VERSION" `
+            --love64-dir ".build/love-$env:LOVE_VERSION-win64" `
+            --love32-dir ".build/love-$env:LOVE_VERSION-win32"
+
+      - name: Upload Windows 64-bit package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_NAME }}-win64
+          path: dist/${{ env.GAME_NAME }}-win64.zip
+          if-no-files-found: error
+
+      - name: Upload Windows 32-bit package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_NAME }}-win32
+          path: dist/${{ env.GAME_NAME }}-win32.zip
+          if-no-files-found: error
+
+      - name: Upload Unix package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_NAME }}-unix
+          path: dist/${{ env.GAME_NAME }}-unix.zip
+          if-no-files-found: error

@@ -122,10 +122,8 @@ function Enemy:addAnimations(idleSettings, walkingSettings, dyingSettings, attac
 			local fullName = prefix .. " " .. dir
 
 			path = pngPathFormat({ "assets", "animations", "enemies", self.name, fullName })
-			local f = io.open(path, "r")
 
-			if f then
-				f:close()
+			if love.filesystem.getInfo(path, "file") then
 				addAnimation(self, path, fullName, settings)
 				self:initAttackAnim(self.animations[fullName])
 			else
