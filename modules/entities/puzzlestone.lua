@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.entities.puzzlepiece")
+require("modules.utils.easing")
 require("modules.utils.vec")
 
 ----------------------------------------
@@ -31,7 +32,8 @@ PuzzleStone.PIECE_NAMES = {
 	["-1,1"] = "Piece Down Left",
 	["1,1"] = "Piece Down Right",
 }
-PuzzleStone.FRAME_DIM = { width = 149, height = 149 }
+PuzzleStone.FRAME_DIM = { width = 36, height = 36 }
+PuzzleStone.MOVE_EASING = Easing.inOutQuad
 
 ---@class PuzzleStoneSettings
 ---@field id string identificador único dentro do puzzle
@@ -95,12 +97,7 @@ function PuzzleStone:moveToCell(targetCell, targetPos, duration)
 
 	local moveDirection = normalize(subVec(targetPos, self.pos))
 	local particleOffset = scaleVec(moveDirection, -PuzzleGridManager.TILE_SIZE / 2)
-	local particle = globalVFXManager:playParticle(
-		PARTICLE_PUZZLE_STONE_MOVING,
-		self,
-		particleOffset,
-		true
-	)
+	local particle = globalVFXManager:playParticle(PARTICLE_PUZZLE_STONE_MOVING, self, particleOffset, true)
 	if particle then
 		particle:setDirection(math.atan2(-moveDirection.y, -moveDirection.x))
 	end
@@ -118,8 +115,9 @@ function PuzzleStone:update(dt)
 
 	self.moveElapsed = math.min(self.moveElapsed + dt, self.moveDuration)
 	local progress = self.moveElapsed / self.moveDuration
-	self.pos.x = lerp(self.moveStart.x, self.moveTarget.x, progress)
-	self.pos.y = lerp(self.moveStart.y, self.moveTarget.y, progress)
+	local easedProgress = self.MOVE_EASING(progress)
+	self.pos.x = lerp(self.moveStart.x, self.moveTarget.x, easedProgress)
+	self.pos.y = lerp(self.moveStart.y, self.moveTarget.y, easedProgress)
 
 	if progress >= 1 then
 		self.pos = vec(self.moveTarget.x, self.moveTarget.y)

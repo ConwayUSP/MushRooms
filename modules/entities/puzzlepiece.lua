@@ -41,7 +41,7 @@ function PuzzlePiece:init(id, pos, puzzleGridManager, hbs)
 	self.puzzleGridManager = puzzleGridManager
 	self.solid = #hbs.solids > 0
 	self.state = IDLE
-	self.scale = 1
+	self.scale = 3
 	self.animations = {}
 	self.spriteSheets = {}
 	self.selectedBy = {}

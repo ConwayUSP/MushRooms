@@ -43,10 +43,10 @@ require("modules.utils.vec")
 
 PuzzleGridManager = {}
 PuzzleGridManager.__index = PuzzleGridManager
-PuzzleGridManager.TILE_SIZE = 150
+PuzzleGridManager.TILE_SIZE = 108
 PuzzleGridManager.PENDING_LINK_DURATION = 5
 PuzzleGridManager.GRID_LINK_DURATION = 5
-PuzzleGridManager.STONE_MOVE_DURATION = 1.0
+PuzzleGridManager.STONE_MOVE_DURATION = 0.8
 PuzzleGridManager.GRID_COLOR = { 19 / 255, 15 / 255, 63 / 255, 1 }
 PuzzleGridManager.CENTER_COLOR = { 14 / 255, 11 / 255, 47 / 255, 1 }
 PuzzleGridManager.BORDER_COLOR = { 67 / 255, 68 / 255, 155 / 255, 1 }
@@ -349,7 +349,7 @@ function PuzzleGridManager:drawBackground(camera)
 	local gridHeight = self.size.y * self.TILE_SIZE
 	local centerWidth = self.centerSize.x * self.TILE_SIZE
 	local centerHeight = self.centerSize.y * self.TILE_SIZE
-	local padding = 15
+	local padding = 10
 
 	love.graphics.setColor(self.BORDER_COLOR[1], self.BORDER_COLOR[2], self.BORDER_COLOR[3], self.BORDER_COLOR[4])
 	love.graphics.rectangle("fill", viewX - gridWidth / 2 - padding, viewY - gridHeight / 2 - padding, gridWidth + 2*padding, gridHeight + 2*padding)

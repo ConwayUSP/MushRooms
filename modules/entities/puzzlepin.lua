@@ -16,7 +16,7 @@ PuzzlePin = setmetatable({}, { __index = PuzzlePiece })
 PuzzlePin.__index = PuzzlePin
 PuzzlePin.KIND = "pin"
 PuzzlePin.SPRITE_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Pin" })
-PuzzlePin.FRAME_DIM = { width = 49, height = 49 }
+PuzzlePin.FRAME_DIM = { width = 12, height = 12 }
 
 ---@param state State
 ---@return string
@@ -37,8 +37,8 @@ function PuzzlePin.new(settings, puzzleGridManager)
 	local pin = setmetatable({}, PuzzlePin)
 	local offset = vec(settings.offset.x, settings.offset.y)
 	local pos = addVec(puzzleGridManager.center, offset)
-	local defaultHb = hitbox(Circle.new(PuzzlePin.FRAME_DIM.width / 2))
-	local solidHb = hitbox(Circle.new(PuzzlePin.FRAME_DIM.width / 2))
+	local defaultHb = hitbox(Circle.new(PuzzlePin.FRAME_DIM.width))
+	local solidHb = hitbox(Circle.new(PuzzlePin.FRAME_DIM.width))
 	local hbs = hitboxes({ defaultHb }, { solidHb }, {})
 
 	PuzzlePiece.init(pin, settings.id, pos, puzzleGridManager, hbs)
