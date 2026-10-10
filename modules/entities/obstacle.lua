@@ -22,9 +22,10 @@ Obstacle.type = OBSTACLE
 ---@param room Room
 ---@param canMirror? boolean
 ---@param isBg? boolean
+---@param rng? RNG
 ---@return Obstacle
 -- cria um obstáculo (como paredes ou decorações)
-function Obstacle.new(name, hbs, spawnPos, room, canMirror, isBg)
+function Obstacle.new(name, hbs, spawnPos, room, canMirror, isBg, rng)
 	---@type Obstacle
 	local ob = setmetatable({}, Obstacle) ---@diagnostic disable-line
 	local entityPhysics = physicsSettings(math.huge, 0, 1, nil, nil, nil, 0)
@@ -33,7 +34,11 @@ function Obstacle.new(name, hbs, spawnPos, room, canMirror, isBg)
 	ob.animations = {}
 	ob.spriteSheets = {}
 	ob.transparent = false
-	ob.mirrored = canMirror and math.random() < 0.5
+	ob.mirrored = false
+	if canMirror then
+		local mirrorRoll = rng and rng:random() or math.random()
+		ob.mirrored = mirrorRoll < 0.5
+	end
 	ob.isBg = isBg or false
 
 	if name:sub(1, 4) ~= "wall" then

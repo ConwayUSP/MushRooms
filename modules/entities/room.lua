@@ -345,11 +345,11 @@ end
 ---@param rng RNG
 -- geração dos conteúdos de uma sala
 function Room:populate(spawnpoints, rng)
-	for _, sp in pairs(spawnpoints) do
+	for _, sp in ipairs(spawnpoints) do
 		local n = rng:random()
 		for _, sd in ipairs(sp.spawns) do
 			if n < sd.chance then
-				self:spawn(sd.entity, sp.pos)
+				self:spawn(sd.entity, sp.pos, rng)
 				goto nextspawnpoint
 			end
 		end
@@ -359,11 +359,12 @@ end
 
 ---@param entity any
 ---@param pos Vec
+---@param rng? RNG
 -- instancia uma entidade e a insere na lista correspondente da sala
-function Room:spawn(entity, pos)
+function Room:spawn(entity, pos, rng)
 	local constructor = CONSTRUCTORS[entity.type][entity.name]
 	local real_pos = addVec(pos, self.pos)
-	constructor(real_pos, self) -- instancia a entidade na sala
+	constructor(real_pos, self, rng) -- instancia a entidade na sala
 end
 
 -- coloca paredes e portas ao redor da sala
