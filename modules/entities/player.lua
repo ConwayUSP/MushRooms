@@ -226,7 +226,7 @@ function Player:move(dt)
 		if endSpecialMove then
 			self.specialMovement = nil
 		end
-		goto applyphysics
+	--	goto applyphysics
 	end
 
 	if self.controls.gamepad then
@@ -264,9 +264,10 @@ function Player:move(dt)
 
 	applyForce(self, walkForce)
 
-	::applyphysics::
+	--::applyphysics::
 
 	applyPhysics(self, dt)
+
 
 	-- atualizando objetos cujo movimento depende do Player
 	self:updateBuildingPos()

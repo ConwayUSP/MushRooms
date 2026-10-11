@@ -124,12 +124,30 @@ function spiralMovement(radius, angularSpeed)
 	local r = radius / 4
 
 	return function(entity, dt)
+		local k = 20 -- intensidade de steering (applySteering)
+		local f = entity.friction
+		local F = k + f
+		local decayP = f > 0 and math.exp(-f * dt) or 1 -- decaimento só do atrito
+		local decayF = math.exp(-F * dt) -- decaimento atrito + steering
+		local gain = f > 0 and (1 - decayP) / f or dt
+
+		local dir = entity.direction or 0
+		local V0 = polarToVec(angle + dir, angularSpeed * r)
+		local Vend = polarToVec(angle + angularSpeed * dt + dir, angularSpeed * (r + radius * 2 * dt))
+
+		-- W = Vend - decayF * V0;  C = k / (F + j*w) * W  (w = angularSpeed)
+		local wx = Vend.x - decayF * V0.x
+		local wy = Vend.y - decayF * V0.y
+		local cs = k / (F * F + angularSpeed * angularSpeed)
+		local cx = cs * (F * wx + angularSpeed * wy)
+		local cy = cs * (F * wy - angularSpeed * wx)
+
+		local ax = (entity.vel.x * (decayF - decayP) + cx) / gain
+		local ay = (entity.vel.y * (decayF - decayP) + cy) / gain
+		applyForce(entity, vec(ax * entity.mass, ay * entity.mass))
+
 		angle = angle + angularSpeed * dt
 		r = r + radius * 2 * dt
-
-		local desiredVel = polarToVec(angle + (entity.direction or 0), angularSpeed * r)
-
-		applySteering(entity, desiredVel, 20)
 	end
 end
 
@@ -196,11 +214,15 @@ function avoidTargetMovement(safeDistance, duration, baseCooldown, angleVar, eas
 		if escapeDir then
 			timer = timer + dt
 			local t = math.min(timer / duration, 1)
-			local intensity = easingFunc(1 - t)
+			-- intensidade amostrada no centro do frame (erro O(dt²) em vez
+			-- de O(dt)), para a fuga não depender do FPS
+			local tMid = math.min((timer - dt / 2) / duration, 1)
+			local intensity = easingFunc(1 - tMid)
 			-- força calculada para ser proporcional à velocidade da entidade
 			local forceMag = entity.speed * entity.friction * entity.mass * 8 * intensity
 			applyForce(entity, scaleVec(escapeDir, forceMag))
 
+			-- a fronteira de fase usa o tempo cheio
 			if t >= 1 then
 				escapeDir = nil
 				cooldown = baseCooldown + math.random()
@@ -215,13 +237,13 @@ end
 ---@param angleVariance? rad
 ---@param forceFactor? number
 ---@return MovementFunc
-function dashToTargetMovement(duration, baseCooldown, easingFunc, angleVariance, forceFactor)
+function dashToTargetMovement(duration, baseCooldown, easingFunc, angleVariance, cooldownVariance)
 	local angleVar = angleVariance or 0
 	local timer = 0
 	local cooldown = baseCooldown
 	local dur = duration or 1.0
 	local dashDir = nil
-	local force = forceFactor or 1
+	local cooldownVar = cooldownVariance or 0
 
 	return function(entity, dt)
 		if cooldown > 0 then
@@ -240,14 +262,15 @@ function dashToTargetMovement(duration, baseCooldown, easingFunc, angleVariance,
 			timer = timer + dt
 			-- o easing controla o multiplicador da força
 			local t = math.min(timer / dur, 1)
-			local intensity = easingFunc(1 - t) * force
-			local forceMag = entity.speed * entity.friction * entity.mass * 10 * intensity
+			local tMid = math.min((timer - dt / 2) / dur, 1)
+			local intensity = easingFunc(1 - tMid)
+			local forceMag = entity.speed * entity.mass * 10 * intensity
 
 			applyForce(entity, scaleVec(dashDir, forceMag))
 
 			if t >= 1 then
 				dashDir = nil
-				cooldown = baseCooldown + math.random()
+				cooldown = baseCooldown + math.random(-cooldownVar, cooldownVar)
 			end
 		end
 	end
@@ -274,14 +297,18 @@ function jumpToTargetMovement(jumpDuration, restDuration, jumpForce, easingFunc,
 		if isJumping then
 			-- fase do pulo
 			local t = math.min(timer / jumpDuration, 1)
-			local intensity = easingFunc(1 - t)
+			-- a intensidade é amostrada no CENTRO do frame (timer - dt/2):
+			-- amostrar na ponta do frame tem erro O(dt) e faz a distância do
+			-- pulo variar com a taxa de quadros; no centro o erro é O(dt²)
+			local tMid = math.min((timer - dt / 2) / jumpDuration, 1)
+			local intensity = easingFunc(1 - tMid)
 			local forceMag = entity.speed * entity.friction * entity.mass * jumpForce * intensity
 
 			if jumpDir then
 				applyForce(entity, scaleVec(jumpDir, forceMag))
 			end
 
-			-- verifica se o pulo acabou
+			-- verifica se o pulo acabou (fronteira de fase usa o tempo cheio)
 			if t >= 1 then
 				isJumping = false
 				timer = 0
@@ -356,19 +383,24 @@ end
 
 ---@param direction Vec
 ---@param duration number
----@param power number]
+---@param power number
 ---@return boolean
--- função de movimento em dash numa direção específica
+-- função de movimento em dash numa direção específica.
 -- retorna `true` quando o dash terminar
 function dashToDirection(direction, duration, power)
+	local dir = normalize(direction)
 	local dur = duration
-	local force = scaleVec(normalize(direction), power)
 	return function(entity, dt)
-		dur = dur - dt
 		if dur <= 0 then
 			return true
 		end
-		applyImpulse(entity, force)
+		-- o último frame do dash avança só o tempo restante, para que a
+		-- distância total seja exatamente power * duration em qualquer FPS
+		local moveDt = math.min(dt, dur)
+		dur = dur - dt
+		local step = scaleVec(dir, power * moveDt)
+		setPos(entity, addVec(entity.pos, step))
+		entity.vel = step
 		return false
 	end
 end

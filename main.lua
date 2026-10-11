@@ -77,8 +77,8 @@ function love.keypressed(key, scancode, isrepeat)
 
 	if _roomCondition() then
 		_roomDebugHandler(key)
-	elseif _spawnDropCondition() then
-		_spawnDropDebugHandler(key)
+	--elseif _spawnDropCondition() then
+	--	_spawnDropDebugHandler(key)
 	elseif _spawnBlessingCondition() then
 		_spawnBlessingDebugHandler(key)
 	else

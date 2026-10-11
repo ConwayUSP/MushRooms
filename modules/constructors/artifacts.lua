@@ -32,12 +32,12 @@ function newRainbowDash()
 		if not aim or self.owner.state == DEFENDING then
 			return
 		else
-			local dur = 0.175
-			local dashMove = dashToDirection(aim, dur, 1850)
+			local dur = 0.2
+			local dashMove = dashToDirection(aim, dur, 2000)
 			self.owner.specialMovement = dashMove
 			self.owner:setInvulnerable(dur)
 		end 
 	end
-	local dash = Artifact.new(RAINBOW_DASH.name, RAINBOW_DASH.description, 2, onUse)
+	local dash = Artifact.new(RAINBOW_DASH.name, RAINBOW_DASH.description, 1.5, onUse)
 	return dash
 end

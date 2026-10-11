@@ -14,10 +14,24 @@ end
 -- atrito, a aceleração e a velocidade inicial
 function applyPhysics(entity, dt)
 	local friction = nullVec(entity.acc) and entity.friction * 5 or entity.friction
-	local frictionMod = math.max(0, 1 - friction * dt)
-	entity.vel = scaleVec(entity.vel, frictionMod)
-	entity.vel = addVec(entity.vel, scaleVec(entity.acc, dt))
-	local nextPos = addVec(entity.pos, scaleVec(entity.vel, dt))
+	local vx, vy = entity.vel.x, entity.vel.y
+	local ax, ay = entity.acc.x, entity.acc.y
+	local dx, dy
+
+	if friction > 0 then
+		local decay = math.exp(-friction * dt)
+		local gain = (1 - decay) / friction
+		local mean = (dt - gain) / friction
+		dx = vx * gain + ax * mean
+		dy = vy * gain + ay * mean
+		entity.vel = vec(vx * decay + ax * gain, vy * decay + ay * gain)
+	else
+		dx = vx * dt + ax * dt * dt / 2
+		dy = vy * dt + ay * dt * dt / 2
+		entity.vel = vec(vx + ax * dt, vy + ay * dt)
+	end
+
+	local nextPos = vec(entity.pos.x + dx, entity.pos.y + dy)
 
 	setPos(entity, nextPos)
 

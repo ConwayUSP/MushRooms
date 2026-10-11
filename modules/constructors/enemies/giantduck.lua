@@ -7,7 +7,7 @@
 ---@return Enemy
 -- cria um inimigo do tipo Pato Aranha BOSS
 function newSpiderDuckBoss(spawnPos, room)
-	local movementFunc = dashToTargetMovement(1.2, 1.5, Easing.outQuad, math.rad(10))
+	local movementFunc = dashToTargetMovement(1.2, 1.5, Easing.outQuad, math.rad(10), 0.5)
 	local atkCooldown = randCooldown(3.0, 4.0)
 	local frameDur = 0.1
 	local framesAtks = 12
@@ -27,7 +27,7 @@ function newSpiderDuckBoss(spawnPos, room)
 	local movements = {
 		[attackRotate.name] = function()
 			local moveBuilder = function()
-				return spiralMovement(math.random(30, 50), math.random(15, 25))
+				return spiralMovement(math.random(40, 50), math.random(20, 25))
 			end
 			return randomMovement(atkDur, startDur, moveBuilder)
 		end,
@@ -43,7 +43,7 @@ function newSpiderDuckBoss(spawnPos, room)
 	local atks = { attackSpawn, attackRotate }
 	local hb = hitbox(Circle.new(50))
 	local hbs = hitboxes({ hb })
-	local physics = physicsSettings(0.8, 50, 5)
+	local physics = physicsSettings(0.8, 250, 5)
 	local enemy =
 		Enemy.new(SPIDER_DUCK.name, 200, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	local idleAnimSettings = newAnimSetting(2, { width = 32, height = 32 }, 0.4, true, 1)

@@ -366,6 +366,7 @@ function Enemy:draw(camera)
 		or 0
 	local scaleX = self.scale - 0.6 * math.sin(2 * math.pi * p)
 	local scaleY = self.scale + 0.6 * math.sin(2 * math.pi * p)
+
 	local offsetX = animation.offset.x
 	local offsetY = (animation.frameDim.height * scaleY - animation.offset.y * self.scale) / scaleY
 

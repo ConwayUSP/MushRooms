@@ -40,7 +40,7 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		hb = hbs,
 		cooldown = cooldown,
 		initialSpeed = speed,
-		accFactor = -speed / 2,
+		accFactor = -speed / 10,
 		restitution = 1,
 		friction = 0,
 		bounces = 3,
@@ -86,9 +86,9 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 		initialMass = 1,
 		initialSpeed = speed,
 		friction = 0,
-		accFactor = -speed / 2,
+		accFactor = -speed / 10,
 		restitution = 1,
-		bounces = 2,
+		bounces = 0,
 		pierces = 1,
 	})
 	local animIntact = newAnimSetting(3, { width = 32, height = 32 }, 0.1, true, 1)

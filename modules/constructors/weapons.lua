@@ -46,7 +46,7 @@ end
 -- cria uma arma do tipo Estilingue
 function newSlingShot()
 	local cooldown = constCooldown(0.4)
-	local attack = newPebbleShotAttack(true, 5, cooldown, 1200, nil)
+	local attack = newPebbleShotAttack(true, 4, cooldown, 1200, nil)
 	attack:setOnHit(onHitLinkTwoEnemies)
 	local slingshot = Weapon.new(SLING_SHOT.name, attack, vec(-10, 10), vec(40, -30))
 	local idleAnimSettings = newAnimSetting(2, { width = 64, height = 64 }, 0.5, true, 1)

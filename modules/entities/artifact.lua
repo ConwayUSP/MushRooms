@@ -52,12 +52,6 @@ function Artifact:update(dt)
 	if self.customUpdate then
 		self:customUpdate(dt)
 	end
-
-	-- DEBUG ---------------------------------------------------
-	if self.cooldown.label then
-		print(self.cooldown.label .. ": " .. self.cooldown.time)
-	end
-	------------------------------------------------------------
 end
 
 -- ativa o efeito do artefato e inicia o cooldown

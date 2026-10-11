@@ -60,11 +60,12 @@ end
 
 -- atualiza a posição do foco do mapa suavemente em direção ao alvo com lerp
 function UIMapElem:update(dt)
+	local k = 1 - math.exp(-6 * dt)
 	if math.abs(self.focus.x - self.targetFocus.x) > 0.00005 then
-		self.focus.x = lerp(self.focus.x, self.targetFocus.x, 0.1)
+		self.focus.x = lerp(self.focus.x, self.targetFocus.x, k)
 	end
 	if math.abs(self.focus.y - self.targetFocus.y) > 0.00005 then
-		self.focus.y = lerp(self.focus.y, self.targetFocus.y, 0.1)
+		self.focus.y = lerp(self.focus.y, self.targetFocus.y, k)
 	end
 end
 

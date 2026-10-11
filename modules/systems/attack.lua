@@ -303,6 +303,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.targetsDamaged = {} -- lista de alvos feridos pelo ataque
 	atkEvent.spriteSheets = {}
 	atkEvent.animations = {}
+	atkEvent.baseAcc = vec(initialAcc.x, initialAcc.y)
 
 	-- adicionando à respectiva lista de hitboxes
 	collisionManager:register(atkEvent)
@@ -324,6 +325,12 @@ function AttackEvent:baseUpdate(dt)
 	self.age = self.age + dt
 	self.timer = self.timer - dt
 	self.moveTargeting:update(dt)
+
+	-- reaplica a aceleração base antes das forças de trajetória,
+	-- que são somadas em cima dela via applyForce/applySteering
+	if self.baseAcc then
+		self.acc = self.baseAcc
+	end
 
 	-- aplica função de trajetória se existir
 	if self.trajectoryFunc then
@@ -349,6 +356,9 @@ function AttackEvent:reflect(newOwner)
 	self.direction = (self.direction + math.pi) % (2 * math.pi)
 	self.vel = scaleVec(polarToVec(self.direction, 1), self.atk.initialSpeed)
 	self.acc = scaleVec(polarToVec(self.direction, 1), self.atk.accFactor)
+	-- a aceleração base acompanha a nova direção para continuar sendo
+	-- reaplicada a cada frame
+	self.baseAcc = vec(self.acc.x, self.acc.y)
 	collisionManager:register(self)
 end
 
