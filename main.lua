@@ -56,6 +56,12 @@ function love.keypressed(key, scancode, isrepeat)
 		p.uiManager:handleInput(key)
 	end
 
+	-- F11 coloca o jogo em tela cheia
+	if key == "f11" then
+		local fullscreen = love.window.getFullscreen()
+		love.window.setFullscreen(fullscreen == false)
+	end
+
 	if gameCtx ~= GAMEPLAY_CTX then
 		return
 	end
