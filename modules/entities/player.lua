@@ -68,6 +68,7 @@ local MAX_HP = 100
 ---@field age number
 ---@field defendingCooldownTimer Timer
 ---@field defendingDurationTimer Timer
+---@field specialMovement function
 
 Player = setmetatable({}, { __index = Mortal })
 Player.__index = Player
@@ -118,6 +119,7 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.age = 0
 	player.defendingCooldownTimer = Timer.new(0.5)
 	player.defendingDurationTimer = Timer.new(3.0, true)
+	player.specialMovement = nil
 
 	collisionManager:register(player)
 	return player
@@ -217,6 +219,16 @@ function Player:move(dt)
 		return
 	end
 
+	local walkForce = nil
+
+	if self.specialMovement then
+		local endSpecialMove = self:specialMovement(dt)
+		if endSpecialMove then
+			self.specialMovement = nil
+		end
+		goto applyphysics
+	end
+
 	if self.controls.gamepad then
 		movementDir.x, movementDir.y = self.controls:getStickDir("left")
 		movementDir.x = movementDir.x or 0
@@ -242,7 +254,7 @@ function Player:move(dt)
 	end
 
 	-- a normalização impede o movimento de ser mais rápido na diagonal
-	local walkForce = scaleVec(normalize(movementDir), self.speed)
+	walkForce = scaleVec(normalize(movementDir), self.speed)
 
 	------------ HACK PARA DEBUG ------------
 	if love.keyboard.isDown("lctrl") then
@@ -251,6 +263,9 @@ function Player:move(dt)
 	-----------------------------------------
 
 	applyForce(self, walkForce)
+
+	::applyphysics::
+
 	applyPhysics(self, dt)
 
 	-- atualizando objetos cujo movimento depende do Player

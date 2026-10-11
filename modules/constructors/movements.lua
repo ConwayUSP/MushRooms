@@ -353,3 +353,22 @@ function followTarget(entity, dt)
 
 	applySteering(entity, desiredVel, 10)
 end
+
+---@param direction Vec
+---@param duration number
+---@param power number]
+---@return boolean
+-- função de movimento em dash numa direção específica
+-- retorna `true` quando o dash terminar
+function dashToDirection(direction, duration, power)
+	local dur = duration
+	local force = scaleVec(normalize(direction), power)
+	return function(entity, dt)
+		dur = dur - dt
+		if dur <= 0 then
+			return true
+		end
+		applyImpulse(entity, force)
+		return false
+	end
+end

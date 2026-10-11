@@ -51,6 +51,7 @@ ROLLING_RUSH = registerEntity(ATTACK, "Rolling Rush")
 
 -------------- ARTEFATOS ---------------
 INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")
+RAINBOW_DASH = registerEntity(ARTIFACT, "Rainbow Dash", "It's just a puff... But it does look special in some way. Faster...")
 
 ------------- DESTRUTÍVEIS -------------
 JAR = registerEntity(DESTRUCTIBLE, "jar")

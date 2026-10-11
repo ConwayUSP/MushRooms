@@ -47,7 +47,8 @@ function startGame()
 	players[1]:collectWeapon(newFlowergun())
 	players[1]:equipWeapon(SKULL_SHOOTER.name)
 	players[1]:collectArtifact(newInvisibilityRing():setOwner(players[1]))
-	players[1]:equipArtifact(INVISIBILITY_RING.name)
+	players[1]:collectArtifact(newRainbowDash():setOwner(players[1]))
+	players[1]:equipArtifact(RAINBOW_DASH.name)
 	players[1].blessingManager:equip(newFireBlessing())
 	----------------------------------------------------------
 	gameCtx = GAMEPLAY_CTX

@@ -139,7 +139,6 @@ function Mortal:die()
 	stopMovement(self)
 	globalAudioManager:stopAllFrom(self)
 
-	collisionManager:unregister(self)
 	local atks = (self.atk and self.atk[self.selectedAtk] and self.atk[self.selectedAtk].events)
 		or (self.weapon and self.weapon.atk.events)
 	if atks then
@@ -148,6 +147,7 @@ function Mortal:die()
 			atk:destroy()
 		end
 	end
+	collisionManager:unregister(self)
 
 	if self.weapon then
 		self:unequipWeapon()
