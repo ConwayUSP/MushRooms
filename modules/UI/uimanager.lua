@@ -8,6 +8,7 @@
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
+---@field worldScenes UIWorldScene[]
 ---@field lastPlayerScene string
 ---@field activeScenes Type[]
 ---@field parentCanvas table
@@ -28,6 +29,7 @@ function UIManager.new(player)
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)
 	uimanager.canvasPos = vec(0, 0)
 	uimanager.scenes = {}
+	uimanager.worldScenes = {}
 	uimanager.activeScenes = {}
 	uimanager.lastPlayerScene = UI_EQUIPMENT_SCENE
 	return uimanager
@@ -60,6 +62,45 @@ function UIManager:addScene(scene)
 	self.scenes[scene.subtype] = scene
 	scene.manager = self
 	return self
+end
+
+---@param scene UIWorldScene
+-- adiciona uma cena de mundo (overlay integrado ao mundo) a este manager.
+-- Ao contrário das UIScenes modais, cenas de mundo são atualizadas e
+-- renderizadas sem entrar na pilha de input, e não bloqueiam o gameplay
+function UIManager:addWorldScene(scene)
+	table.insert(self.worldScenes, scene)
+	scene.manager = self
+	scene.active = true
+	return self
+end
+
+---@param sceneOrType UIWorldScene|Type
+-- remove uma cena de mundo deste manager (por referência ou tipo)
+function UIManager:removeWorldScene(sceneOrType)
+	for idx, scene in ipairs(self.worldScenes) do
+		if scene == sceneOrType or scene.subtype == sceneOrType then
+			scene.active = false
+			if scene.onRemoved then
+				scene:onRemoved()
+			end
+			table.remove(self.worldScenes, idx)
+			return self
+		end
+	end
+	return self
+end
+
+---@param sceneType Type
+---@return UIWorldScene?
+-- retorna a cena de mundo de tipo `sceneType`, se existir
+function UIManager:getWorldScene(sceneType)
+	for _, scene in ipairs(self.worldScenes) do
+		if scene.subtype == sceneType then
+			return scene
+		end
+	end
+	return nil
 end
 
 ---@param sceneType Type
@@ -161,6 +202,33 @@ function UIManager:update(dt)
 	for _, scene in pairs(self.scenes) do
 		if scene.active then
 			scene:update(dt)
+		end
+	end
+
+	-- cenas de mundo: atualiza e remove as que expiraram
+	for idx = #self.worldScenes, 1, -1 do
+		local scene = self.worldScenes[idx]
+		if scene.active then
+			scene:update(dt)
+			if scene.isFinished then
+				table.remove(self.worldScenes, idx)
+				if scene.onRemoved then
+					scene:onRemoved()
+				end
+			end
+		end
+	end
+end
+
+---@param camera Camera
+-- renderiza as cenas de mundo deste manager dentro do espaço do mundo
+-- (chamado com o transform de zoom da câmera ainda ativo)
+function UIManager:drawWorldScenes(camera)
+	-- guarda a câmera atual para cenas ancoradas à câmera usarem no update
+	self.camera = camera
+	for _, scene in ipairs(self.worldScenes) do
+		if scene.active then
+			scene:draw(camera)
 		end
 	end
 end

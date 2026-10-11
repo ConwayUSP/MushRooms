@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.UI.uiscene")
+require("modules.UI.uiworldscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.UI.elements.lifebar")
@@ -802,4 +803,52 @@ function newBossLifeBarScene(room)
 	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))
 
 	return lifeBarScene
+end
+
+----------------------------------------
+-- Cenas de Mundo
+----------------------------------------
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra a barra de vida do jogador acima da cabeça
+function newPlayerDamageBarScene(player)
+	local DAMAGE_BAR_DURATION = 2
+
+	local scene = UIWorldScene.new(UI_PLAYER_HP_SCENE, player, vec(0, -90), nil)
+
+	local lifeCalc = function()
+		return player.hp, player.maxHp
+	end
+
+	local lifebar = UILifeBarElem.new(
+		"equip player lifebar",
+		vec(0, 0),
+		size(74, 14),
+		lifeCalc,
+		{ l = 11, r = 3 },
+		2
+	)
+	scene:addElement(lifebar, vec(0, 0))
+
+	-- detecta dano ou cura comparando o hp atual com o do frame anterior
+	local lastHp = player.hp
+	local hideTimer = 0
+	scene.onUpdate = function(self, dt)
+		if player.hp ~= lastHp then
+			self:show()
+			hideTimer = DAMAGE_BAR_DURATION
+		end
+		lastHp = player.hp
+
+		if hideTimer > 0 then
+			hideTimer = hideTimer - dt
+			if hideTimer <= 0 then
+				self:hide()
+			end
+		end
+	end
+
+	scene:hide()
+	return scene
 end

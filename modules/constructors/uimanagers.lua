@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.UI.uimanager")
 require("modules.UI.uiscene")
+require("modules.UI.uiworldscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.constructors.uiscenes")
@@ -32,6 +33,10 @@ function newPlayerUIManager(player)
 	playerManager:addScene(openChestScene)
 	playerManager:addScene(equipScene)
 	playerManager:addScene(mapScene)
+
+	-- cenas de mundo
+	local damageBarScene = newPlayerDamageBarScene(player)
+	playerManager:addWorldScene(damageBarScene)
 
 	return playerManager
 end

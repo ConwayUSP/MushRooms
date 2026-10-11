@@ -75,6 +75,7 @@ ELEMENTAL = "elemental"
 ---------- UI ----------
 UI_MANAGER = "UI manager"
 UI_SCENE = "UI scene"
+UI_WORLD_SCENE = "UI world scene"
 UI_ELEMENT = "UI element"
 UI_IMAGE_ELEM = "UI image element"
 UI_BUTTON_ELEM = "UI button element"
@@ -90,6 +91,7 @@ UI_BESTIARY_SCENE = "UI player bestiary scene"
 UI_CRAFTING_SCENE = "UI player crafting scene"
 UI_CHEST_SCENE = "UI chest scene"
 UI_BOSS_LIFE_BAR_SCENE = "UI boss life bar scene"
+UI_PLAYER_DAMAGE_BAR_SCENE = "UI player damage bar scene"
 
 ---------- ÁUDIOS ----------
 MUSIC_MENU = "menu music"
