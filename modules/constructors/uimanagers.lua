@@ -36,7 +36,13 @@ function newPlayerUIManager(player)
 
 	-- cenas de mundo
 	local damageBarScene = newPlayerDamageBarScene(player)
+	local artifactEquipScene = newPlayerArtifactEquipScene(player)
+	local interactionPromptScene = newPlayerInteractionPromptScene(player)
+	local artifactCdScene = newPlayerArtifactCooldownBarScene(player)
 	playerManager:addWorldScene(damageBarScene)
+	playerManager:addWorldScene(artifactEquipScene)
+	playerManager:addWorldScene(interactionPromptScene)
+	playerManager:addWorldScene(artifactCdScene)
 
 	return playerManager
 end

@@ -99,8 +99,8 @@ function UIWorldScene:update(dt)
 	end
 
 	-- expiração automática de pop-ups com duração
+	self.timer = self.timer + dt
 	if self.duration then
-		self.timer = self.timer + dt
 		if self.timer >= self.duration then
 			self.timer = self.duration
 			self.visible = false

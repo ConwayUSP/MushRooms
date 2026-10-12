@@ -439,7 +439,12 @@ function Player:processInput()
 
 	-- input de uso de artefato
 	if self.controls:checkAction(ACT_UA) and self.artifact then
-		self.artifact:use()
+		if not self.artifact:use() then
+			local cdScene = self.uiManager:getWorldScene(UI_ARTIFACT_COOLDOWN_BAR_SCENE)
+			if cdScene then
+				cdScene:activate()
+			end
+		end
 	end
 
 	-- input de defesa

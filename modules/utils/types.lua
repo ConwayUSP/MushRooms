@@ -91,7 +91,10 @@ UI_BESTIARY_SCENE = "UI player bestiary scene"
 UI_CRAFTING_SCENE = "UI player crafting scene"
 UI_CHEST_SCENE = "UI chest scene"
 UI_BOSS_LIFE_BAR_SCENE = "UI boss life bar scene"
-UI_PLAYER_DAMAGE_BAR_SCENE = "UI player damage bar scene"
+UI_PLAYER_HP_SCENE = "UI player hp scene"
+UI_ARTIFACT_EQUIP_SCENE = "UI artifact equip scene"
+UI_INTERACTION_PROMPT_SCENE = "UI interaction prompt scene"
+UI_ARTIFACT_COOLDOWN_BAR_SCENE = "UI artifact cooldown bar scene"
 
 ---------- ÁUDIOS ----------
 MUSIC_MENU = "menu music"

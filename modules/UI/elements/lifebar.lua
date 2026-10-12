@@ -61,6 +61,9 @@ end
 ---@field size Size
 ---@field scale integer
 ---@field name string
+---@field color table
+---@field trailColor table
+---@field customUpdateColor fun(self: LifeBarFront)
 ---@field scissorOffset? table
 ---@field frontTarget number
 ---@field backTarget number
@@ -70,7 +73,7 @@ end
 local LifeBarFront = {}
 LifeBarFront.__index = LifeBarFront
 
-function LifeBarFront.new(pos, size, name, scissorOffset, scale)
+function LifeBarFront.new(pos, size, name, scissorOffset, scale, customUpdateColor)
 	local front = setmetatable({}, LifeBarFront)
 	front.pos = vec(pos.x, pos.y)
 	front.scissorOffset = scissorOffset or { l = 0, r = 0 }
@@ -80,6 +83,8 @@ function LifeBarFront.new(pos, size, name, scissorOffset, scale)
 	front.backTarget = 1
 	front.percent = 1
 	front.color = {1, 1, 1, 1}
+	front.trailColor = {1, 0.9, 1, 0.5}
+	front.customUpdateColor = customUpdateColor
 
 	local path = pngPathFormat({ "assets", "animations", "UI", name, "front" })
 	addAnimation(front, path, IDLE, newAnimSetting(1, size, 0.1, false))
@@ -112,6 +117,10 @@ end
 
 -- atualiza a cor da barra de vida
 function LifeBarFront:updateBarColor()
+	if self.customUpdateColor then
+		self.customUpdateColor(self)
+		return
+	end
 	local dmgFactor = 1 - self.percent
 	self.color[1] = 1 - dmgFactor * 0.3 -- R
 	self.color[2] = 0.6 - dmgFactor * 0.5 -- G
@@ -155,7 +164,7 @@ function LifeBarFront:draw(camera)
 	end
 
 	love.graphics.setScissor(finalStartX, 0, self.backTarget * width, window.height)
-	drawWithColorShader(drawFunc)
+	drawWithColorShader(drawFunc, self.trailColor)
 	love.graphics.setScissor()
 
 	love.graphics.setScissor(finalStartX, 0, self.frontTarget * width, window.height)
@@ -174,12 +183,12 @@ end
 UILifeBarElem = setmetatable({}, { __index = UIElement })
 UILifeBarElem.__index = UILifeBarElem
 
-function UILifeBarElem.new(name, pos, size, lifeCalc, scissorOffset, scale)
+function UILifeBarElem.new(name, pos, size, lifeCalc, scissorOffset, scale, customUpdateColor)
 	local lifeBar = setmetatable({}, UILifeBarElem)
 	---@diagnostic disable-next-line
 	lifeBar:init(name, UI_BUTTON_ELEM, pos, size)
 	lifeBar.lifeCalc = lifeCalc or function() end
-	lifeBar.front = LifeBarFront.new(pos, size, name, scissorOffset, scale)
+	lifeBar.front = LifeBarFront.new(pos, size, name, scissorOffset, scale, customUpdateColor)
 	lifeBar.back = LifeBarBg.new(pos, size, name, scale)
 
 	return lifeBar

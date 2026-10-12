@@ -16,7 +16,7 @@ require("modules.utils.types")
 ---@field customData table
 ---@field customUpdate fun(self: Artifact, dt: number)
 ---@field update fun(self: Artifact, dt: number)
----@field use fun(self: Artifact)
+---@field use fun(self: Artifact): boolean
 ---@field setOwner fun(self: Artifact, owner: Player)
 
 Artifact = {}
@@ -54,12 +54,16 @@ function Artifact:update(dt)
 	end
 end
 
--- ativa o efeito do artefato e inicia o cooldown
+---@return boolean
+-- ativa o efeito do artefato e inicia o cooldown.
+-- retorna `true` se o artefato foi usado, ou `false` se estava em cooldown
 function Artifact:use()
 	if not self.cooldown.active then
 		self.cooldown:start()
 		self:onUse()
+		return true
 	end
+	return false
 end
 
 ---@param owner Player
