@@ -869,7 +869,6 @@ function Player:updateSleep(dt)
 		self:wakeUp()
 		return
 	end
-	print(self.sleepTimer.time)
 	self.sleepTimer:update(dt)
 end
 
