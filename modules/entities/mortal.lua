@@ -94,6 +94,10 @@ function Mortal:takeDamage(damage)
 	self.hp = math.max(self.hp - damage, 0)
 	globalAudioManager:play(AUDIO_GET_HIT, self, "au")
 
+	if self.type == PLAYER then
+		self:wakeUp()
+	end
+
 	if self.hp <= 0 then
 		self:die()
 	end

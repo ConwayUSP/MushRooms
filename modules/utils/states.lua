@@ -21,6 +21,7 @@ RIGHT = "right"
 LEFT = "left"
 HURTING = "hurting" -- tomando dano
 DYING = "dying"
+SLEEPING = "sleeping"
 
 DIRECTIONS = { UP, DOWN, LEFT, RIGHT }
 

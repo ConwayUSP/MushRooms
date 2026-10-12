@@ -1,6 +1,6 @@
 require("modules.systems.control")
 
----@return AnimSettings, AnimSettings, AnimSettings, AnimSettings
+---@return AnimSettings, AnimSettings, AnimSettings, AnimSettings, AnimSettings
 -- retorna as configurações das animações de `Player`
 function getPlayersAnimSettings()
 	local quadSize = { width = 32, height = 32 }
@@ -8,7 +8,8 @@ function getPlayersAnimSettings()
 	local defAnimSettings = newAnimSetting(15, quadSize, 0.05, true, 12)
 	local walkAnimSettings = newAnimSetting(4, quadSize, 0.18, true, 1)
 	local dyingAnimSettings = newAnimSetting(2, quadSize, 0.1, false)
-	return idleAnimSettings, defAnimSettings, walkAnimSettings, dyingAnimSettings
+	local sleepAnimSettings = newAnimSetting(26, { width = 48, height = 48 }, 0.18, true, 19)
+	return idleAnimSettings, defAnimSettings, walkAnimSettings, dyingAnimSettings, sleepAnimSettings
 end
 
 -- inicializa o jogador 1 - Mush

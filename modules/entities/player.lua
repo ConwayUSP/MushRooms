@@ -27,7 +27,8 @@ require("table")
 ----------------------------------------
 
 players = {}
-local MAX_HP = 100
+local MAX_HP = 100		-- limite de hp
+local TIME_TO_SLEEP = 15 -- limite de tempo inativo até dormir
 
 ----------------------------------------
 -- Classe Player
@@ -68,7 +69,9 @@ local MAX_HP = 100
 ---@field age number
 ---@field defendingCooldownTimer Timer
 ---@field defendingDurationTimer Timer
+---@field sleepTimer Timer
 ---@field specialMovement function
+---@field sleep function
 
 Player = setmetatable({}, { __index = Mortal })
 Player.__index = Player
@@ -76,7 +79,7 @@ Player.type = PLAYER
 
 ---@param name string
 ---@param spawnPos Vec
----@param keybinds table<string, string>
+---@param control table<string, string>
 ---@param colors Color[]
 ---@param room Room
 ---@return Player
@@ -119,6 +122,7 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.age = 0
 	player.defendingCooldownTimer = Timer.new(0.5)
 	player.defendingDurationTimer = Timer.new(3.0, true)
+	player.sleepTimer = Timer.new(TIME_TO_SLEEP, true)
 	player.specialMovement = nil
 
 	collisionManager:register(player)
@@ -127,10 +131,11 @@ end
 
 ---@param idleSettings AnimSettings
 ---@param defSettings AnimSettings
----@param WalkSettings AnimSettings
+---@param walkSettings AnimSettings
 ---@param dyingSettings AnimSettings
+---@param sleepSettings AnimSettings
 -- adiciona animações à tabela do `Player`, associando-as aos seus estados respectivos
-function Player:addAnimations(idleSettings, defSettings, WalkSettings, dyingSettings)
+function Player:addAnimations(idleSettings, defSettings, walkSettings, dyingSettings, sleepSettings)
 	-- !TODO: refatorar o addAnimations
 	-- for state, settings in pairs(animSettings) do
 	-- 	local path = pngPathFormat({ "assets", "animations", "players", self.name, state })
@@ -147,16 +152,19 @@ function Player:addAnimations(idleSettings, defSettings, WalkSettings, dyingSett
 	addAnimation(self, path, DEFENDING, defSettings)
 	-------------- WALKING UP --------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_UP })
-	addAnimation(self, path, WALKING_UP, WalkSettings)
+	addAnimation(self, path, WALKING_UP, walkSettings)
 	------------- WALKING DOWN -------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_DOWN })
-	addAnimation(self, path, WALKING_DOWN, WalkSettings)
+	addAnimation(self, path, WALKING_DOWN, walkSettings)
 	------------- WALKING LEFT -------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_LEFT })
-	addAnimation(self, path, WALKING_LEFT, WalkSettings)
+	addAnimation(self, path, WALKING_LEFT, walkSettings)
 	------------- WALKING RIGHT ------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_RIGHT })
-	addAnimation(self, path, WALKING_RIGHT, WalkSettings)
+	addAnimation(self, path, WALKING_RIGHT, walkSettings)
+	--------------- SLEEPING ---------------
+	path = pngPathFormat({ "assets", "animations", "players", self.name, SLEEPING })
+	addAnimation(self, path, SLEEPING, sleepSettings)
 end
 
 function Player:calcHitboxes()
@@ -178,6 +186,7 @@ function Player:update(dt)
 		self:updateBuildingMode(dt)
 		self:updateState()
 		self:resolveInteractive()
+		self:updateSleep(dt)
 		self.uiManager:update(dt)
 	end
 
@@ -300,14 +309,20 @@ function Player:updateState()
 		elseif self.vel.x < 0 then
 			self.state = WALKING_LEFT
 		else
-			self.state = IDLE
+			if self.state ~= SLEEPING then
+				self.state = IDLE
+			end
 		end
 	end
 
 	-- atualizando a situação do sistema de partículas de caminhada
 	if isMoving then
+		self:wakeUp()
 		globalVFXManager:playParticle(PARTICLE_WALKING, self, vec(0, 24), true)
 	else
+		if self.sleepTimer.goingOff then
+			self:sleep()
+		end
 		globalVFXManager:stopParticle(PARTICLE_WALKING, self)
 	end
 
@@ -444,13 +459,20 @@ function Player:processInput()
 	-- input de ataque
 	if self.controls:checkAction(ACT_ATK) then
 		self.weapon:attack()
+		self:wakeUp()
+	end
+
+	if self.state == SLEEPING then
+		return
 	end
 
 	-- input de troca de arma
 	if self.controls:checkAction(ACT_PW) then
 		self:prevWeapon()
+		self:wakeUp()
 	elseif self.controls:checkAction(ACT_NW) then
 		self:nextWeapon()
+		self:wakeUp()
 	end
 
 	-- input de troca de artefato
@@ -461,17 +483,20 @@ end
 
 ---@param dy number
 function Player:wheelmoved(dy)
-	if self.weapon
-		and self.state ~= DYING
-		and not self.uiManager:hasActiveScene()
-		and not self.inDialogue
+	if not self.weapon
+		or self.state == DYING
+		or self.uiManager:hasActiveScene()
+		or self.inDialogue
+		or self.state == SLEEPING
 	then
-		if dy > 0 then
-			self:nextWeapon()
-		else
-			self:prevWeapon()
-		end
+		return
 	end
+	if dy > 0 then
+		self:nextWeapon()
+	else
+		self:prevWeapon()
+	end
+	self:wakeUp()
 end
 
 ---@param weapon Weapon
@@ -817,6 +842,30 @@ function Player:dropAllBlessings()
 		end
 	end
 	self.blessingManager.equipped = {}
+end
+
+function Player:sleep()
+	self.state = SLEEPING
+end
+
+function Player:wakeUp()
+	self.sleepTimer:restart()
+	if self.state == SLEEPING then
+		self.state = IDLE
+	end
+end
+
+---@param dt number
+function Player:updateSleep(dt)
+	if self.uiManager:hasActiveScene()
+		or self.inDialogue
+		or self.activeInteraction
+		or self.building then
+		self:wakeUp()
+		return
+	end
+	print(self.sleepTimer.time)
+	self.sleepTimer:update(dt)
 end
 
 ----------------------------------------
