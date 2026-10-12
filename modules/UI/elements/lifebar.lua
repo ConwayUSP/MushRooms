@@ -79,6 +79,7 @@ function LifeBarFront.new(pos, size, name, scissorOffset, scale)
 	front.frontTarget = 1
 	front.backTarget = 1
 	front.percent = 1
+	front.color = {1, 1, 1, 1}
 
 	local path = pngPathFormat({ "assets", "animations", "UI", name, "front" })
 	addAnimation(front, path, IDLE, newAnimSetting(1, size, 0.1, false))
@@ -90,6 +91,7 @@ function LifeBarFront:update(dt, lifeCalc)
 	local oldPercent = self.percent
 	local hp, maxHp = lifeCalc()
 	self.percent = math.max(0, (hp / maxHp))
+	self:updateBarColor()
 
 	if oldPercent ~= self.percent then
 		if self.percent < oldPercent then
@@ -106,6 +108,14 @@ function LifeBarFront:update(dt, lifeCalc)
 	if math.abs(self.backTarget - self.percent) > 0.00005 then
 		self.backTarget = lerp(self.backTarget, self.percent, 4 * dt)
 	end
+end
+
+-- atualiza a cor da barra de vida
+function LifeBarFront:updateBarColor()
+	local dmgFactor = 1 - self.percent
+	self.color[1] = 1 - dmgFactor * 0.3 -- R
+	self.color[2] = 0.6 - dmgFactor * 0.5 -- G
+	self.color[3] = 0.4 + dmgFactor * dmgFactor * 0.2 -- B
 end
 
 function LifeBarFront:draw(camera)
@@ -134,14 +144,22 @@ function LifeBarFront:draw(camera)
 	local endX = startX + (anim.frameDim.width) * self.scale
 	local finalStartX = startX + self.scissorOffset.l * self.scale
 	local finalEndX = endX - self.scissorOffset.r * self.scale
-	local width = (finalEndX - finalStartX)
+	local width = (finalEndX - finalStartX) - 2
+
+	-- converte para o espaço do canvas usando o zoom centralizado,
+	-- para o preenchimento continuar alinhado ao sprite
+	if camera then
+		local vpW = camera.viewport.width
+		finalStartX = (finalStartX - vpW / 2) * camera.zoom + vpW / 2
+		width = width * camera.zoom
+	end
 
 	love.graphics.setScissor(finalStartX, 0, self.backTarget * width, window.height)
 	drawWithColorShader(drawFunc)
 	love.graphics.setScissor()
 
 	love.graphics.setScissor(finalStartX, 0, self.frontTarget * width, window.height)
-	drawFunc()
+	drawWithColorShader(drawFunc, self.color)
 	love.graphics.setScissor()
 end
 
@@ -177,7 +195,7 @@ function UILifeBarElem:draw(camera)
 		return
 	end
 
-	love.graphics.setColor(1, 1, 1, 0.5)
+	love.graphics.setColor(1, 1, 1, 1)
 
 	self.back:draw(camera)
 	self.front:draw(camera)

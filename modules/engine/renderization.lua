@@ -356,6 +356,14 @@ function renderPlayerUIs(camera)
 end
 
 ---@param camera Camera
+-- renderiza as cenas de mundo (overlays de UI ancorados no mundo) dos
+-- UI managers; deve ser chamada com o transform de zoom da câmera ativo
+function renderUIWorldScenes(camera)
+	camera.playerAttached.uiManager:drawWorldScenes(camera)
+	camera.playerAttached.room.uiManager:drawWorldScenes(camera)
+end
+
+---@param camera Camera
 -- renderiza os diálogos ativos na perspectiva da `camera`
 function renderDialogues(camera)
 	for _, dialogue in pairs(DialogueManager.dialogues) do

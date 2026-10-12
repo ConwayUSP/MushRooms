@@ -249,6 +249,8 @@ function Camera:draw()
 	renderHitboxes(self)
 	-- renderiza pós-processamento
 	renderLighting(self)
+	-- renderiza overlays de UI ancorados no mundo (vida, popups, etc)
+	renderUIWorldScenes(self)
 	-- renderiza caixas de diálogo por cima de tudo
 	renderDialogues(self)
 
