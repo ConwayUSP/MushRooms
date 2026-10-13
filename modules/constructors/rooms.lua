@@ -137,12 +137,12 @@ function insertGeneralDecorations(blueprint, rng)
 	-- fazermos uma personalização mais fina das salas depois
 	insertPossiblePillars(blueprint, 0.6, rng)
 	insertPossibleTorches(blueprint, 0.8, rng)
-	insertRandomly(blueprint, NEGATIVE, 20, rng)
-	insertRandomly(blueprint, MOSS, 18, rng)
-	insertRandomly(blueprint, CRACKS, 16, rng)
-	insertRandomly(blueprint, SKELETON, 4, rng)
-	insertIntoGrid(blueprint, RUBBLE_BIG, 0.1, 6, true, rng)
-	insertIntoGrid(blueprint, RUBBLE_SMALL, 0.3, 8, true, rng)
+	insertRandomly(blueprint, NEGATIVE, 14, rng)
+	insertRandomly(blueprint, MOSS, 9, rng)
+	insertRandomly(blueprint, CRACKS, 12, rng)
+	insertRandomly(blueprint, SKELETON, 3, rng)
+	insertIntoGrid(blueprint, RUBBLE_BIG, 0.07, 6, true, rng)
+	insertIntoGrid(blueprint, RUBBLE_SMALL, 0.1, 8, true, rng)
 end
 
 ---@param blueprint Blueprint
@@ -151,8 +151,8 @@ end
 ---comment
 function insertRandomly(blueprint, type, amount, rng)
 	for i = 1, amount do
-		local x = rng:random(-(Room.stdDim.width / 2) + 20, Room.stdDim.width - 20)
-		local y = rng:random(-(Room.stdDim.height / 2) + 20, Room.stdDim.height - 20)
+		local x = rng:random(-(Room.stdDim.width / 2) + 20, (Room.stdDim.width / 2) - 20)
+		local y = rng:random(-(Room.stdDim.height / 2) + 20, (Room.stdDim.height / 2) - 20)
 		local pos = vec(x, y)
 		local sp = SpawnPoint.new(pos)
 		local sd = SpawnData.new(type, 1.0)
@@ -168,8 +168,8 @@ end
 ---@param scapeGrid boolean
 -- insere na blueprint aleatoriamente de acordo com uma grade de tamanho ajustável
 function insertIntoGrid(blueprint, type, density, gridDim, scapeGrid, rng)
-	for i = 0, gridDim do
-		for j = 0, gridDim do
+	for i = -(gridDim/2), (gridDim / 2) do
+		for j = -(gridDim/2), (gridDim / 2) do
 			local ox, oy = 0, 0
 			local scapeFactor = Room.stdDim.width / (gridDim * 3)
 			if scapeGrid then
@@ -206,7 +206,7 @@ function insertPossiblePillars(blueprint, prob, rng)
 			local spPillarDecoration = SpawnPoint.new(addVec(pillarPositions[i], vec(rng:random(-140, 10), 280)))
 			local pillarData = SpawnData.new(PILLAR, 1.0)
 			local pillarBaseData = SpawnData.new(PILLAR_BASE, 1.0)
-			local pillarPropData = SpawnData.new(PILLAR_PROP, 1.0)
+			local pillarPropData = SpawnData.new(PILLAR_PROP, 0.1)
 			local pillarDecData1 = SpawnData.new(CANDLE, 0.2)
 			local pillarDecData2 = SpawnData.new(SKELETON, 0.3)
 			spPillar:insert(pillarData)
