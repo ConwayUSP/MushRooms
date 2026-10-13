@@ -112,6 +112,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
 	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
+	room.deactivationTimer = Timer.new(2)
 
 	room:addWallsAndDoors()
 
@@ -157,6 +158,15 @@ function Room:update(dt)
 	self.linkManager:update(dt)
 	self.uiManager:update(dt)
 	self:updateDoorsLogic(dt)
+
+	print("active rooms: " .. activeRooms:size())
+	print("timer: " .. self.deactivationTimer.time)
+	-- lógica de desativação da sala quando ela está vazia
+	self.deactivationTimer:update(dt)
+	if self.deactivationTimer.goingOff then
+		activeRooms:remove(makeKey(self.arrPos.x, self.arrPos.y))
+		collisionManager.roomsDirty = true
+	end
 end
 
 -- define a sala como estando explorada, gerando as 4 salas
@@ -221,6 +231,8 @@ function Room:onPlayerEnter(player)
 			self.doorsTimer:startOrContinue()
 		end
 	end
+
+	self.deactivationTimer:stop()
 end
 
 ---@param player Player
@@ -235,8 +247,7 @@ function Room:onPlayerExit(player)
 		if not self.explored and (self.roomType == BOSS_ROOM or self.roomType == BATTLE_ROOM) then
 			self.doorsTimer:restart()
 		end
-		activeRooms:remove(makeKey(self.arrPos.x, self.arrPos.y))
-		collisionManager.roomsDirty = true
+		self.deactivationTimer:start()
 	end
 end
 
