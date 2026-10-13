@@ -297,6 +297,7 @@ function Player:updateState()
 
 	if self.defendingDurationTimer.active then
 		self.state = DEFENDING
+		self:wakeUp()
 	else
 		local isVerticalMovement = math.abs(self.vel.y) > math.abs(self.vel.x)
 
