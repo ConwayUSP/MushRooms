@@ -28,7 +28,12 @@ end
 
 function newRainbowDash()
 	local onUse = function(self)
-		local aim = self.owner.controls:getAimDir()
+		local aim
+		if self.owner.controls.gamepad then 
+			aim = self.owner.vel
+		else 
+			aim = self.owner.controls:getAimDir()
+		end
 		if not aim or self.owner.state == DEFENDING then
 			return
 		else
@@ -36,7 +41,7 @@ function newRainbowDash()
 			local dashMove = dashToDirection(aim, dur, 2000)
 			self.owner.specialMovement = dashMove
 			self.owner:setInvulnerable(dur)
-		end 
+		end
 	end
 	local dash = Artifact.new(RAINBOW_DASH.name, RAINBOW_DASH.description, 1.5, onUse)
 	return dash
