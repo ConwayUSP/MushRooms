@@ -471,12 +471,13 @@ function Room:getWalls()
 	return roomWalls
 end
 
----@param building Product
+---@param buildingProduct Product
 ---@return Interactive
 -- torna uma construção tangível e insere ela na sala, registrando sua hitbox
-function Room:addBuilding(building)
-	local interactive = building.makeInteractive(building.pos, self)
+function Room:addBuilding(buildingProduct)
+	local interactive = buildingProduct.makeInteractive(buildingProduct.pos, self)
 	table.insert(self.interactives, interactive)
+	collisionManager:unregister(buildingProduct)
 	collisionManager:register(interactive)
 	return interactive
 end

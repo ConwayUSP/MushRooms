@@ -28,13 +28,14 @@ Product.type = RESOURCE
 ---@param name string
 ---@param description string
 ---@param makeInteractive function
+---@param hitboxes? Hitboxes
 ---@diagnostic disable: inject-field
 -- cria uma nova instância de Product
-function Product.new(prodType, name, description, makeInteractive)
+function Product.new(prodType, name, description, makeInteractive, hitboxes)
 	---@type Product
 	local product
 	product = setmetatable({}, Product) ---@diagnostic disable-line
-	Entity.init(product, name)
+	Entity.init(product, name, vec(0, 0), hitboxes)
 
 	product.subtype = prodType             -- se o recurso é BUILDING ou FOOD
 	product.actualized = prodType ~= BUILDING -- construções não começam reais (precisam ser posicionadas antes)

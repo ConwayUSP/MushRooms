@@ -52,9 +52,11 @@ function newChest()
 		return chestInteractive
 	end
 
-	local chest = Product.new(BUILDING, CHEST.name, CHEST.description, makeInteractive)
-
+	local productHb = hitboxes({ hitbox(Circle.new(40)) }, { }, { })
+	local chest = Product.new(BUILDING, CHEST.name, CHEST.description, makeInteractive, productHb)
 	addAnimations(chest, pathStart, animSettings)
+	collisionManager:register(chest)
+
 	chest.shadowWidth = 35
 
 	return chest
@@ -116,8 +118,10 @@ function newFirecamp()
 		return firecampInteractive
 	end
 
-	local firecamp = Product.new(BUILDING, FIRECAMP.name, FIRECAMP.description, makeInteractive)
+	local productHb = hitboxes({ hitbox(Circle.new(40)) }, { }, { })
+	local firecamp = Product.new(BUILDING, FIRECAMP.name, FIRECAMP.description, makeInteractive, productHb)
 	addAnimations(firecamp, pathStart, animSettings)
+	collisionManager:register(firecamp)
 
 	return firecamp
 end

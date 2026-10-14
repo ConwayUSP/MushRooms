@@ -139,6 +139,7 @@ function Mortal:die()
 			self.activeInteraction:onExit(self.activeInteraction, self)
 			self.uiManager:deactivateAllScenes()
 		end
+		self:endBuildingMode()
 		self.room:onPlayerDieInside()
 	end
 

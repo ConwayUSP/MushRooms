@@ -184,6 +184,7 @@ function Player:update(dt)
 		self:tryRespawn()
 	else
 		self:move(dt)
+		self:updateBuildingPos()
 		self:updateBuildingMode(dt)
 		self:updateState()
 		self:resolveInteractive()
@@ -277,10 +278,6 @@ function Player:move(dt)
 	--::applyphysics::
 
 	applyPhysics(self, dt)
-
-
-	-- atualizando objetos cujo movimento depende do Player
-	self:updateBuildingPos()
 end
 
 function Player:checkEndDefense(dt)
@@ -355,7 +352,11 @@ end
 -- faz com que a construção fique na direção aproximada em que o player está olhando (considera colisões)
 function Player:updateBuildingPos()
 	if self.building then
-		setPos(self.building, addVec(self.pos, scaleVec(normalize(self.vel), 100)))
+		local dir = normalize(self.controls:getAimDir() or player.vel)
+		local pos = addVec(self.pos, scaleVec(dir, 110))
+		pos.x = math.min(math.max(pos.x, self.room.limits.p1.x + 20), self.room.limits.p2.x - 20)
+		pos.y = math.min(math.max(pos.y, self.room.limits.p1.y + 20), self.room.limits.p2.y - 20)
+		setPos(self.building, pos)
 	end
 end
 
@@ -371,7 +372,6 @@ function Player:updateBuildingMode(dt)
 	if self.building then
 		self.building:update(dt)
 		self.buildingModeTimer = self.buildingModeTimer + dt
-		-- self:unequipWeapon()
 	end
 end
 
@@ -394,7 +394,8 @@ end
 
 -- sai do modo construção
 function Player:endBuildingMode()
-	if self.buildingModeTimer > 0.5 then
+	if self.state == DYING or self.buildingModeTimer > 0.5 then
+		collisionManager:unregister(self.building)
 		self.building = nil
 		self.buildingModeTimer = 0
 	end

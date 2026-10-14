@@ -482,9 +482,9 @@ function CollisionManager:wouldCollideAt(entity, pos)
 end
 
 ---@param entity Entity
----@param dir Vec direção unitária
----@param maxDist number distância máxima a ser verificada
----@param step? number passo da verificação (default 16)
+---@param dir Vec
+---@param maxDist number
+---@param step? number
 ---@return number
 -- distância que `entity` consegue andar na direção `dir` antes de encostar em
 -- algum sólido (ou `maxDist`, se não encostar em nada)
