@@ -60,7 +60,7 @@ function newWallRightFront(spawnPos, room)
 end
 
 function newPillar(spawnPos, room)
-	local triggerHb = hitbox(Rectangle.new(300, 360), vec(-90, -40))
+	local triggerHb = hitbox(Rectangle.new(300, 460), vec(-90, -80))
 	local hbs = hitboxes({}, {}, { triggerHb })
 	local randPillar = tostring(math.random(4))
 	local obs = Obstacle.new(PILLAR.name .. randPillar, hbs, spawnPos, room)
