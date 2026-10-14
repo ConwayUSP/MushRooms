@@ -29,6 +29,7 @@ require("table")
 players = {}
 local MAX_HP = 100		-- limite de hp
 local TIME_TO_SLEEP = 15 -- limite de tempo inativo até dormir
+local MAX_DEFENSE_DUR = 3 -- limite de tempo que o player pode ficar defendendo sem parar
 
 ----------------------------------------
 -- Classe Player
@@ -67,8 +68,8 @@ local TIME_TO_SLEEP = 15 -- limite de tempo inativo até dormir
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
 ---@field age number
----@field defendingCooldownTimer Timer
----@field defendingDurationTimer Timer
+---@field defenseCooldownTimer Timer
+---@field defenseDurationTimer Timer
 ---@field sleepTimer Timer
 ---@field specialMovement function
 ---@field sleep function
@@ -120,8 +121,8 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.shadowWidth = 25
 	player.atkSpeed = 1 -- porcentagem de velocidade de ataque do jogador (1 = 100%)
 	player.age = 0
-	player.defendingCooldownTimer = Timer.new(0.5)
-	player.defendingDurationTimer = Timer.new(3.0, true)
+	player.defenseCooldownTimer = Timer.new(2)
+	player.defenseDurationTimer = Timer.new(MAX_DEFENSE_DUR, true)
 	player.sleepTimer = Timer.new(TIME_TO_SLEEP, true)
 	player.specialMovement = nil
 
@@ -283,10 +284,10 @@ function Player:move(dt)
 end
 
 function Player:checkEndDefense(dt)
-	self.defendingCooldownTimer:update(dt)
-	self.defendingDurationTimer:update(dt)
+	self.defenseCooldownTimer:update(dt)
+	self.defenseDurationTimer:update(dt)
 	if not self.controls:checkAction(ACT_DEF) or self.state == DYING then
-		self.defendingDurationTimer:stop()
+		self.defenseDurationTimer:stop()
 	end
 end
 
@@ -295,7 +296,7 @@ function Player:updateState()
 	local prevState = self.state
 	local isMoving = not nullVec(self.vel)
 
-	if self.defendingDurationTimer.active then
+	if self.defenseDurationTimer.active then
 		self.state = DEFENDING
 		self:wakeUp()
 	else
@@ -333,6 +334,11 @@ function Player:updateState()
 		self.animations[prevState]:reset()
 		-- parando efeito de partículas
 		if prevState == DEFENDING then
+			-- a defesa não entra em cooldown se o jogador defendeu por muito pouco tempo
+			-- basicamente: perdoa missclicks ou recompensa defesas muito precisas
+			if self.defenseDurationTimer.time >= 0.3 then
+				self.defenseCooldownTimer:start()
+			end
 			globalAudioManager:stop(AUDIO_DEFENSE, self)
 			globalVFXManager:stopParticle(PARTICLE_DEFENSE, self)
 		end
@@ -441,23 +447,23 @@ function Player:processInput()
 	-- input de uso de artefato
 	if self.controls:checkAction(ACT_UA) and self.artifact then
 		if not self.artifact:use() then
-			local cdScene = self.uiManager:getWorldScene(UI_ARTIFACT_COOLDOWN_BAR_SCENE)
-			if cdScene then
-				cdScene:activate()
-			end
+			self.uiManager:activateWorldScene(UI_ARTIFACT_COOLDOWN_BAR_SCENE)
 		end
 	end
 
 	-- input de defesa
 	if self.controls:checkAction(ACT_DEF) then
-		if not self.defendingDurationTimer.active and not self.defendingDurationTimer.completed and not self.defendingCooldownTimer.active then
+		if self.defenseCooldownTimer.active then
+			self.uiManager:activateWorldScene(UI_DEFENSE_COOLDOWN_BAR_SCENE)
+		end
+		if not self.defenseDurationTimer.active and not self.defenseDurationTimer.completed and not self.defenseCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
 			globalAudioManager:play(AUDIO_DEFENSE, self, "pop")
-			self.defendingDurationTimer:start()
-			self.defendingCooldownTimer:stop()
-		elseif not self.defendingCooldownTimer.active and not self.defendingCooldownTimer.completed and self.defendingDurationTimer.completed then
-			self.defendingCooldownTimer:start()
-			self.defendingDurationTimer:stop()
+			self.defenseDurationTimer:start()
+			self.defenseCooldownTimer:stop()
+		elseif not self.defenseCooldownTimer.active and not self.defenseCooldownTimer.completed and self.defenseDurationTimer.completed then
+			self.defenseCooldownTimer:start()
+			self.defenseDurationTimer:stop()
 		end
 		return
 	end
@@ -793,9 +799,9 @@ function Player:defenseShake(offset, scaleX, scaleY)
 		return Easing.inOutQuart(t - a)
 	end
 
-	local k = self.defendingDurationTimer.duration - 1
+	local k = self.defenseDurationTimer.duration - 1
 	local deg = math.rad(4)
-	local shake = shakeFunc(self.defendingDurationTimer.time, k)
+	local shake = shakeFunc(self.defenseDurationTimer.time, k)
 	local angle = shake * math.sin(40 * (self.age ^ 4)) * deg
 
 	local rotateOffset = shake > 0 and offset or vec(0, 0)

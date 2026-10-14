@@ -39,10 +39,12 @@ function newPlayerUIManager(player)
 	local artifactEquipScene = newPlayerArtifactEquipScene(player)
 	local interactionPromptScene = newPlayerInteractionPromptScene(player)
 	local artifactCdScene = newPlayerArtifactCooldownBarScene(player)
+	local defenseCdScene = newPlayerDefenseCooldownBarScene(player)
 	playerManager:addWorldScene(damageBarScene)
 	playerManager:addWorldScene(artifactEquipScene)
 	playerManager:addWorldScene(interactionPromptScene)
 	playerManager:addWorldScene(artifactCdScene)
+	playerManager:addWorldScene(defenseCdScene)
 
 	return playerManager
 end

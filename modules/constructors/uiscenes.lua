@@ -977,9 +977,8 @@ end
 
 ---@param player Player
 ---@return UIWorldScene
--- cena de mundo que mostra uma barra de cooldown (estilo barra de vida)
--- abaixo do jogador enquanto o artefato equipado está em cooldown; o
--- jogador vê a barra ao tentar usar o artefato com o cooldown ativo
+-- cena de mundo que mostra uma barra de cooldown abaixo do jogador
+-- enquanto o artefato equipado está em cooldown
 function newPlayerArtifactCooldownBarScene(player)
 	local scene = UIWorldScene.new(UI_ARTIFACT_COOLDOWN_BAR_SCENE, player, vec(0, 76), nil)
 
@@ -992,13 +991,13 @@ function newPlayerArtifactCooldownBarScene(player)
 	end
 
 	local customCalcBarColor = function(self)
-		local dmgFactor = 1 - self.percent
-		self.color[1] = 0.7 - dmgFactor * 0.2 -- R
-		self.color[2] = 0.8 + dmgFactor * 0.2 -- G
-		self.color[3] = 0.9 + dmgFactor * dmgFactor * 0.1 -- B
+		local revPercent = 1 - self.percent
+		self.color[1] = 0.7 - revPercent * 0.2 -- R
+		self.color[2] = 0.8 + revPercent * 0.2 -- G
+		self.color[3] = 0.9 + revPercent * revPercent * 0.1 -- B
 	end
 
-	local lifebar = UILifeBarElem.new(
+	local cooldownBar = UILifeBarElem.new(
 		"artifact cooldown bar",
 		vec(0, 0),
 		size(12, 12),
@@ -1007,7 +1006,7 @@ function newPlayerArtifactCooldownBarScene(player)
 		3,
 		customCalcBarColor
 	)
-	scene:addElement(lifebar, vec(0, 0))
+	scene:addElement(cooldownBar, vec(0, 0))
 
 	local hideTimer = 0
 	-- chamado pelo player quando o uso do artefato é bloqueado pelo cooldown
@@ -1021,9 +1020,9 @@ function newPlayerArtifactCooldownBarScene(player)
 		local cd = player.artifact and player.artifact.cooldown
 		if cd and cd.duration > 0 then
 			local frac = math.min(math.max(cd.time / cd.duration, 0), 1)
-			lifebar.front.frontTarget = frac
-			lifebar.front.backTarget = frac
-			lifebar.front.percent = frac
+			cooldownBar.front.frontTarget = frac
+			cooldownBar.front.backTarget = frac
+			cooldownBar.front.percent = frac
 		end
 	end
 
@@ -1037,6 +1036,71 @@ function newPlayerArtifactCooldownBarScene(player)
 			end
 		end
 		local cd = player.artifact and player.artifact.cooldown
+		if self.visible and (not cd or not cd.active) then
+			self:hide()
+		end
+
+	end
+
+	scene:hide()
+	return scene
+end
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra uma barra de cooldown da defesa
+function newPlayerDefenseCooldownBarScene(player)
+	local scene = UIWorldScene.new(UI_DEFENSE_COOLDOWN_BAR_SCENE, player, vec(0, 76), nil)
+
+	local cooldownCalc = function()
+		return player.defenseCooldownTimer.time, player.defenseCooldownTimer.duration
+	end
+
+	local customCalcBarColor = function(self)
+		local revPercent = 1 - self.percent
+		self.color[1] = 0.9 + revPercent * revPercent * 0.1 -- R
+		self.color[2] = 0.7 - revPercent * 0.2 -- G
+		self.color[3] = 0.7 - revPercent * 0.3 -- B
+	end
+
+	local cooldownBar = UILifeBarElem.new(
+		"defense cooldown bar",
+		vec(0, 0),
+		size(12, 12),
+		cooldownCalc,
+		{ l = 0, r = 0 },
+		3,
+		customCalcBarColor
+	)
+	scene:addElement(cooldownBar, vec(0, 0))
+
+	local hideTimer = 0
+	-- chamado pelo player quando tenta defender no cooldown
+	function scene:activate()
+		hideTimer = 0.5
+		if self.visible then
+			return
+		end
+		self:show()
+		local cd = player.defenseCooldownTimer
+		if cd and cd.duration > 0 then
+			local frac = math.min(math.max(cd.time / cd.duration, 0), 1)
+			cooldownBar.front.frontTarget = frac
+			cooldownBar.front.backTarget = frac
+			cooldownBar.front.percent = frac
+		end
+	end
+
+	-- some com o tempo ou quando o cooldown da defesa termina
+	scene.onUpdate = function(self, dt)
+		if hideTimer > 0 then
+			hideTimer = hideTimer - dt
+			if hideTimer <= 0 then
+				self:hide()
+				return
+			end
+		end
+		local cd = player.defenseCooldownTimer
 		if self.visible and (not cd or not cd.active) then
 			self:hide()
 		end

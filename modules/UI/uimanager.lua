@@ -104,6 +104,15 @@ function UIManager:getWorldScene(sceneType)
 end
 
 ---@param sceneType Type
+-- ativa uma cena de mundo do tipo `sceneType`
+function UIManager:activateWorldScene(sceneType)
+	local scene = self:getWorldScene(sceneType)
+	if scene then
+		scene:activate()
+	end
+end
+
+---@param sceneType Type
 -- ativa uma cena de um determinado tipo
 function UIManager:activateScene(sceneType)
 	if self.scenes[sceneType].active then

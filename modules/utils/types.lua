@@ -95,6 +95,7 @@ UI_PLAYER_HP_SCENE = "UI player hp scene"
 UI_ARTIFACT_EQUIP_SCENE = "UI artifact equip scene"
 UI_INTERACTION_PROMPT_SCENE = "UI interaction prompt scene"
 UI_ARTIFACT_COOLDOWN_BAR_SCENE = "UI artifact cooldown bar scene"
+UI_DEFENSE_COOLDOWN_BAR_SCENE = "UI defense cooldown bar scene"
 
 ---------- ÁUDIOS ----------
 MUSIC_MENU = "menu music"
