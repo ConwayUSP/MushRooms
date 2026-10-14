@@ -14,10 +14,10 @@ function newPuzzleRoom1(rng)
 		centerSize = vec(2, 2),
 		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
 		stones = {
-			{ id = "stone-up-left", cell = vec(1, 1), direction = vec(1, 1) },
-			{ id = "stone-up-right", cell = vec(gridSize.x, 1), direction = vec(-1, 1) },
-			{ id = "stone-down-left", cell = vec(1, gridSize.y), direction = vec(1, -1) },
-			{ id = "stone-down-right", cell = vec(gridSize.x, gridSize.y), direction = vec(-1, -1) },
+			{ id = "stone-up-left", cell = vec(2, 2), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(3, 2), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(2, 3), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(3, 4), direction = vec(-1, -1) },
 		},
 	})
 

@@ -143,9 +143,7 @@ function renderEntities(camera)
 	for _, r in activeRooms:iter() do
 		if r.puzzleGridManager then
 			for _, piece in ipairs(r.puzzleGridManager.pieces) do
-				local animation = piece.animations[piece.state]
-				local floorAnchor = animation.frameDim.height * piece.scale / 2
-				addEntityToDrawList(piece, piece.pos.y + floorAnchor)
+				addEntityToDrawList(piece, piece.pos.y + getAnchor(piece, FLOOR))
 			end
 		end
 		-- adiciona destrutíveis

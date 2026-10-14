@@ -15,8 +15,10 @@ require("modules.utils.vec")
 PuzzlePin = setmetatable({}, { __index = PuzzlePiece })
 PuzzlePin.__index = PuzzlePin
 PuzzlePin.KIND = "pin"
-PuzzlePin.SPRITE_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Pin" })
-PuzzlePin.FRAME_DIM = { width = 12, height = 12 }
+PuzzlePin.SPRITE_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Pin", "Environment" })
+PuzzlePin.FRAME_DIM = { width = 36, height = 36 }
+PuzzlePin.FRAME_DURATION = 0.25
+PuzzlePin.HITBOX_RADIUS = 12
 
 ---@param state State
 ---@return string
@@ -37,8 +39,8 @@ function PuzzlePin.new(settings, puzzleGridManager)
 	local pin = setmetatable({}, PuzzlePin)
 	local offset = vec(settings.offset.x, settings.offset.y)
 	local pos = addVec(puzzleGridManager.center, offset)
-	local defaultHb = hitbox(Circle.new(PuzzlePin.FRAME_DIM.width))
-	local solidHb = hitbox(Circle.new(PuzzlePin.FRAME_DIM.width))
+	local defaultHb = hitbox(Circle.new(PuzzlePin.HITBOX_RADIUS))
+	local solidHb = hitbox(Circle.new(PuzzlePin.HITBOX_RADIUS))
 	local hbs = hitboxes({ defaultHb }, { solidHb }, {})
 
 	PuzzlePiece.init(pin, settings.id, pos, puzzleGridManager, hbs)
@@ -47,6 +49,7 @@ function PuzzlePin.new(settings, puzzleGridManager)
 	pin.pullDirection = vec(settings.pullDirection.x, settings.pullDirection.y)
 	pin:addIdleAnimation(PuzzlePin.spritePathForState(IDLE), PuzzlePin.FRAME_DIM)
 	pin:addSelectedAnimation(PuzzlePin.spritePathForState(SELECTED), PuzzlePin.FRAME_DIM)
+	pin:addFinishedAnimation(PuzzlePin.spritePathForState(IDLE), PuzzlePin.FRAME_DIM, PuzzlePin.FRAME_DURATION)
 
 	return pin
 end

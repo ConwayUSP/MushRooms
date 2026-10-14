@@ -51,3 +51,4 @@ ACTIVE = "active"
 ------------ ELEMENTOS DE UI -----------
 
 SELECTED = "selected"
+FINISHED = "finished"

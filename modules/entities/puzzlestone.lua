@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.entities.puzzlepiece")
+require("modules.engine.tile")
 require("modules.utils.easing")
 require("modules.utils.vec")
 
@@ -21,18 +22,23 @@ require("modules.utils.vec")
 ---@field moveElapsed number
 ---@field moveDuration number
 ---@field moveLink GridLink?
+---@field tile Tile
+---@field pinVisualOffset Vec
 
 PuzzleStone = setmetatable({}, { __index = PuzzlePiece })
 PuzzleStone.__index = PuzzleStone
 PuzzleStone.KIND = "stone"
-PuzzleStone.SPRITE_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Puzzle Corner" })
-PuzzleStone.PIECE_NAMES = {
-	["-1,-1"] = "Piece Up Left",
-	["1,-1"] = "Piece Up Right",
-	["-1,1"] = "Piece Down Left",
-	["1,1"] = "Piece Down Right",
+PuzzleStone.SPRITE_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Stone" })
+PuzzleStone.PIN_PATH_START = dirPathFormat({ "assets", "sprites", "puzzle", "Pin", "Stone" })
+PuzzleStone.TILE_POSITIONS = {
+	["-1,-1"] = vec(1, 1),
+	["1,-1"] = vec(0, 1),
+	["-1,1"] = vec(1, 0),
+	["1,1"] = vec(0, 0),
 }
 PuzzleStone.FRAME_DIM = { width = 36, height = 36 }
+PuzzleStone.PIN_FRAME_DIM = { width = 36, height = 36 }
+PuzzleStone.PIN_FRAME_DURATION = 0.25
 PuzzleStone.MOVE_EASING = Easing.inOutQuad
 
 ---@class PuzzleStoneSettings
@@ -40,13 +46,15 @@ PuzzleStone.MOVE_EASING = Easing.inOutQuad
 ---@field cell Vec posição inicial válida e desocupada no grid
 ---@field direction Vec direção da quina: cada eixo deve ser -1 ou 1
 
----@param direction Vec
+---@return string
+function PuzzleStone.spritePath()
+	return pngPathFormat({ PuzzleStone.SPRITE_PATH_START, IDLE })
+end
+
 ---@param state? State
 ---@return string
-function PuzzleStone.spritePathForDirection(direction, state)
-	local spriteState = state or IDLE
-	local pieceName = PuzzleStone.PIECE_NAMES[direction.x .. "," .. direction.y]
-	return pngPathFormat({ PuzzleStone.SPRITE_PATH_START, pieceName, spriteState })
+function PuzzleStone.pinPathForState(state)
+	return pngPathFormat({ PuzzleStone.PIN_PATH_START, state or IDLE })
 end
 
 ---@param settings PuzzleStoneSettings
@@ -65,13 +73,19 @@ function PuzzleStone.new(settings, puzzleGridManager)
 	stone.kind = PuzzleStone.KIND
 	stone.cell = cell
 	stone.direction = vec(settings.direction.x, settings.direction.y)
-	stone.spritePath = PuzzleStone.spritePathForDirection(stone.direction, IDLE)
+	stone.spritePath = PuzzleStone.spritePath()
 	stone.moving = false
 	stone.moveElapsed = 0
 	stone.moveDuration = 0
 	stone.moveLink = nil
-	stone:addIdleAnimation(stone.spritePath, PuzzleStone.FRAME_DIM)
-	stone:addSelectedAnimation(PuzzleStone.spritePathForDirection(stone.direction, SELECTED), PuzzleStone.FRAME_DIM)
+	stone.pinVisualOffset = vec(0, -4)
+
+	local tilePosition = PuzzleStone.TILE_POSITIONS[stone.direction.x .. "," .. stone.direction.y]
+	stone.tile = Tile.new(PuzzleStone.spritePath(), tilePosition, PuzzleStone.FRAME_DIM)
+	-- as animações representam somente o pino visual sobreposto à pedra
+	stone:addIdleAnimation(PuzzleStone.pinPathForState(IDLE), PuzzleStone.PIN_FRAME_DIM)
+	stone:addSelectedAnimation(PuzzleStone.pinPathForState(SELECTED), PuzzleStone.PIN_FRAME_DIM)
+	stone:addFinishedAnimation(PuzzleStone.pinPathForState(IDLE), PuzzleStone.PIN_FRAME_DIM, PuzzleStone.PIN_FRAME_DURATION)
 
 	return stone
 end
@@ -132,6 +146,14 @@ function PuzzleStone:update(dt)
 		self.vel = vec(0, 0)
 		self.acc = vec(0, 0)
 	end
+end
+
+---@param camera Camera
+function PuzzleStone:draw(camera)
+	local viewX, viewY = camera:viewPos(self.pos)
+
+	self.tile:draw(viewX, viewY, self.scale)
+	PuzzlePiece.draw(self, camera, self.pinVisualOffset)
 end
 
 ---@param centerBounds PuzzleCenterBounds

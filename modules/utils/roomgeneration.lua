@@ -206,7 +206,7 @@ end
 ---@return PuzzlePinSettings[]
 -- cria um pino alinhado a cada tile dos quatro lados do grid
 function RoomGeneration.fullPerimeterWithPins(size)
-	local gridMargin = 50
+	local gridMargin = 36
 	local directionNames = {
 		["0;-1"] = "up",
 		["1;0"] = "right",

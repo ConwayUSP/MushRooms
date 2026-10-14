@@ -82,6 +82,10 @@ ANCHORS = {
 	nuclear_shot = floorAnchor(4),
 	pebble_shot = floorAnchor(4),
 	ember_mark = floorAnchor(-1000),
+
+	-- Puzzle
+	stone = floorAnchor(18),
+	pin = floorAnchor(8),
 }
 
 ----------------------------------------
@@ -97,7 +101,7 @@ ANCHORS = {
 function getAnchor(obj, anchorType, scale)
 	scale = scale or obj.scale or 3
 
-	local key = obj.object and obj.object.name or obj.name
+	local key = obj.object and obj.object.name or obj.name or obj.kind
 	key = pathlizeName(string.lower(key))
 	local anchor = ANCHORS[key] and ANCHORS[key][anchorType] or nil
 

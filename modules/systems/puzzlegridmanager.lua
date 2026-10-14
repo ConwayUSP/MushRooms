@@ -4,6 +4,7 @@
 require("modules.entities.puzzlepin")
 require("modules.entities.puzzlestone")
 require("modules.systems.links")
+require("modules.systems.puzzlebackground")
 require("modules.utils.timer")
 require("modules.utils.vec")
 
@@ -23,6 +24,7 @@ require("modules.utils.vec")
 ---@field center Vec
 ---@field size Vec
 ---@field centerSize Vec
+---@field background PuzzleBackground
 ---@field grid table<number, table<number, PuzzleStone | false>>
 ---@field reservedCells table<number, table<number, PuzzleStone | false>>
 ---@field pieces PuzzlePiece[]
@@ -30,6 +32,10 @@ require("modules.utils.vec")
 ---@field pins PuzzlePin[]
 ---@field stones PuzzleStone[]
 ---@field pendingPinsByAttacker table<Entity, PendingPuzzlePin>
+---@field completionPins PuzzlePin[]
+---@field nextCompletionPin number
+---@field pinFinishTimer Timer
+---@field completed boolean
 
 ---@class PendingPuzzlePin
 ---@field pin PuzzlePin
@@ -47,9 +53,7 @@ PuzzleGridManager.TILE_SIZE = 108
 PuzzleGridManager.PENDING_LINK_DURATION = 5
 PuzzleGridManager.GRID_LINK_DURATION = 5
 PuzzleGridManager.STONE_MOVE_DURATION = 0.8
-PuzzleGridManager.GRID_COLOR = { 19 / 255, 15 / 255, 63 / 255, 1 }
-PuzzleGridManager.CENTER_COLOR = { 14 / 255, 11 / 255, 47 / 255, 1 }
-PuzzleGridManager.BORDER_COLOR = { 67 / 255, 68 / 255, 155 / 255, 1 }
+PuzzleGridManager.PIN_FINISH_DELAY = 0.1
 
 ---@param room Room
 ---@param settings PuzzleGridSettings
@@ -63,6 +67,7 @@ function PuzzleGridManager.new(room, settings)
 	manager.center = vec(center.x, center.y)
 	manager.size = vec(settings.size.x, settings.size.y)
 	manager.centerSize = vec(settings.centerSize.x, settings.centerSize.y)
+	manager.background = PuzzleBackground.new(manager.center, manager.size, manager.centerSize)
 	manager.grid = {}
 	manager.reservedCells = {}
 	manager.pieces = {}
@@ -70,6 +75,11 @@ function PuzzleGridManager.new(room, settings)
 	manager.pins = {}
 	manager.stones = {}
 	manager.pendingPinsByAttacker = {}
+	manager.completionPins = {}
+	manager.nextCompletionPin = 1
+	manager.pinFinishTimer = Timer.new(PuzzleGridManager.PIN_FINISH_DELAY, false, function()
+		manager:finishNextPin()
+	end)
 	manager.completed = false
 
 	for y = 1, manager.size.y do
@@ -125,6 +135,10 @@ end
 ---@param attacker Entity
 ---@param pin PuzzlePin
 function PuzzleGridManager:selectPendingPin(attacker, pin)
+	if self.completed then
+		return
+	end
+
 	local current = self.pendingPinsByAttacker[attacker]
 
 	if current then
@@ -157,7 +171,7 @@ end
 ---@param direction Vec
 ---@return boolean
 function PuzzleGridManager:moveStoneOneCell(stone, direction)
-	if stone.moving then
+	if self.completed or stone.moving then
 		return false
 	end
 
@@ -230,19 +244,54 @@ function PuzzleGridManager:isPuzzleComplete()
 end
 
 function PuzzleGridManager:checkCompletion()
-	local isComplete = self:isPuzzleComplete()
-	if isComplete and not self.completed then
-		self.completed = true
-		print("Completou o puzzle")
-		-- TODO: substituir o print pelo efeito definitivo de conclusão do puzzle.
-	elseif not isComplete then
-		self.completed = false
+	if self.completed or not self:isPuzzleComplete() then
+		return
 	end
+
+	self:completePuzzle()
+end
+
+-- toca a animação do próximo pino e agenda o restante do stagger
+function PuzzleGridManager:finishNextPin()
+	local pin = self.pins[self.nextCompletionPin]
+	if not pin then
+		return
+	end
+
+	pin:finish()
+	self.nextCompletionPin = self.nextCompletionPin + 1
+	if self.pins[self.nextCompletionPin] then
+		self.pinFinishTimer:restart()
+	end
+end
+
+-- encerra as interações e inicia as animações de conclusão
+function PuzzleGridManager:completePuzzle()
+	self.completed = true
+	self.pendingPinsByAttacker = {}
+
+	for _, piece in ipairs(self.pieces) do
+		piece:clearSelection()
+	end
+
+	for _, stone in ipairs(self.stones) do
+		stone:finish()
+	end
+
+	self.nextCompletionPin = 1
+	self.pinFinishTimer:restart()
+
+	print("Completou o puzzle")
+	-- TODO: substituir o print pelo efeito definitivo de conclusão do puzzle.
 end
 
 ---@param attacker Entity
 ---@param piece PuzzlePiece
 function PuzzleGridManager:onPieceHit(attacker, piece)
+	if self.completed then
+		return
+	end
+
 	if piece.kind == PuzzlePin.KIND then
 		self:selectPendingPin(attacker, piece)
 		return
@@ -329,6 +378,8 @@ function PuzzleGridManager:update(dt)
 		piece:update(dt)
 	end
 
+	self.pinFinishTimer:update(dt)
+
 	local expiredAttackers = {}
 	for attacker, pending in pairs(self.pendingPinsByAttacker) do
 		pending.timer:update(dt)
@@ -344,20 +395,7 @@ end
 
 ---@param camera Camera
 function PuzzleGridManager:drawBackground(camera)
-	local viewX, viewY = camera:viewPos(self.center)
-	local gridWidth = self.size.x * self.TILE_SIZE
-	local gridHeight = self.size.y * self.TILE_SIZE
-	local centerWidth = self.centerSize.x * self.TILE_SIZE
-	local centerHeight = self.centerSize.y * self.TILE_SIZE
-	local padding = 10
-
-	love.graphics.setColor(self.BORDER_COLOR[1], self.BORDER_COLOR[2], self.BORDER_COLOR[3], self.BORDER_COLOR[4])
-	love.graphics.rectangle("fill", viewX - gridWidth / 2 - padding, viewY - gridHeight / 2 - padding, gridWidth + 2*padding, gridHeight + 2*padding)
-	love.graphics.setColor(self.GRID_COLOR[1], self.GRID_COLOR[2], self.GRID_COLOR[3], self.GRID_COLOR[4])
-	love.graphics.rectangle("fill", viewX - gridWidth / 2, viewY - gridHeight / 2, gridWidth, gridHeight)
-	love.graphics.setColor(self.CENTER_COLOR[1], self.CENTER_COLOR[2], self.CENTER_COLOR[3], self.CENTER_COLOR[4])
-	love.graphics.rectangle("fill", viewX - centerWidth / 2, viewY - centerHeight / 2, centerWidth, centerHeight)
-	love.graphics.setColor(1, 1, 1, 1)
+	self.background:draw(camera)
 end
 
 return PuzzleGridManager

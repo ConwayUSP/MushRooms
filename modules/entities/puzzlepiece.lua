@@ -49,6 +49,10 @@ end
 
 ---@param source any fonte responsável por manter a peça selecionada
 function PuzzlePiece:select(source)
+	if self.puzzleGridManager.completed then
+		return
+	end
+
 	self.selectedBy[source] = true
 	self.state = SELECTED
 end
@@ -57,9 +61,26 @@ end
 function PuzzlePiece:deselect(source)
 	self.selectedBy[source] = nil
 
+	if self.puzzleGridManager.completed then
+		return
+	end
+
 	if not next(self.selectedBy) then
 		self.state = IDLE
 	end
+end
+
+-- remove todas as fontes de seleção e restaura o estado inicial
+function PuzzlePiece:clearSelection()
+	self.selectedBy = {}
+	self.state = IDLE
+end
+
+-- inicia a animação definitiva de conclusão da peça
+function PuzzlePiece:finish()
+	self.selectedBy = {}
+	self.animations[FINISHED]:reset()
+	self.state = FINISHED
 end
 
 ---@return boolean
@@ -101,27 +122,29 @@ function PuzzlePiece:addSelectedAnimation(path, frameDim)
 	self:addSingleFrameAnimation(path, SELECTED, frameDim)
 end
 
+---@param path string
+---@param frameDim Size
+---@param frameDuration number
+-- adiciona a animação final que permanece no segundo frame
+function PuzzlePiece:addFinishedAnimation(path, frameDim, frameDuration)
+	local settings = newAnimSetting(2, frameDim, frameDuration, false, 1, 0)
+	addAnimation(self, path, FINISHED, settings)
+end
+
 ---@param dt number
 function PuzzlePiece:update(dt)
 	self.animations[self.state]:update(dt)
 end
 
 ---@param camera Camera
-function PuzzlePiece:draw(camera)
+---@param visualOffset? Vec deslocamento em pixels do sprite antes da escala
+function PuzzlePiece:draw(camera, visualOffset)
 	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
+	local offsetX = visualOffset and visualOffset.x * self.scale or 0
+	local offsetY = visualOffset and visualOffset.y * self.scale or 0
 
-	love.graphics.draw(
-		self.spriteSheets[self.state],
-		animation.frames[animation.currFrame],
-		viewX,
-		viewY,
-		0,
-		self.scale,
-		self.scale,
-		animation.offset.x,
-		animation.offset.y
-	)
+	love.graphics.draw(self.spriteSheets[self.state], animation.frames[animation.currFrame], viewX + offsetX, viewY + offsetY, 0, self.scale, self.scale, animation.offset.x, animation.offset.y)
 end
 
 return PuzzlePiece
