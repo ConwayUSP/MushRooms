@@ -73,6 +73,7 @@ ANCHORS = {
 	rubble_big = floorAnchor(-6),
 	torch = floorAnchor(200),
 	pillar_prop = floorAnchor(-4),
+	skeleton = floorAnchor(-2),
 
 	-- Produtos
 	chest = floorAnchor(10),

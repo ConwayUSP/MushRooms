@@ -305,7 +305,7 @@ end
 -- renderiza iluminações, como as de tochas ou dos players
 function renderLighting(camera)
 	for _, r in activeRooms:iter() do
-		-- Iluminações de obstáculos
+		-- iluminações de obstáculos
 		for _, obs in pairs(r.obstacles) do
 			if obs.emitsLight then
 				local viewX, viewY = camera:viewPos(obs.pos)
@@ -319,12 +319,29 @@ function renderLighting(camera)
 						obs.glowRadius
 					)
 				end
-				renderWithLight(drawFunc, { 0.9, 0.2, 0.4, 0.66 }, lightLevels, obs.glowRadius / 5)
+				renderWithLight(drawFunc, obs.glowColor, math.ceil(obs.glowRadius / 120), obs.glowRadius / 5)
+			end
+		end
+
+		for _, build in pairs(r.interactives) do
+			if build.emitsLight then
+				local viewX, viewY = camera:viewPos(build.pos)
+				local drawFunc = function()
+					love.graphics.draw(
+						assetManager.emptyTex,
+						viewX - build.glowRadius / 2,
+						viewY - build.glowRadius / 2,
+						0,
+						build.glowRadius,
+						build.glowRadius
+					)
+				end
+				renderWithLight(drawFunc, build.glowColor, math.ceil(build.glowRadius / 120), build.glowRadius / 5)
 			end
 		end
 	end
 
-	-- Player
+	-- player
 	for _, p in pairs(players) do
 		local viewX, viewY = camera:viewPos(p.pos)
 		local glowRadius = p.glowRadius or 600
@@ -339,7 +356,7 @@ function renderLighting(camera)
 				glowRadius
 			)
 		end
-		renderWithLight(drawFunc, { 0.7, 0.7, 0.9, 0.15 }, lightLevels, glowRadius / 5)
+		renderWithLight(drawFunc, { 0.7, 0.7, 0.9, 0.1 }, lightLevels, glowRadius / 5)
 	end
 end
 

@@ -427,7 +427,7 @@ function Player:processInput()
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
 		elseif self.interactiveObj.type == INTERACTIVE then
 			-- define a interação ativa se for uma interação duradoura (como um baú, que se mantém aberto até ser fechado)
-			self.activeInteraction = self.interactiveObj.onInteract(self.interactiveObj, self)
+			self.activeInteraction = self.interactiveObj.onInteract and self.interactiveObj.onInteract(self.interactiveObj, self)
 		end
 		stopMovement(self)
 	end
@@ -656,6 +656,9 @@ end
 
 -- adiciona um objeto interativo candidato à lista do `Player`
 function Player:considerInteractive(obj)
+	if obj.type ~= NPC and not obj.onInteract then
+		return
+	end
 	table.insert(self.candidateInteractives, obj)
 end
 

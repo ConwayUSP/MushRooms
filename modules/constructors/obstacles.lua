@@ -92,7 +92,7 @@ function newCandle(spawnPos, room)
 	local randCandle = tostring(math.random(3))
 	local obs = Obstacle.new(CANDLE.name .. randCandle, hbs, spawnPos, room, true)
 	obs:addAnimations(newAnimSetting(2, size(27, 36), 0.35, true, 1))
-	obs:makeGlow(600)
+	obs:makeGlow(450, COLOR_RED_GLOW)
 
 	return obs
 end
@@ -102,7 +102,7 @@ function newTorch(spawnPos, room)
 	local randTorch = tostring(math.random(1))
 	local obs = Obstacle.new(TORCH.name .. randTorch, hbs, spawnPos, room, true)
 	obs:addAnimations(newAnimSetting(2, size(17, 37), 0.35, true, 1))
-	obs:makeGlow(400)
+	obs:makeGlow(600, COLOR_RED_GLOW)
 
 	return obs
 end
@@ -130,6 +130,12 @@ function newSkeleton(spawnPos, room)
 	local randSkeleton = tostring(math.random(6))
 	local obs = Obstacle.new(SKELETON.name .. randSkeleton, hbs, spawnPos, room, true)
 	obs:addAnimations(newAnimSetting(1, size(28, 24), 1000, false))
+
+	-- o esqueleto 5 tem uma vela grudada nele
+	if randSkeleton == "5" then
+		obs:addAnimations(newAnimSetting(1, size(28, 24), 1000, false, nil, nil, vec(0, 20)))
+		obs:makeGlow(400, COLOR_WEAK_RED_GLOW)
+	end
 
 	return obs
 end

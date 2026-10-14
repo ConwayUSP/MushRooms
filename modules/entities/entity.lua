@@ -101,6 +101,15 @@ function Entity:nearestEnemy(maxDistance)
 	return nearest
 end
 
+---@param glowRadius number
+---@param glowColor table
+-- faz o objeto emitir luz
+function Entity:makeGlow(glowRadius, glowColor)
+	self.emitsLight = true
+	self.glowRadius = glowRadius
+	self.glowColor = glowColor
+end
+
 ---@param camera Camera
 -- função de renderização padrão das entidades
 function Entity:draw(camera)

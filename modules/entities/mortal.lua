@@ -114,6 +114,10 @@ function Mortal:heal(amount)
 	self.hp = math.min(self.hp + amount, self.maxHp)
 end
 
+function Mortal:stopHealing()
+	self.healingTimer:stop()
+end
+
 function Mortal:applyFear(attacker, duration)
 	if self.type == ENEMY then
 		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_ON_INIT, FEAR_DEFAULT_DUR), avoidAllPlayersStrong)
