@@ -112,7 +112,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
 	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
-	room.deactivationTimer = Timer.new(2)
+	room.deactivationTimer = Timer.new(0.5)
 
 	room:addWallsAndDoors()
 
@@ -159,8 +159,6 @@ function Room:update(dt)
 	self.uiManager:update(dt)
 	self:updateDoorsLogic(dt)
 
-	print("active rooms: " .. activeRooms:size())
-	print("timer: " .. self.deactivationTimer.time)
 	-- lógica de desativação da sala quando ela está vazia
 	self.deactivationTimer:update(dt)
 	if self.deactivationTimer.goingOff then
@@ -245,7 +243,7 @@ function Room:onPlayerExit(player)
 			self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
 		end
 		if not self.explored and (self.roomType == BOSS_ROOM or self.roomType == BATTLE_ROOM) then
-			self.doorsTimer:restart()
+			self.doorsTimer:stop()
 		end
 		self.deactivationTimer:start()
 	end
@@ -338,9 +336,12 @@ end
 -- lida com o timer para abertura e fechamento de portas
 -- e com a conclusão de combates em sala de combate
 function Room:updateDoorsLogic(dt)
+	--debugTable("DOOR TIMER", self.doorsTimer)
 	self.doorsTimer:update(dt)
 	if not self.explored and not self:isInCombat() then
-		self:setExplored()
+		if self.playersInRoom:size() > 0 then
+			self:setExplored()
+		end
 		self:openDoors()
 		if self.doorsTimer.active then
 			self.doorsTimer:stop()

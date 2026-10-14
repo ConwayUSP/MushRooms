@@ -96,6 +96,7 @@ function Timer:startOrContinue()
 	end
 end
 
+-- começa a contagem do zero
 function Timer:restart()
 	self:start()
 end
