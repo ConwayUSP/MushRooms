@@ -663,9 +663,6 @@ end
 
 -- adiciona um objeto interativo candidato à lista do `Player`
 function Player:considerInteractive(obj)
-	if obj.type ~= NPC and not obj.onInteract then
-		return
-	end
 	table.insert(self.candidateInteractives, obj)
 end
 
@@ -861,6 +858,7 @@ function Player:dropAllBlessings()
 end
 
 function Player:sleep()
+	self.animations[SLEEPING]:reset()
 	self.state = SLEEPING
 end
 
