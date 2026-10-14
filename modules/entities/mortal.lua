@@ -142,15 +142,6 @@ function Mortal:die()
 	self.deathTimer = 0
 	stopMovement(self)
 	globalAudioManager:stopAllFrom(self)
-
-	local atks = (self.atk and self.atk[self.selectedAtk] and self.atk[self.selectedAtk].events)
-		or (self.weapon and self.weapon.atk.events)
-	if atks then
-		for _, atk in pairs(atks) do
-			collisionManager:unregister(atk)
-			atk:destroy()
-		end
-	end
 	collisionManager:unregister(self)
 
 	if self.weapon then

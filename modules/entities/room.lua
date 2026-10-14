@@ -112,7 +112,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
 	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
-	room.deactivationTimer = Timer.new(0.5)
+	room.deactivationTimer = Timer.new(1)
 
 	room:addWallsAndDoors()
 
@@ -164,6 +164,7 @@ function Room:update(dt)
 	if self.deactivationTimer.goingOff then
 		activeRooms:remove(makeKey(self.arrPos.x, self.arrPos.y))
 		collisionManager.roomsDirty = true
+		self:clearDeadBodies()
 	end
 end
 
@@ -492,6 +493,15 @@ function Room:isInCombat()
 		end
 	end
 	return false
+end
+
+function Room:clearDeadBodies()
+	for i = #self.enemies, 1, -1 do
+		if self.enemies[i].hp <= 0 then
+			self.enemies[i]:destroyAttacks()
+			table.remove(self.enemies, i)
+		end
+	end
 end
 
 ----------------------------------------

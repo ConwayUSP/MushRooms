@@ -287,6 +287,16 @@ function Enemy:interruptAttack()
 	self:resetAttackAnimations()
 end
 
+-- destrói e desregistra todos os eventos de ataque pertencentes a este inimigo
+function Enemy:destroyAttacks()
+	for _, atk in pairs(self.atk) do
+		for _, ev in pairs(atk.events) do
+			collisionManager:unregister(ev)
+			ev:destroy()
+		end
+	end
+end
+
 ----------------------------------------
 -- Funções de Estado
 ----------------------------------------
