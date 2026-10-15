@@ -10,8 +10,7 @@ require("modules.utils.types")
 
 local BLUEPRINTS = {}
 
--- BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2 }
-BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1 }
+BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2, newPuzzleRoom3 }
 BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
 BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
 BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }

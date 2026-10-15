@@ -1,9 +1,10 @@
 local RoomGeneration = require("modules.utils.roomgeneration")
 
+---@param rng RNG
 ---@return Blueprint
--- sala de puzzle 1: grid 4x4 com uma pedra em cada canto e pinos em todo o perímetro
+-- sala de puzzle pequena
 function newPuzzleRoom1(rng)
-	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room", rgba8(12, 253, 255, 255))
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 4x4", rgba8(12, 253, 255, 255))
 	local gridSize = vec(4, 4)
 	local decorationMargin = 100
 	local excludedAreas = { RoomGeneration.puzzleGridExclusionArea(gridSize, decorationMargin) }
@@ -14,25 +15,63 @@ function newPuzzleRoom1(rng)
 		centerSize = vec(2, 2),
 		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
 		stones = {
-			{ id = "stone-up-left", cell = vec(2, 2), direction = vec(1, 1) },
-			{ id = "stone-up-right", cell = vec(3, 2), direction = vec(-1, 1) },
-			{ id = "stone-down-left", cell = vec(2, 3), direction = vec(1, -1) },
-			{ id = "stone-down-right", cell = vec(3, 4), direction = vec(-1, -1) },
+			{ id = "stone-up-left", cell = vec(1, 1), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(4, 1), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(1, 4), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(4, 4), direction = vec(-1, -1) },
 		},
 	})
 
 	return bp
 end
 
+---@param rng RNG
 ---@return Blueprint
--- sala de puzzle 2: contém uma vela (?)
+-- sala de puzzle média
 function newPuzzleRoom2(rng)
-	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room 2", rgba8(12, 253, 255, 255))
-	local spCenter = SpawnPoint.new(vec(0, 0))
-	local candleData = SpawnData.new(CANDLE, 1.0)
-	spCenter:insert(candleData)
-	bp:insert(spCenter)
-	RoomGeneration.insertGeneralDecorations(bp, rng)
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 6x6", rgba8(12, 253, 255, 255))
+	local gridSize = vec(6, 6)
+	local decorationMargin = 100
+	local excludedAreas = { RoomGeneration.puzzleGridExclusionArea(gridSize, decorationMargin) }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+
+	bp:setPuzzleGrid({
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
+		stones = {
+			{ id = "stone-up-left", cell = vec(1, 2), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(6, 1), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(2, 6), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(5, 5), direction = vec(-1, -1) },
+		},
+	})
+
+	return bp
+end
+
+---@param rng RNG
+---@return Blueprint
+-- sala de puzzle GRANDE
+function newPuzzleRoom3(rng)
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 8x8", rgba8(12, 253, 255, 255))
+	local gridSize = vec(8, 8)
+	local decorationMargin = 100
+	local excludedAreas = { RoomGeneration.puzzleGridExclusionArea(gridSize, decorationMargin) }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+
+	bp:setPuzzleGrid({
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
+		stones = {
+			{ id = "stone-up-left", cell = vec(2, 2), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(7, 3), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(1, 7), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(8, 8), direction = vec(-1, -1) },
+		},
+	})
+
 	return bp
 end
 
