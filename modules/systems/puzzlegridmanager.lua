@@ -154,6 +154,8 @@ function PuzzleGridManager:selectPendingPin(attacker, pin)
 	timer:start()
 	self.pendingPinsByAttacker[attacker] = { pin = pin, timer = timer }
 	pin:select(attacker)
+	-- TODO: substituir pelo som definitivo de seleção do pino.
+	globalAudioManager:play(AUDIO_SELECT, pin, "pop")
 end
 
 ---@param attacker Entity
@@ -185,6 +187,8 @@ function PuzzleGridManager:moveStoneOneCell(stone, direction)
 	if not stone:moveToCell(targetCell, targetPos, self.STONE_MOVE_DURATION) then
 		return false
 	end
+	-- TODO: substituir pelo som definitivo de movimento da pedra.
+	globalAudioManager:play(AUDIO_COLLIDE, stone, "wurr")
 
 	-- O destino passa a ser a posição lógica da pedra, enquanto a origem fica
 	-- reservada até o fim da interpolação. Assim nenhuma outra pedra pode ocupar
@@ -259,6 +263,8 @@ function PuzzleGridManager:finishNextPin()
 	end
 
 	pin:finish()
+	-- TODO: substituir pelo som definitivo de descida do pino.
+	globalAudioManager:play(AUDIO_PRESS, pin, "pfffft")
 	self.nextCompletionPin = self.nextCompletionPin + 1
 	if self.pins[self.nextCompletionPin] then
 		self.pinFinishTimer:restart()
