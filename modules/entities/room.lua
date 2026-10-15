@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.entities.doorglow")
 require("modules.systems.blueprint")
+require("modules.systems.treasure")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
 require("modules.utils.types")
@@ -47,6 +48,8 @@ walls = BiList.new()
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
 ---@field doorGlows DoorGlow[]
+---@field treasurePillars Interactive[]
+---@field treasureResolved boolean
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
 ---@field createAdjacentRooms fun()
@@ -112,6 +115,8 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
 	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
+	room.treasurePillars = {}
+	room.treasureResolved = false
 	room.deactivationTimer = Timer.new(1)
 
 	room:addWallsAndDoors()
@@ -224,10 +229,10 @@ function Room:onPlayerEnter(player)
 	end
 
 	if not self.explored then
-		if not (self.roomType == BATTLE_ROOM or self.roomType == BOSS_ROOM) then
-			self:setExplored()
-		else
+		if self.roomType == BATTLE_ROOM or self.roomType == BOSS_ROOM then
 			self.doorsTimer:startOrContinue()
+		elseif self.roomType ~= TREASURE_ROOM then
+			self:setExplored()
 		end
 	end
 
@@ -339,7 +344,7 @@ end
 function Room:updateDoorsLogic(dt)
 	--debugTable("DOOR TIMER", self.doorsTimer)
 	self.doorsTimer:update(dt)
-	if not self.explored and not self:isInCombat() then
+	if not self.explored and self.roomType ~= TREASURE_ROOM and not self:isInCombat() then
 		if self.playersInRoom:size() > 0 then
 			self:setExplored()
 		end
@@ -358,6 +363,10 @@ end
 ---@param rng RNG
 -- geração dos conteúdos de uma sala
 function Room:populate(spawnpoints, rng)
+	if self.roomType == TREASURE_ROOM then
+		self:populateTreasure(rng)
+	end
+
 	for _, sp in pairs(spawnpoints) do
 		local n = rng:random()
 		for _, sd in ipairs(sp.spawns) do
@@ -368,6 +377,39 @@ function Room:populate(spawnpoints, rng)
 		end
 		::nextspawnpoint::
 	end
+end
+
+---@param rng RNG
+-- cria os dois pilares com recompensas da mesma categoria.
+function Room:populateTreasure(rng)
+	local rewards = createTreasureRewards(rng)
+	local positions = { vec(-170, 0), vec(170, 0) }
+
+	for index, reward in ipairs(rewards) do
+		local pillar = newTreasurePillar(addVec(self.pos, positions[index]), self, reward)
+		table.insert(self.treasurePillars, pillar)
+	end
+end
+
+---@param chosenPillar Interactive
+---@param player Player
+---@return boolean
+-- tenta conceder a recompensa escolhida e encerra a sala apenas em caso de sucesso.
+function Room:claimTreasure(chosenPillar, player)
+	if self.treasureResolved or not grantTreasureReward(player, chosenPillar.reward) then
+		return false
+	end
+
+	self.treasureResolved = true
+	for _, pillar in ipairs(self.treasurePillars) do
+		if pillar ~= chosenPillar then
+			globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar, vec(0, 0), false)
+		end
+		pillar:remove()
+	end
+	self.treasurePillars = {}
+	self:setExplored()
+	return true
 end
 
 ---@param entity any

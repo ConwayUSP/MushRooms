@@ -32,6 +32,40 @@ function newTurtle(spawnPos, room)
 	turtle:addAnimations(animSettings)
 end
 
+---@param spawnPos Vec
+---@param room Room
+---@param reward any
+---@return Interactive
+function newTreasurePillar(spawnPos, room, reward)
+	local solidHb = hitbox(Circle.new(45))
+	local triggerHb = hitbox(Circle.new(120))
+	local hbs = hitboxes({}, { solidHb }, { triggerHb })
+	local physics = physicsSettings(math.huge, 0, 0, nil, nil, nil, 0)
+	local onInteract = function(pillar, player)
+		pillar.room:claimTreasure(pillar, player)
+	end
+	local pillar = Interactive.new(TREASURE_PILLAR.name, spawnPos, hbs, room, physics, onInteract)
+	pillar.reward = reward
+	pillar.drop = newDrop(reward, addVec(spawnPos, vec(0, 20)), room, false, spawnPos.y + 20)
+	pillar.drop.canPick = true
+	pillar.drop.collectable = false
+	pillar.drop.drawOffset = vec(0, -90)
+	pillar:addAnimations({ [IDLE] = newAnimSetting(1, size(32, 32), 1000, true) })
+
+	function pillar:remove()
+		collisionManager:unregister(self)
+		if not self.drop.collected then
+			self.drop:setCollected()
+		end
+		local index = tableIndexOf(self.room.interactives, self)
+		if index then
+			table.remove(self.room.interactives, index)
+		end
+	end
+
+	return pillar
+end
+
 ---------- DOORS ----------
 local openDoor = function(door, player)
 	if door.state == OPEN or door.state == OPENING then

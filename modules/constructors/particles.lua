@@ -47,6 +47,28 @@ function newWalkingParticles()
 end
 
 ---@return ParticleSystem
+-- fumaça curta usada quando um pilar de tesouro desaparece.
+function newTreasureDisappearParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local particles = love.graphics.newParticleSystem(particleImg, 18)
+	particles:setPosition(0, 0)
+	particles:setParticleLifetime(0.3, 0.6)
+	particles:setEmissionRate(0)
+	particles:setSizes(0.05, 0.15)
+	particles:setSizeVariation(0.1)
+	particles:setSpin(math.pi)
+	particles:setSpinVariation(0.5)
+	particles:setColors(1.0, 1.0, 1.0, 0.5, 0.8, 0.8, 0.8, 0.0)
+	particles:setLinearAcceleration(0, -100)
+	particles:setSpread(math.pi / 4)
+	particles:setDirection(-math.pi / 2)
+	particles:setEmissionArea("normal", 10, 2)
+	particles:setSpeed(70)
+	particles:stop()
+	return particles
+end
+
+---@return ParticleSystem
 function newBreakingParticles()
 	local particleImg = assetManager:getImage("assets/sprites/circle.png")
 	local ps = love.graphics.newParticleSystem(particleImg, 12)

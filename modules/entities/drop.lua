@@ -25,10 +25,12 @@ require("table")
 ---@field idleTimer number
 ---@field shine boolean
 ---@field canPick boolean
+---@field collectable boolean
 ---@field image table
 ---@field setCollected function
 ---@field state string
 ---@field visualOffset Vec
+---@field drawOffset Vec
 
 Drop = setmetatable({}, { __index = Entity })
 Drop.__index = Drop
@@ -57,11 +59,13 @@ function Drop.new(object, pos, room, autoPick, floorY)
 	drop.floorY = drop.pos.y + (floorY or 0) -- posição onde irá parar de cair
 
 	drop.visualOffset = vec(0, 0) -- offset visual para renderização
+	drop.drawOffset = vec(0, 0) -- deslocamento visual fixo, sem afetar a ordem de desenho
 	drop.gravity = 1500 -- força da gravidade
 	drop.idleTimer = 0 -- timer para oscilar enquanto parado
 	drop.collected = false -- flag de coleta
 	drop.shine = false -- se está brilhando
 	drop.canPick = false -- se o drop pode ser coletado (true após terminar de cair)
+	drop.collectable = true -- permite que contextos especiais controlem quando o drop pode ser coletado
 	drop.state = "falling" -- estado inicial do drop
 	drop.hasShadow = true
 	drop.shadowWidth = 15
@@ -147,7 +151,7 @@ function Drop:draw(camera)
 		return
 	end
 
-	local visualPos = addVec(self.pos, self.visualOffset)
+	local visualPos = addVec(addVec(self.pos, self.visualOffset), self.drawOffset)
 	local viewX, viewY = camera:viewPos(visualPos)
 	local offsetX = self.image:getWidth() / 2
 	local offsetY = self.image:getHeight() / 2
