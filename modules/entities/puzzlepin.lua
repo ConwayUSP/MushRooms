@@ -50,6 +50,10 @@ function PuzzlePin.new(settings, puzzleGridManager)
 	pin:addIdleAnimation(PuzzlePin.spritePathForState(IDLE), PuzzlePin.FRAME_DIM)
 	pin:addSelectedAnimation(PuzzlePin.spritePathForState(SELECTED), PuzzlePin.FRAME_DIM)
 	pin:addFinishedAnimation(PuzzlePin.spritePathForState(IDLE), PuzzlePin.FRAME_DIM, PuzzlePin.FRAME_DURATION)
+	pin.animations[FINISHED]:onFrame(2, function()
+		-- TODO: substituir pelo som definitivo de descida do pino.
+		globalAudioManager:play(AUDIO_PRESS, pin, "pfffft")
+	end, 1)
 
 	return pin
 end

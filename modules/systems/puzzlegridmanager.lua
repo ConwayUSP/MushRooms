@@ -263,8 +263,6 @@ function PuzzleGridManager:finishNextPin()
 	end
 
 	pin:finish()
-	-- TODO: substituir pelo som definitivo de descida do pino.
-	globalAudioManager:play(AUDIO_PRESS, pin, "pfffft")
 	self.nextCompletionPin = self.nextCompletionPin + 1
 	if self.pins[self.nextCompletionPin] then
 		self.pinFinishTimer:restart()
