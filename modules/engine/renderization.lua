@@ -92,21 +92,13 @@ function renderRooms(camera)
 			local roomViewPos = addVec(vec(camera:viewPos(r.limits.p1)), vec(Room.spacingH / 2, Room.spacingV / 2))
 			-- love.graphics.draw(r.sprites.floor, roomViewPos.x, roomViewPos.y, 0, 3, 3)
 			love.graphics.setColor(25 / 255, 21 / 255, 83 / 255, 1)
-			love.graphics.rectangle("fill", roomViewPos.x - 1000, roomViewPos.y - 1000, 2000, 2000)
+			love.graphics.rectangle("fill", roomViewPos.x, roomViewPos.y, r.dimensions.width, r.dimensions.height)
 			love.graphics.setColor(1, 1, 1, 1)
-
-			::nextroom::
-		end
-	end
-
-	-- Os fundos específicos precisam ser desenhados somente depois dos fundos
-	-- de todas as salas, para que salas vizinhas não os sobrescrevam.
-	for i = rooms.minIndex, rooms.maxIndex do
-		for j = rooms[i].minIndex, rooms[i].maxIndex do
-			local r = rooms[i][j]
-			if r and r.puzzleGridManager then
+			if r.puzzleGridManager then
 				r.puzzleGridManager:drawBackground(camera)
 			end
+
+			::nextroom::
 		end
 	end
 end
