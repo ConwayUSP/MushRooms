@@ -18,6 +18,8 @@ require("table")
 ---@field isFinished boolean
 ---@field onFinish? function
 ---@field update function
+---@field reset function
+---@field finish function
 ---@field offset Vec
 
 Animation = {}
@@ -93,6 +95,12 @@ function Animation:reset()
 	self.currFrame = 1
 	self.timer = 0
 	self.isFinished = false
+end
+
+-- posiciona a animação no último frame sem disparar seu callback de término
+function Animation:finish()
+	self.currFrame = #self.frames
+	self.timer = 0
 end
 
 ----------------------------------------
