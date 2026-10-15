@@ -59,28 +59,29 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	enemy:init(name, spawnPos, hitboxes, room, physics, hp)
 
 	-- atributos que variam
-	enemy.move = move -- função de movimento do inimigo
-	enemy.atk = attacks -- objetos Attack associados ao inimigo (caso possua)
-	enemy.atkFrame = atkFrames -- frames para
-	enemy.room = room -- a sala onde o inimigo está
+	enemy.move = move                            -- função de movimento do inimigo
+	enemy.atk = attacks                          -- objetos Attack associados ao inimigo (caso possua)
+	enemy.atkFrame = atkFrames                   -- frames para
+	enemy.room = room                            -- a sala onde o inimigo está
 	-- atributos fixos na instanciação
-	enemy.selectedAtk = 1 -- o primeiro ataque começa selecionado, os posteriores são aleatórios
-	enemy.state = IDLE -- define o estado atual do inimigo, estreitamente relacionado às animações
-	enemy.spriteSheets = {} -- no tipo imagem do love
-	enemy.animations = {} -- as chaves são estados e os valores são Animações
+	enemy.selectedAtk = 1                        -- o primeiro ataque começa selecionado, os posteriores são aleatórios
+	enemy.state = IDLE                           -- define o estado atual do inimigo, estreitamente relacionado às animações
+	enemy.spriteSheets = {}                      -- no tipo imagem do love
+	enemy.animations = {}                        -- as chaves são estados e os valores são Animações
 	enemy.moveTargeting = TargetManager.new(enemy) -- um gerenciador de alvo do inimigo
 	enemy.atkTargeting = TargetManager.new(enemy) -- um gerenciador de alvo do inimigo
-	enemy.isAttacking = false -- indica se o inimigo está atualmente atacando
-	enemy.hasTriggeredAttackThisAnim = false -- garante que cada animação de ataque dispare apenas uma vez
-	enemy.defaultInvulnerableTime = 0.2 -- tempo padrão de invulnerabilidade após levar dano
-	enemy.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
+	enemy.isAttacking = false                    -- indica se o inimigo está atualmente atacando
+	enemy.hasTriggeredAttackThisAnim = false     -- garante que cada animação de ataque dispare apenas uma vez
+	enemy.defaultInvulnerableTime = 0.2          -- tempo padrão de invulnerabilidade após levar dano
+	enemy.hasShadow = true                       -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	enemy.shadowWidth = 25
-	enemy.isReallyDead = false -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
-	enemy.leavesBody = true -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
-	enemy.movementsBuilder = movementsBuilder or {} -- tabela de construtores de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
-	enemy.scale = 3 -- escala padrão do inimigo
-	enemy.isBoss = false -- indica se o inimigo é um chefe
-	enemy.attackMoveFunc = nil -- função de movimento específica para o ataque atual, se houver
+	enemy.isReallyDead = false                   -- indica se o inimigo já passou da animação de morte e pode ser considerado morto para efeitos de lógica de jogo
+	enemy.leavesBody = true                      -- indica se o inimigo deixa um corpo após morrer (pode ser usado para efeitos visuais ou mecânicas de jogo)
+	enemy.movementsBuilder = movementsBuilder or
+	{}                                           -- tabela de construtores de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
+	enemy.scale = 3                              -- escala padrão do inimigo
+	enemy.isBoss = false                         -- indica se o inimigo é um chefe
+	enemy.attackMoveFunc = nil                   -- função de movimento específica para o ataque atual, se houver
 
 	enemy.moveTargeting:applyStrats(TC_ON_INIT)
 	enemy.atkTargeting:applyStrats(TC_ON_INIT)
@@ -122,10 +123,8 @@ function Enemy:addAnimations(idleSettings, walkingSettings, dyingSettings, attac
 			local fullName = prefix .. " " .. dir
 
 			path = pngPathFormat({ "assets", "animations", "enemies", self.name, fullName })
-			local f = io.open(path, "r")
 
-			if f then
-				f:close()
+			if love.filesystem.getInfo(path, "file") then
 				addAnimation(self, path, fullName, settings)
 				self:initAttackAnim(self.animations[fullName])
 			else
@@ -288,6 +287,16 @@ function Enemy:interruptAttack()
 	self:resetAttackAnimations()
 end
 
+-- destrói e desregistra todos os eventos de ataque pertencentes a este inimigo
+function Enemy:destroyAttacks()
+	for _, atk in pairs(self.atk) do
+		for _, ev in pairs(atk.events) do
+			collisionManager:unregister(ev)
+			ev:destroy()
+		end
+	end
+end
+
 ----------------------------------------
 -- Funções de Estado
 ----------------------------------------
@@ -346,7 +355,9 @@ function Enemy:updateState(dt)
 		end
 	end
 
-	self.animations[self.state]:update(dt)
+	if self.animations[self.state] then
+		self.animations[self.state]:update(dt)
+	end
 end
 
 ----------------------------------------
@@ -361,10 +372,11 @@ function Enemy:draw(camera)
 	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
 	local p = (self.invulnerableTimer > 0 and self.state ~= DYING)
-			and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
+		and (self.defaultInvulnerableTime - self.invulnerableTimer) / self.defaultInvulnerableTime
 		or 0
 	local scaleX = self.scale - 0.6 * math.sin(2 * math.pi * p)
 	local scaleY = self.scale + 0.6 * math.sin(2 * math.pi * p)
+
 	local offsetX = animation.offset.x
 	local offsetY = (animation.frameDim.height * scaleY - animation.offset.y * self.scale) / scaleY
 

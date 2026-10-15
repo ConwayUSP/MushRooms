@@ -40,8 +40,8 @@ ANCHORS = {
 
 	-- Interagiveis
 	door_up = floorAnchor(20),
-	door_left = floorAnchor(10.0001),
-	door_right = floorAnchor(10),
+	door_left = floorAnchor(100.0001),
+	door_right = floorAnchor(100),
 	turtle = floorAnchor(10),
 
 	-- Inimigos
@@ -73,6 +73,7 @@ ANCHORS = {
 	rubble_big = floorAnchor(-6),
 	torch = floorAnchor(200),
 	pillar_prop = floorAnchor(-4),
+	skeleton = floorAnchor(-2),
 
 	-- Produtos
 	chest = floorAnchor(10),

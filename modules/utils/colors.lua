@@ -98,3 +98,10 @@ function getP4ColorPalette()
 	table.insert(palette, rgba(0.56, 0.15, 0.88, 1.0))
 	return palette
 end
+
+-------------------------------------------
+-- Cores de brilho para objetos do cenário
+-------------------------------------------
+
+COLOR_RED_GLOW = { 0.9, 0.2, 0.4, 0.66 }
+COLOR_WEAK_RED_GLOW = {0.9, 0.2, 0.4, 0.33}

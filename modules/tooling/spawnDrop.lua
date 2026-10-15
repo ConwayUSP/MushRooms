@@ -23,6 +23,10 @@ function _spawnDropDebugHandler(numberKey)
 	end
 	table.insert(constructors, newKatana)
 	table.insert(constructors, newSlingShot)
+	table.insert(constructors, newBlackholer)
+	table.insert(constructors, newFlowergun)
+	table.insert(constructors, newSkullShooter)
+	table.insert(constructors, newBoomerangue)
 
 	local idx = math.random(tableLen(constructors))
 	local c = 0

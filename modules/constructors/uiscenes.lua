@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.UI.uiscene")
+require("modules.UI.uiworldscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.UI.elements.lifebar")
@@ -802,4 +803,310 @@ function newBossLifeBarScene(room)
 	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))
 
 	return lifeBarScene
+end
+
+----------------------------------------
+-- Cenas de Mundo
+----------------------------------------
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra a barra de vida do jogador acima da cabeça
+function newPlayerDamageBarScene(player)
+	local DAMAGE_BAR_DURATION = 2
+
+	local scene = UIWorldScene.new(UI_PLAYER_HP_SCENE, player, vec(0, -90), nil)
+
+	local lifeCalc = function()
+		return player.hp, player.maxHp
+	end
+
+	local lifebar = UILifeBarElem.new(
+		"equip player lifebar",
+		vec(0, 0),
+		size(74, 14),
+		lifeCalc,
+		{ l = 11, r = 3 },
+		2
+	)
+	scene:addElement(lifebar, vec(0, 0))
+
+	-- detecta dano ou cura comparando o hp atual com o do frame anterior
+	local lastHp = player.hp
+	local hideTimer = 0
+	scene.onUpdate = function(self, dt)
+		if player.hp ~= lastHp then
+			self:show()
+			hideTimer = DAMAGE_BAR_DURATION
+		end
+		lastHp = player.hp
+
+		if hideTimer > 0 then
+			hideTimer = hideTimer - dt
+			if hideTimer <= 0 then
+				self:hide()
+			end
+		end
+	end
+
+	scene:hide()
+	return scene
+end
+
+-- rótulos legíveis para teclas comuns (o resto vira maiúsculo)
+local KEYBIND_LABELS = {
+	mouse1 = "LMB",
+	mouse2 = "RMB",
+	mouse3 = "MMB",
+	mousewheel = "Wheel",
+	lshift = "Shift",
+	rshift = "Shift",
+	lctrl = "Ctrl",
+	rctrl = "Ctrl",
+	escape = "Esc",
+}
+
+---@param key string?
+---@return string
+-- converte uma tecla bruta do LÖVE em um rótulo legível para exibir na UI
+local function keybindLabel(key)
+	if not key then
+		return "?"
+	end
+	return KEYBIND_LABELS[key] or string.upper(key)
+end
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra o ícone do artefato equipado acima da cabeça
+-- por um instante sempre que o jogador troca de artefato equipado
+function newPlayerArtifactEquipScene(player)
+	local ICON_DURATION = 1.5
+
+	local scene = UIWorldScene.new(UI_ARTIFACT_EQUIP_SCENE, player, vec(0, -80), nil)
+
+	-- um ícone para o equipamento antigo e um para o novo
+	local afterIcon = UIImageElem.new("artifact equip icon", vec(0, 0), size(92, 92))
+	local beforeIcon = UIImageElem.new("artifact equip icon", vec(0, 0), size(92, 92))
+	scene:addElement(afterIcon, vec(0, 0))
+	scene:addElement(beforeIcon, vec(0, 0))
+
+	-- detecta a troca de artefato comparando a referência com a do frame anterior
+	local lastArtifact = player.artifact
+	local hideTimer = 0
+
+	scene.onUpdate = function(self, dt)
+		if player.artifact ~= lastArtifact then
+			local newArtifact = player.artifact
+			if lastArtifact then
+				local path = pngPathFormat({ "assets", "sprites", "icons", ARTIFACT .. "s", newArtifact.name })
+				addAnimation(afterIcon, path, IDLE, newAnimSetting(1, size(32, 32), 1, true))
+				path = pngPathFormat({ "assets", "sprites", "icons", ARTIFACT .. "s", lastArtifact.name })
+				addAnimation(beforeIcon, path, IDLE, newAnimSetting(1, size(32, 32), 1, true))
+				self:show()
+				hideTimer = ICON_DURATION
+			else
+				self:hide()
+			end
+			lastArtifact = newArtifact
+		end
+
+
+		if hideTimer > 0 then
+			-- trazendo o novo ícone para o centro e crescendo ele
+			local timeFactor = Easing.inOutCubic(math.min((ICON_DURATION - hideTimer) / ICON_DURATION * 4, 1))
+			scene.elements[1].offset.x = lerp(70, 0, timeFactor)
+			local size = lerp(0, 92, timeFactor)
+			scene.elements[1].elem.size.width = size
+			scene.elements[1].elem.size.height = size
+
+			-- tirando o ícone antigo do centro e diminuindo ele
+			scene.elements[2].offset.x = lerp(0, -70, timeFactor)
+			local size = lerp(92, 0, timeFactor)
+			scene.elements[2].elem.size.width = size
+			scene.elements[2].elem.size.height = size
+			
+			hideTimer = hideTimer - dt
+			if hideTimer <= 0 then
+				self:hide()
+			end
+		end
+	end
+
+	scene:hide()
+	return scene
+end
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra o texto da tecla de interação acima do objeto
+-- interativo mais próximo quando o jogador está no alcance dele
+function newPlayerInteractionPromptScene(player)
+	local scene = UIWorldScene.new(UI_INTERACTION_PROMPT_SCENE, nil, vec(0, -110), nil)
+
+	local prompt = UITextElem.new(
+		"interaction prompt",
+		vec(0, 0),
+		size(120, 20),
+		1.5,
+		nil,
+		rgba8(255, 255, 255, 255),
+		"?"
+	)
+	scene:addElement(prompt, vec(0, 0))
+
+	scene.onUpdate = function(self, dt)
+		local target = player.interactiveObj
+		self.followEntity = target
+		self.anchorOffset.y = -110 + math.sin(love.timer.getTime() * 2) * 4
+
+		if target and not player.activeInteraction and not player.inDialogue then
+			local key = player.controls and player.controls.keybinds
+				and player.controls.keybinds[ACT_INT] or nil
+			prompt.text = keybindLabel(key)
+			self.anchorOffset.x = -(#prompt.text) * 18
+			self:show()
+		else
+			self:hide()
+		end
+	end
+
+	scene:hide()
+	return scene
+end
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra uma barra de cooldown abaixo do jogador
+-- enquanto o artefato equipado está em cooldown
+function newPlayerArtifactCooldownBarScene(player)
+	local scene = UIWorldScene.new(UI_ARTIFACT_COOLDOWN_BAR_SCENE, player, vec(0, 76), nil)
+
+	local cooldownCalc = function()
+		local cd = player.artifact and player.artifact.cooldown
+		if cd and cd.active and cd.duration > 0 then
+			return cd.time, cd.duration
+		end
+		return 0, 1
+	end
+
+	local customCalcBarColor = function(self)
+		local revPercent = 1 - self.percent
+		self.color[1] = 0.7 - revPercent * 0.2 -- R
+		self.color[2] = 0.8 + revPercent * 0.2 -- G
+		self.color[3] = 0.9 + revPercent * revPercent * 0.1 -- B
+	end
+
+	local cooldownBar = UILifeBarElem.new(
+		"artifact cooldown bar",
+		vec(0, 0),
+		size(12, 12),
+		cooldownCalc,
+		{ l = 0, r = 0 },
+		3,
+		customCalcBarColor
+	)
+	scene:addElement(cooldownBar, vec(0, 0))
+
+	local hideTimer = 0
+	-- chamado pelo player quando o uso do artefato é bloqueado pelo cooldown
+	function scene:activate()
+		hideTimer = 1
+		if self.visible then
+			return
+		end
+		self:show()
+		-- começa cheia (cooldown recém-iniciado), sem o atraso do lerp
+		local cd = player.artifact and player.artifact.cooldown
+		if cd and cd.duration > 0 then
+			local frac = math.min(math.max(cd.time / cd.duration, 0), 1)
+			cooldownBar.front.frontTarget = frac
+			cooldownBar.front.backTarget = frac
+			cooldownBar.front.percent = frac
+		end
+	end
+
+	-- some com o tempo ou quando o cooldown do artefato termina
+	scene.onUpdate = function(self, dt)
+		if hideTimer > 0 then
+			hideTimer = hideTimer - dt
+			if hideTimer <= 0 then
+				self:hide()
+				return
+			end
+		end
+		local cd = player.artifact and player.artifact.cooldown
+		if self.visible and (not cd or not cd.active) then
+			self:hide()
+		end
+
+	end
+
+	scene:hide()
+	return scene
+end
+
+---@param player Player
+---@return UIWorldScene
+-- cena de mundo que mostra uma barra de cooldown da defesa
+function newPlayerDefenseCooldownBarScene(player)
+	local scene = UIWorldScene.new(UI_DEFENSE_COOLDOWN_BAR_SCENE, player, vec(0, 76), nil)
+
+	local cooldownCalc = function()
+		return player.defenseCooldownTimer.time, player.defenseCooldownTimer.duration
+	end
+
+	local customCalcBarColor = function(self)
+		local revPercent = 1 - self.percent
+		self.color[1] = 0.9 + revPercent * revPercent * 0.1 -- R
+		self.color[2] = 0.7 - revPercent * 0.2 -- G
+		self.color[3] = 0.7 - revPercent * 0.3 -- B
+	end
+
+	local cooldownBar = UILifeBarElem.new(
+		"defense cooldown bar",
+		vec(0, 0),
+		size(12, 12),
+		cooldownCalc,
+		{ l = 0, r = 0 },
+		3,
+		customCalcBarColor
+	)
+	scene:addElement(cooldownBar, vec(0, 0))
+
+	local hideTimer = 0
+	-- chamado pelo player quando tenta defender no cooldown
+	function scene:activate()
+		hideTimer = 0.5
+		if self.visible then
+			return
+		end
+		self:show()
+		local cd = player.defenseCooldownTimer
+		if cd and cd.duration > 0 then
+			local frac = math.min(math.max(cd.time / cd.duration, 0), 1)
+			cooldownBar.front.frontTarget = frac
+			cooldownBar.front.backTarget = frac
+			cooldownBar.front.percent = frac
+		end
+	end
+
+	-- some com o tempo ou quando o cooldown da defesa termina
+	scene.onUpdate = function(self, dt)
+		if hideTimer > 0 then
+			hideTimer = hideTimer - dt
+			if hideTimer <= 0 then
+				self:hide()
+				return
+			end
+		end
+		local cd = player.defenseCooldownTimer
+		if self.visible and (not cd or not cd.active) then
+			self:hide()
+		end
+
+	end
+
+	scene:hide()
+	return scene
 end

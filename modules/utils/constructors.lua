@@ -48,6 +48,7 @@ CONSTRUCTORS[NPC] = {
 
 CONSTRUCTORS[ARTIFACT] = {
 	[INVISIBILITY_RING.name] = newInvisibilityRing,
+	[RAINBOW_DASH.name] = newRainbowDash,
 }
 
 CONSTRUCTORS[DESTRUCTIBLE] = {

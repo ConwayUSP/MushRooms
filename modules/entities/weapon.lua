@@ -186,7 +186,7 @@ end
 -- renderiza a arma na perspectiva da `camera`
 function Weapon:draw(camera)
 	-- Não renderiza armas de jogadores se defendendo
-	if self.owner.state == DEFENDING or self.owner.building or not self.visible then
+	if self.owner.state == DEFENDING or self.owner.building or not self.visible or self.owner.state == SLEEPING then
 		return
 	end
 

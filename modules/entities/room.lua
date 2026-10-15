@@ -114,6 +114,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
 	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
+	room.deactivationTimer = Timer.new(1)
 
 	room:addWallsAndDoors()
 	if blueprint.puzzleGridSettings then
@@ -165,6 +166,14 @@ function Room:update(dt)
 	self.linkManager:update(dt)
 	self.uiManager:update(dt)
 	self:updateDoorsLogic(dt)
+
+	-- lógica de desativação da sala quando ela está vazia
+	self.deactivationTimer:update(dt)
+	if self.deactivationTimer.goingOff then
+		activeRooms:remove(makeKey(self.arrPos.x, self.arrPos.y))
+		collisionManager.roomsDirty = true
+		self:clearDeadBodies()
+	end
 end
 
 -- define a sala como estando explorada, gerando as 4 salas
@@ -229,6 +238,8 @@ function Room:onPlayerEnter(player)
 			self.doorsTimer:startOrContinue()
 		end
 	end
+
+	self.deactivationTimer:stop()
 end
 
 ---@param player Player
@@ -245,10 +256,21 @@ function Room:onPlayerExit(player)
 			self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
 		end
 		if not self.explored and (self.roomType == BOSS_ROOM or self.roomType == BATTLE_ROOM) then
-			self.doorsTimer:restart()
+			self.doorsTimer:stop()
 		end
-		activeRooms:remove(makeKey(self.arrPos.x, self.arrPos.y))
-		collisionManager.roomsDirty = true
+		self.deactivationTimer:start()
+	end
+end
+
+function Room:onPlayerDieInside()
+	local noPlayersAlive = true
+	for _, p in self.playersInRoom:iter() do
+		if p.hp > 0 then
+			noPlayersAlive = false
+		end
+	end
+	if noPlayersAlive then
+		self:openDoors()
 	end
 end
 
@@ -327,9 +349,12 @@ end
 -- lida com o timer para abertura e fechamento de portas
 -- e com a conclusão de combates em sala de combate
 function Room:updateDoorsLogic(dt)
+	--debugTable("DOOR TIMER", self.doorsTimer)
 	self.doorsTimer:update(dt)
 	if not self.explored and not self:isInCombat() then
-		self:setExplored()
+		if self.playersInRoom:size() > 0 then
+			self:setExplored()
+		end
 		self:openDoors()
 		if self.doorsTimer.active then
 			self.doorsTimer:stop()
@@ -459,12 +484,13 @@ function Room:getWalls()
 	return roomWalls
 end
 
----@param building Product
+---@param buildingProduct Product
 ---@return Interactive
 -- torna uma construção tangível e insere ela na sala, registrando sua hitbox
-function Room:addBuilding(building)
-	local interactive = building.makeInteractive(building.pos, self)
+function Room:addBuilding(buildingProduct)
+	local interactive = buildingProduct.makeInteractive(buildingProduct.pos, self)
 	table.insert(self.interactives, interactive)
+	collisionManager:unregister(buildingProduct)
 	collisionManager:register(interactive)
 	return interactive
 end
@@ -476,11 +502,20 @@ function Room:isInCombat()
 		return false
 	end
 	for _, e in pairs(self.enemies) do
-		if not e.isReallyDead then
+		if not (e.hp <= 0) then
 			return true
 		end
 	end
 	return false
+end
+
+function Room:clearDeadBodies()
+	for i = #self.enemies, 1, -1 do
+		if self.enemies[i].hp <= 0 then
+			self.enemies[i]:destroyAttacks()
+			table.remove(self.enemies, i)
+		end
+	end
 end
 
 ----------------------------------------

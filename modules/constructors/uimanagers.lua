@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.UI.uimanager")
 require("modules.UI.uiscene")
+require("modules.UI.uiworldscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.constructors.uiscenes")
@@ -32,6 +33,18 @@ function newPlayerUIManager(player)
 	playerManager:addScene(openChestScene)
 	playerManager:addScene(equipScene)
 	playerManager:addScene(mapScene)
+
+	-- cenas de mundo
+	local damageBarScene = newPlayerDamageBarScene(player)
+	local artifactEquipScene = newPlayerArtifactEquipScene(player)
+	local interactionPromptScene = newPlayerInteractionPromptScene(player)
+	local artifactCdScene = newPlayerArtifactCooldownBarScene(player)
+	local defenseCdScene = newPlayerDefenseCooldownBarScene(player)
+	playerManager:addWorldScene(damageBarScene)
+	playerManager:addWorldScene(artifactEquipScene)
+	playerManager:addWorldScene(interactionPromptScene)
+	playerManager:addWorldScene(artifactCdScene)
+	playerManager:addWorldScene(defenseCdScene)
 
 	return playerManager
 end

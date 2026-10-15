@@ -89,10 +89,6 @@ function UIElement:draw(camera)
 		viewX, viewY = camera:viewPos(self.pos)
 	end
 	local anim = self.animations[self.state]
-	if not anim then
-		print(self.name)
-		return
-	end
 	local scale = self.size.width / anim.frameDim.width
 	local offsetX = anim.frameDim.width / 2
 	local offsetY = anim.frameDim.height / 2

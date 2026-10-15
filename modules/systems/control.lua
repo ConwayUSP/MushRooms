@@ -1,4 +1,9 @@
 ----------------------------------------
+-- Importações de Módulos
+----------------------------------------
+require("modules.engine.mouse")
+
+----------------------------------------
 -- Funções Auxiliares
 ----------------------------------------
 
@@ -36,6 +41,7 @@ end
 ---@field justPressed fun(string) : boolean
 ---@field justReleased fun(string) : boolean
 ---@field getStickAngle fun(string) : table<number, number, number> | nil
+---@field getAimDir fun() : Vec|nil
 ---@field setOwner fun(Player)
 ---@field newKeybinds function : table
 ---@field newDefaultControl fun() : Controls
@@ -75,6 +81,9 @@ end
 
 ---@param dt number
 function Controls:update(dt)
+    -- sincroniza o estado de diálogo do dono, usado para bloquear ataques
+    self.inDialogue = self.owner and self.owner.inDialogue or false
+
     for action, binding in pairs(self.keybinds) do
         local state = self.keyStates[action]
         local wasDown = state.isDown
@@ -148,8 +157,6 @@ end
 function Controls:isDown(action)
     local act = self.keybinds[action]
     if not self.gamepad then -- se não é gamepad, é teclado/mouse
-        -- !TODO: implementar a troca de arma com a rodinha do mouse
-
         if act:sub(1, 5) == "mouse" then
             return love.mouse.isDown(tonumber(act:sub(6, 6)) or 1)
         else
@@ -226,11 +233,62 @@ function Controls:getStickDir(stick)
     return nil
 end
 
+---@return Vec|nil
+-- direção apontada pelo jogador: analógico direito no gamepad, posição do mouse
+function Controls:getAimDir()
+    if self.gamepad then
+        local x, y = self:getStickDir("right")
+        if not x or not y then
+            return nil
+        end
+        return { x = x, y = y }
+    end
+
+    -- teclado/mouse: mira congelada com UI aberta ou durante diálogos
+    if not self.owner or not mouseManager then
+        return nil
+    end
+    if self.owner.inDialogue then
+        return nil
+    end
+    if self.owner.uiManager and self.owner.uiManager:hasActiveScene() then
+        return nil
+    end
+
+    local cursor = mouseManager:get(self.owner)
+    if not cursor then
+        return nil
+    end
+
+    local camera = getCameraByPlayer(self.owner)
+    if not camera then
+        return nil
+    end
+
+    -- leva em conta que o player nem sempre está no centro da câmera:
+    -- o ponto do mundo é calculado pela transformação completa da câmera
+    local worldPoint = cursor:getAimPoint(camera)
+    if not worldPoint then
+        return nil
+    end
+
+    local dir = { x = worldPoint.x - self.owner.pos.x, y = worldPoint.y - self.owner.pos.y }
+    if math.abs(dir.x) < 0.0001 and math.abs(dir.y) < 0.0001 then
+        return nil
+    end
+    return dir
+end
+
 ---@param player Player
---
+-- define o jogador atrelado a este controle
 function Controls:setOwner(player)
     self.owner = player
     self.inputBuffer = InputBuffer.new(player)
+
+    -- cada jogador de teclado/mouse ganha seu próprio cursor
+    if not self.gamepad and mouseManager then
+        mouseManager:register(player)
+    end
 end
 
 ----------------------------------------

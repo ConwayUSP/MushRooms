@@ -71,7 +71,7 @@ function newWallRightFront(spawnPos, room)
 end
 
 function newPillar(spawnPos, room, rng)
-	local triggerHb = hitbox(Rectangle.new(300, 360), vec(-90, -40))
+	local triggerHb = hitbox(Rectangle.new(300, 460), vec(-90, -80))
 	local hbs = hitboxes({}, {}, { triggerHb })
 	local randPillar = tostring(randomFrom(rng, 4))
 	local obs = Obstacle.new(PILLAR.name .. randPillar, hbs, spawnPos, room, false, false, rng)
@@ -103,7 +103,7 @@ function newCandle(spawnPos, room, rng)
 	local randCandle = tostring(randomFrom(rng, 3))
 	local obs = Obstacle.new(CANDLE.name .. randCandle, hbs, spawnPos, room, true, false, rng)
 	obs:addAnimations(newAnimSetting(2, size(27, 36), 0.35, true, 1))
-	obs:makeGlow(600)
+	obs:makeGlow(450, COLOR_RED_GLOW)
 
 	return obs
 end
@@ -113,7 +113,7 @@ function newTorch(spawnPos, room, rng)
 	local randTorch = tostring(randomFrom(rng, 1))
 	local obs = Obstacle.new(TORCH.name .. randTorch, hbs, spawnPos, room, true, false, rng)
 	obs:addAnimations(newAnimSetting(2, size(17, 37), 0.35, true, 1))
-	obs:makeGlow(400)
+	obs:makeGlow(600, COLOR_RED_GLOW)
 
 	return obs
 end
@@ -201,6 +201,12 @@ function newSkeleton(spawnPos, room, rng)
 	local randSkeleton = tostring(randomFrom(rng, 6))
 	local obs = Obstacle.new(SKELETON.name .. randSkeleton, hbs, spawnPos, room, true, false, rng)
 	obs:addAnimations(newAnimSetting(1, size(28, 24), 1000, false))
+
+	-- o esqueleto 5 tem uma vela grudada nele
+	if randSkeleton == "5" then
+		obs:addAnimations(newAnimSetting(1, size(28, 24), 1000, false, nil, nil, vec(0, 20)))
+		obs:makeGlow(400, COLOR_WEAK_RED_GLOW)
+	end
 
 	return obs
 end

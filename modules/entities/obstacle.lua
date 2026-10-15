@@ -71,13 +71,6 @@ function Obstacle:update(dt)
 	self.animations[IDLE]:update(dt)
 end
 
----@param glowRadius number
--- faz o objeto emitir luz
-function Obstacle:makeGlow(glowRadius)
-	self.emitsLight = true
-	self.glowRadius = 600
-end
-
 function Obstacle:updateTransparentShaderUniforms(shader)
 	local anim = self.animations[IDLE]
 	local spriteWidth = anim.frameDim.width * self.scale

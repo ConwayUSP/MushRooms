@@ -22,6 +22,27 @@ function newInvisibilityRing()
 			self.owner.invisible = false
 		end
 	end
-	local a = Artifact.new(INVISIBILITY_RING.name, INVISIBILITY_RING.description, 20, onUse, customData, customUpdate)
-	return a
+	local ring = Artifact.new(INVISIBILITY_RING.name, INVISIBILITY_RING.description, 20, onUse, customData, customUpdate)
+	return ring
+end
+
+function newRainbowDash()
+	local onUse = function(self)
+		local aim
+		if self.owner.controls.gamepad then 
+			aim = self.owner.vel
+		else 
+			aim = self.owner.controls:getAimDir()
+		end
+		if not aim or self.owner.state == DEFENDING then
+			return
+		else
+			local dur = 0.2
+			local dashMove = dashToDirection(aim, dur, 2000)
+			self.owner.specialMovement = dashMove
+			self.owner:setInvulnerable(dur)
+		end
+	end
+	local dash = Artifact.new(RAINBOW_DASH.name, RAINBOW_DASH.description, 1.5, onUse)
+	return dash
 end

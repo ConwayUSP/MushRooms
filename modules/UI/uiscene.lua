@@ -185,6 +185,66 @@ function UIScene:handleInput(key, controls)
 	end
 end
 
+---@param lx number
+---@param ly number
+---@return UIElement|nil, Vec|nil
+-- acha o elemento interativo que contém o ponto (lx, ly) e sua posição na grade.
+-- camadas superiores ganham prioridade para elementos sobrepostos
+function UIScene:hitTest(lx, ly)
+	for i = #INTERACTION_LAYERS, 1, -1 do
+		local layer = self.layers[INTERACTION_LAYERS[i]]
+		for y, row in pairs(layer) do
+			for x, el in pairs(row) do
+				local hw = el.size.width / 2
+				local hh = el.size.height / 2
+				if
+					lx >= el.pos.x - hw
+					and lx <= el.pos.x + hw
+					and ly >= el.pos.y - hh
+					and ly <= el.pos.y + hh
+				then
+					return el, vec(x, y)
+				end
+			end
+		end
+	end
+	return nil, nil
+end
+
+---@param lx number
+---@param ly number
+-- seleciona o elemento sob o cursor (hover), reaproveitando a navegação por grade
+function UIScene:handleMouseHover(lx, ly)
+	local _, pos = self:hitTest(lx, ly)
+	if not pos then
+		return
+	end
+
+	if pos.x ~= self.selectionPos.x or pos.y ~= self.selectionPos.y then
+		self:setSelection(pos)
+		globalAudioManager:play(AUDIO_SELECT, self, "pop")
+	end
+end
+
+---@param lx number
+---@param ly number
+-- ativa o elemento sob o cursor ao clicar
+function UIScene:handleMouseClick(lx, ly)
+	local el, pos = self:hitTest(lx, ly)
+	if not el then
+		return
+	end
+
+	if pos.x ~= self.selectionPos.x or pos.y ~= self.selectionPos.y then
+		self:setSelection(pos)
+	end
+
+	if el.subtype == UI_BUTTON_ELEM and el.onClick then
+		el:onClick()
+		globalAudioManager:play(AUDIO_SELECT, self, "kabum")
+	end
+end
+
 -- acha o elemento mais próximo da linha `row` na coluna `column`
 function UIScene:closestElemInRow(row, col)
 	local smallestDif = math.huge

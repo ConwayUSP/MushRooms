@@ -52,9 +52,11 @@ function newChest()
 		return chestInteractive
 	end
 
-	local chest = Product.new(BUILDING, CHEST.name, CHEST.description, makeInteractive)
-
+	local productHb = hitboxes({ hitbox(Circle.new(40)) }, { }, { })
+	local chest = Product.new(BUILDING, CHEST.name, CHEST.description, makeInteractive, productHb)
 	addAnimations(chest, pathStart, animSettings)
+	collisionManager:register(chest)
+
 	chest.shadowWidth = 35
 
 	return chest
@@ -63,7 +65,7 @@ end
 function newFirecamp()
 	local hb = hitboxes({ hitbox(Circle.new(30)) }, { hitbox(Circle.new(30)) }, { hitbox(Circle.new(120)) })
 
-	local onInteract = function() end
+	local onInteract = nil
 	local onEnter = function(firecamp, player)
 		if not firecamp.playersHealing then
 			firecamp.playersHealing = { player }
@@ -79,13 +81,15 @@ function newFirecamp()
 		end
 
 		for _, player in pairs(self.playersHealing) do
-			local cap = 40
+			local cap = 60
 			if player.state ~= DYING and player.hp < cap then
 				player:heal(4 * dt)
+				player.healingTimer:startOrContinue()
 				if player.hp > cap then
 					player.hp = cap
 				end
-				print("curando no fogo, hp atual: " .. math.floor(player.hp))
+			else
+				player:stopHealing()
 			end
 		end
 	end
@@ -108,13 +112,16 @@ function newFirecamp()
 		local firecampInteractive =
 			Interactive.new(FIRECAMP.name, pos, hb, room, physics, onInteract, nil, customUpdate, onEnter, onExit)
 		addAnimations(firecampInteractive, pathStart, animSettings)
+		firecampInteractive.shadowWidth = 35
+		firecampInteractive:makeGlow(700, {1.2, 0.6, 0.3, 0.2})
 
 		return firecampInteractive
 	end
 
-	local firecamp = Product.new(BUILDING, FIRECAMP.name, FIRECAMP.description, makeInteractive)
-
+	local productHb = hitboxes({ hitbox(Circle.new(40)) }, { }, { })
+	local firecamp = Product.new(BUILDING, FIRECAMP.name, FIRECAMP.description, makeInteractive, productHb)
 	addAnimations(firecamp, pathStart, animSettings)
-	firecamp.shadowWidth = 35
+	collisionManager:register(firecamp)
+
 	return firecamp
 end

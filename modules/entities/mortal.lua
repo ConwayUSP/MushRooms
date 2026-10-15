@@ -94,6 +94,10 @@ function Mortal:takeDamage(damage)
 	self.hp = math.max(self.hp - damage, 0)
 	globalAudioManager:play(AUDIO_GET_HIT, self, "au")
 
+	if self.type == PLAYER then
+		self:wakeUp()
+	end
+
 	if self.hp <= 0 then
 		self:die()
 	end
@@ -108,6 +112,10 @@ end
 
 function Mortal:heal(amount)
 	self.hp = math.min(self.hp + amount, self.maxHp)
+end
+
+function Mortal:stopHealing()
+	self.healingTimer:stop()
 end
 
 function Mortal:applyFear(attacker, duration)
@@ -131,27 +139,19 @@ function Mortal:die()
 			self.activeInteraction:onExit(self.activeInteraction, self)
 			self.uiManager:deactivateAllScenes()
 		end
+		self:endBuildingMode()
+		self.room:onPlayerDieInside()
 	end
 
 	self.state = DYING
 	self.deathTimer = 0
 	stopMovement(self)
 	globalAudioManager:stopAllFrom(self)
-
 	collisionManager:unregister(self)
-	local atks = (self.atk and self.atk[self.selectedAtk] and self.atk[self.selectedAtk].events)
-		or (self.weapon and self.weapon.atk.events)
-	if atks then
-		for _, atk in pairs(atks) do
-			collisionManager:unregister(atk)
-			atk:destroy()
-		end
-	end
 
 	if self.weapon then
 		self:unequipWeapon()
 	end
-	---@diagnostic enable
 end
 
 function Mortal:getQuadInfo()

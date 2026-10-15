@@ -8,6 +8,7 @@
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
+---@field worldScenes UIWorldScene[]
 ---@field lastPlayerScene string
 ---@field activeScenes Type[]
 ---@field parentCanvas table
@@ -28,6 +29,7 @@ function UIManager.new(player)
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)
 	uimanager.canvasPos = vec(0, 0)
 	uimanager.scenes = {}
+	uimanager.worldScenes = {}
 	uimanager.activeScenes = {}
 	uimanager.lastPlayerScene = UI_EQUIPMENT_SCENE
 	return uimanager
@@ -60,6 +62,54 @@ function UIManager:addScene(scene)
 	self.scenes[scene.subtype] = scene
 	scene.manager = self
 	return self
+end
+
+---@param scene UIWorldScene
+-- adiciona uma cena de mundo (overlay integrado ao mundo) a este manager.
+-- Ao contrário das UIScenes modais, cenas de mundo são atualizadas e
+-- renderizadas sem entrar na pilha de input, e não bloqueiam o gameplay
+function UIManager:addWorldScene(scene)
+	table.insert(self.worldScenes, scene)
+	scene.manager = self
+	scene.active = true
+	return self
+end
+
+---@param sceneOrType UIWorldScene|Type
+-- remove uma cena de mundo deste manager (por referência ou tipo)
+function UIManager:removeWorldScene(sceneOrType)
+	for idx, scene in ipairs(self.worldScenes) do
+		if scene == sceneOrType or scene.subtype == sceneOrType then
+			scene.active = false
+			if scene.onRemoved then
+				scene:onRemoved()
+			end
+			table.remove(self.worldScenes, idx)
+			return self
+		end
+	end
+	return self
+end
+
+---@param sceneType Type
+---@return UIWorldScene?
+-- retorna a cena de mundo de tipo `sceneType`, se existir
+function UIManager:getWorldScene(sceneType)
+	for _, scene in ipairs(self.worldScenes) do
+		if scene.subtype == sceneType then
+			return scene
+		end
+	end
+	return nil
+end
+
+---@param sceneType Type
+-- ativa uma cena de mundo do tipo `sceneType`
+function UIManager:activateWorldScene(sceneType)
+	local scene = self:getWorldScene(sceneType)
+	if scene then
+		scene:activate()
+	end
 end
 
 ---@param sceneType Type
@@ -157,9 +207,37 @@ function UIManager:update(dt)
 	end
 
 	self:handleInput()
+	self:handleMouseHover()
 	for _, scene in pairs(self.scenes) do
 		if scene.active then
 			scene:update(dt)
+		end
+	end
+
+	-- cenas de mundo: atualiza e remove as que expiraram
+	for idx = #self.worldScenes, 1, -1 do
+		local scene = self.worldScenes[idx]
+		if scene.active then
+			scene:update(dt)
+			if scene.isFinished then
+				table.remove(self.worldScenes, idx)
+				if scene.onRemoved then
+					scene:onRemoved()
+				end
+			end
+		end
+	end
+end
+
+---@param camera Camera
+-- renderiza as cenas de mundo deste manager dentro do espaço do mundo
+-- (chamado com o transform de zoom da câmera ainda ativo)
+function UIManager:drawWorldScenes(camera)
+	-- guarda a câmera atual para cenas ancoradas à câmera usarem no update
+	self.camera = camera
+	for _, scene in ipairs(self.worldScenes) do
+		if scene.active then
+			scene:draw(camera)
 		end
 	end
 end
@@ -168,6 +246,9 @@ end
 -- redefine o canvas ativo e os offsets necessários e então
 -- renderiza todas as UIScenes deste manager
 function UIManager:draw(camera)
+	-- guarda a câmera da última renderização para converter o mouse depois
+	self.camera = camera
+
 	love.graphics.setCanvas(self.canvas)
 	love.graphics.clear(0.0, 0.0, 0.0, 0.0)
 	for _, sceneType in ipairs(self.activeScenes) do
@@ -177,22 +258,84 @@ function UIManager:draw(camera)
 	-- projetamos o canvas interno para o destino, delegando a transformação para a GPU
 	if camera then
 		love.graphics.setCanvas(camera.canvas)
-		love.graphics.draw(self.canvas, self.canvasPos.x, self.canvasPos.y, 0, self.scaleX, self.scaleY)
+		love.graphics.draw(self.canvas, self.canvasPos.x, self.canvasPos.y, 0, self.scaleX or 1, self.scaleY or 1)
 	else
 		love.graphics.setCanvas()
 		love.graphics.push()
 
-		local screenW = love.graphics.getWidth()
-		local screenH = love.graphics.getHeight()
-
-		local scale = math.min(screenW / self.baseWidth, screenH / self.baseHeight)
-		local offsetX = (screenW - (self.baseWidth * scale)) / 2
-		local offsetY = (screenH - (self.baseHeight * scale)) / 2
-
+		local scale, offsetX, offsetY = self:getScreenLayout()
 		love.graphics.draw(self.canvas, offsetX, offsetY, 0, scale, scale)
 
 		love.graphics.pop()
 	end
+end
+
+---@return number, number, number
+-- escala e deslocamento usados ao desenhar esta UI em tela cheia (menu)
+function UIManager:getScreenLayout()
+	local screenW = love.graphics.getWidth()
+	local screenH = love.graphics.getHeight()
+	local scale = math.min(screenW / self.baseWidth, screenH / self.baseHeight)
+	return scale, (screenW - self.baseWidth * scale) / 2, (screenH - self.baseHeight * scale) / 2
+end
+
+---@param px number
+---@param py number
+---@param camera? Camera
+---@return number?, number?
+-- converte uma posição do mouse no espaço base (1280x720) desta UI,
+-- desfazendo exatamente os transforms aplicados em `draw`
+function UIManager:mouseToLocal(px, py, camera)
+	if camera then
+		-- pixels da janela -> unidades lógicas -> coordenadas do viewport
+		local lx = px / window.scale - camera.canvasPos.x
+		local ly = py / window.scale - camera.canvasPos.y
+		if lx < 0 or ly < 0 or lx > camera.viewport.width or ly > camera.viewport.height then
+			return nil, nil
+		end
+
+		-- desfaz o letterbox/escala do canvas interno da UI
+		return (lx - self.canvasPos.x) / (self.scaleX or 1),
+			(ly - self.canvasPos.y) / (self.scaleY or 1)
+	end
+
+	local scale, offsetX, offsetY = self:getScreenLayout()
+	return (px - offsetX) / scale, (py - offsetY) / scale
+end
+
+-- seleciona o elemento sob o cursor do mouse (hover)
+function UIManager:handleMouseHover()
+	local activeScene = self.activeScenes[#self.activeScenes]
+	if not activeScene then
+		return
+	end
+
+	local camera = self.camera or (self.player and getCameraByPlayer(self.player) or nil)
+	local px, py = mouseManager:getPos(self.player)
+	local lx, ly = self:mouseToLocal(px, py, camera)
+	if not lx then
+		return
+	end
+
+	self.scenes[activeScene]:handleMouseHover(lx, ly)
+end
+
+---@param px number
+---@param py number
+-- ativa o elemento sob o cursor do mouse ao clicar
+function UIManager:handleMouseClick(px, py)
+	local activeScene = self.activeScenes[#self.activeScenes]
+	if not activeScene then
+		return
+	end
+
+	local camera = self.camera or (self.player and getCameraByPlayer(self.player) or nil)
+	local lx, ly = self:mouseToLocal(px, py, camera)
+	if not lx then
+		return
+	end
+
+	self.scenes[activeScene]:handleMouseClick(lx, ly)
 end
 
 ---@param key? string

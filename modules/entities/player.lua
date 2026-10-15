@@ -27,7 +27,9 @@ require("table")
 ----------------------------------------
 
 players = {}
-local MAX_HP = 100
+local MAX_HP = 100		-- limite de hp
+local TIME_TO_SLEEP = 15 -- limite de tempo inativo até dormir
+local MAX_DEFENSE_DUR = 3 -- limite de tempo que o player pode ficar defendendo sem parar
 
 ----------------------------------------
 -- Classe Player
@@ -66,8 +68,11 @@ local MAX_HP = 100
 ---@field buildingModeTimer number
 ---@field startBuildingMode function
 ---@field age number
----@field defendingCooldownTimer Timer
----@field defendingDurationTimer Timer
+---@field defenseCooldownTimer Timer
+---@field defenseDurationTimer Timer
+---@field sleepTimer Timer
+---@field specialMovement function
+---@field sleep function
 
 Player = setmetatable({}, { __index = Mortal })
 Player.__index = Player
@@ -75,7 +80,7 @@ Player.type = PLAYER
 
 ---@param name string
 ---@param spawnPos Vec
----@param keybinds table<string, string>
+---@param control table<string, string>
 ---@param colors Color[]
 ---@param room Room
 ---@return Player
@@ -116,8 +121,10 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.shadowWidth = 25
 	player.atkSpeed = 1 -- porcentagem de velocidade de ataque do jogador (1 = 100%)
 	player.age = 0
-	player.defendingCooldownTimer = Timer.new(0.5)
-	player.defendingDurationTimer = Timer.new(3.0, true)
+	player.defenseCooldownTimer = Timer.new(2)
+	player.defenseDurationTimer = Timer.new(MAX_DEFENSE_DUR, true)
+	player.sleepTimer = Timer.new(TIME_TO_SLEEP, true)
+	player.specialMovement = nil
 
 	collisionManager:register(player)
 	return player
@@ -125,10 +132,11 @@ end
 
 ---@param idleSettings AnimSettings
 ---@param defSettings AnimSettings
----@param WalkSettings AnimSettings
+---@param walkSettings AnimSettings
 ---@param dyingSettings AnimSettings
+---@param sleepSettings AnimSettings
 -- adiciona animações à tabela do `Player`, associando-as aos seus estados respectivos
-function Player:addAnimations(idleSettings, defSettings, WalkSettings, dyingSettings)
+function Player:addAnimations(idleSettings, defSettings, walkSettings, dyingSettings, sleepSettings)
 	-- !TODO: refatorar o addAnimations
 	-- for state, settings in pairs(animSettings) do
 	-- 	local path = pngPathFormat({ "assets", "animations", "players", self.name, state })
@@ -145,16 +153,19 @@ function Player:addAnimations(idleSettings, defSettings, WalkSettings, dyingSett
 	addAnimation(self, path, DEFENDING, defSettings)
 	-------------- WALKING UP --------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_UP })
-	addAnimation(self, path, WALKING_UP, WalkSettings)
+	addAnimation(self, path, WALKING_UP, walkSettings)
 	------------- WALKING DOWN -------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_DOWN })
-	addAnimation(self, path, WALKING_DOWN, WalkSettings)
+	addAnimation(self, path, WALKING_DOWN, walkSettings)
 	------------- WALKING LEFT -------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_LEFT })
-	addAnimation(self, path, WALKING_LEFT, WalkSettings)
+	addAnimation(self, path, WALKING_LEFT, walkSettings)
 	------------- WALKING RIGHT ------------
 	path = pngPathFormat({ "assets", "animations", "players", self.name, WALKING_RIGHT })
-	addAnimation(self, path, WALKING_RIGHT, WalkSettings)
+	addAnimation(self, path, WALKING_RIGHT, walkSettings)
+	--------------- SLEEPING ---------------
+	path = pngPathFormat({ "assets", "animations", "players", self.name, SLEEPING })
+	addAnimation(self, path, SLEEPING, sleepSettings)
 end
 
 function Player:calcHitboxes()
@@ -173,10 +184,19 @@ function Player:update(dt)
 		self:tryRespawn()
 	else
 		self:move(dt)
+		self:updateBuildingPos()
 		self:updateBuildingMode(dt)
 		self:updateState()
 		self:resolveInteractive()
+		self:updateSleep(dt)
 		self.uiManager:update(dt)
+	end
+
+	if self.weapon then
+		local aimDir = self.controls:getAimDir()
+		if aimDir then
+			self.weapon:updateOrientation(aimDir)
+		end
 	end
 
 	self:processInput()
@@ -184,16 +204,6 @@ function Player:update(dt)
 	Mortal.update(self, dt)
 	self.age = self.age + dt
 	self.animations[self.state]:update(dt)
-
-	-- controla a mira do personagem
-	if self.weapon then
-		if self.controls.gamepad then
-			local x, y = self.controls:getStickDir("right")
-			x = x or 0
-			y = y or 0
-			self.weapon:updateOrientation({x = x, y = y})
-		end
-	end
 
 	for _, w in pairs(self.weapons) do
 		-- atualizando a animação da arma equipada
@@ -218,6 +228,16 @@ function Player:move(dt)
 	local movementDir = vec(0, 0)
 	if self.state == DEFENDING or self.inDialogue then
 		return
+	end
+
+	local walkForce = nil
+
+	if self.specialMovement then
+		local endSpecialMove = self:specialMovement(dt)
+		if endSpecialMove then
+			self.specialMovement = nil
+		end
+	--	goto applyphysics
 	end
 
 	if self.controls.gamepad then
@@ -245,7 +265,7 @@ function Player:move(dt)
 	end
 
 	-- a normalização impede o movimento de ser mais rápido na diagonal
-	local walkForce = scaleVec(normalize(movementDir), self.speed)
+	walkForce = scaleVec(normalize(movementDir), self.speed)
 
 	------------ HACK PARA DEBUG ------------
 	if love.keyboard.isDown("lctrl") then
@@ -254,27 +274,17 @@ function Player:move(dt)
 	-----------------------------------------
 
 	applyForce(self, walkForce)
-	applyPhysics(self, dt)
 
-	-- atualizando objetos cujo movimento depende do Player
-	self:updateBuildingPos()
-	if self.weapon then
-		if not self.controls.gamepad then
-			-- separa a orientação da arma em dois casos para amenizar o bug ao colidir com paredes
-			if not nullVec(self.vel) then
-				self.weapon:updateOrientation({ x = self.vel.x, y = self.vel.y })
-			else
-				self.weapon:updateOrientation(movementDir)
-			end
-		end
-	end
+	--::applyphysics::
+
+	applyPhysics(self, dt)
 end
 
 function Player:checkEndDefense(dt)
-	self.defendingCooldownTimer:update(dt)
-	self.defendingDurationTimer:update(dt)
+	self.defenseCooldownTimer:update(dt)
+	self.defenseDurationTimer:update(dt)
 	if not self.controls:checkAction(ACT_DEF) or self.state == DYING then
-		self.defendingDurationTimer:stop()
+		self.defenseDurationTimer:stop()
 	end
 end
 
@@ -283,8 +293,9 @@ function Player:updateState()
 	local prevState = self.state
 	local isMoving = not nullVec(self.vel)
 
-	if self.defendingDurationTimer.active then
+	if self.defenseDurationTimer.active then
 		self.state = DEFENDING
+		self:wakeUp()
 	else
 		local isVerticalMovement = math.abs(self.vel.y) > math.abs(self.vel.x)
 
@@ -297,14 +308,20 @@ function Player:updateState()
 		elseif self.vel.x < 0 then
 			self.state = WALKING_LEFT
 		else
-			self.state = IDLE
+			if self.state ~= SLEEPING then
+				self.state = IDLE
+			end
 		end
 	end
 
 	-- atualizando a situação do sistema de partículas de caminhada
 	if isMoving then
+		self:wakeUp()
 		globalVFXManager:playParticle(PARTICLE_WALKING, self, vec(0, 24), true)
 	else
+		if self.sleepTimer.goingOff then
+			self:sleep()
+		end
 		globalVFXManager:stopParticle(PARTICLE_WALKING, self)
 	end
 
@@ -314,6 +331,11 @@ function Player:updateState()
 		self.animations[prevState]:reset()
 		-- parando efeito de partículas
 		if prevState == DEFENDING then
+			-- a defesa não entra em cooldown se o jogador defendeu por muito pouco tempo
+			-- basicamente: perdoa missclicks ou recompensa defesas muito precisas
+			if self.defenseDurationTimer.time >= 0.3 then
+				self.defenseCooldownTimer:start()
+			end
 			globalAudioManager:stop(AUDIO_DEFENSE, self)
 			globalVFXManager:stopParticle(PARTICLE_DEFENSE, self)
 		end
@@ -330,7 +352,11 @@ end
 -- faz com que a construção fique na direção aproximada em que o player está olhando (considera colisões)
 function Player:updateBuildingPos()
 	if self.building then
-		setPos(self.building, addVec(self.pos, scaleVec(normalize(self.vel), 100)))
+		local dir = normalize(self.controls:getAimDir() or player.vel)
+		local pos = addVec(self.pos, scaleVec(dir, 110))
+		pos.x = math.min(math.max(pos.x, self.room.limits.p1.x + 20), self.room.limits.p2.x - 20)
+		pos.y = math.min(math.max(pos.y, self.room.limits.p1.y + 20), self.room.limits.p2.y - 20)
+		setPos(self.building, pos)
 	end
 end
 
@@ -346,7 +372,6 @@ function Player:updateBuildingMode(dt)
 	if self.building then
 		self.building:update(dt)
 		self.buildingModeTimer = self.buildingModeTimer + dt
-		-- self:unequipWeapon()
 	end
 end
 
@@ -369,7 +394,8 @@ end
 
 -- sai do modo construção
 function Player:endBuildingMode()
-	if self.buildingModeTimer > 0.5 then
+	if self.state == DYING or self.buildingModeTimer > 0.5 then
+		collisionManager:unregister(self.building)
 		self.building = nil
 		self.buildingModeTimer = 0
 	end
@@ -408,7 +434,7 @@ function Player:processInput()
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
 		elseif self.interactiveObj.type == INTERACTIVE then
 			-- define a interação ativa se for uma interação duradoura (como um baú, que se mantém aberto até ser fechado)
-			self.activeInteraction = self.interactiveObj.onInteract(self.interactiveObj, self)
+			self.activeInteraction = self.interactiveObj.onInteract and self.interactiveObj.onInteract(self.interactiveObj, self)
 		end
 		stopMovement(self)
 	end
@@ -421,19 +447,24 @@ function Player:processInput()
 
 	-- input de uso de artefato
 	if self.controls:checkAction(ACT_UA) and self.artifact then
-		self.artifact:use()
+		if not self.artifact:use() then
+			self.uiManager:activateWorldScene(UI_ARTIFACT_COOLDOWN_BAR_SCENE)
+		end
 	end
 
 	-- input de defesa
 	if self.controls:checkAction(ACT_DEF) then
-		if not self.defendingDurationTimer.active and not self.defendingDurationTimer.completed and not self.defendingCooldownTimer.active then
+		if self.defenseCooldownTimer.active then
+			self.uiManager:activateWorldScene(UI_DEFENSE_COOLDOWN_BAR_SCENE)
+		end
+		if not self.defenseDurationTimer.active and not self.defenseDurationTimer.completed and not self.defenseCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
 			globalAudioManager:play(AUDIO_DEFENSE, self, "pop")
-			self.defendingDurationTimer:start()
-			self.defendingCooldownTimer:stop()
-		elseif not self.defendingCooldownTimer.active and not self.defendingCooldownTimer.completed and self.defendingDurationTimer.completed then
-			self.defendingCooldownTimer:start()
-			self.defendingDurationTimer:stop()
+			self.defenseDurationTimer:start()
+			self.defenseCooldownTimer:stop()
+		elseif not self.defenseCooldownTimer.active and not self.defenseCooldownTimer.completed and self.defenseDurationTimer.completed then
+			self.defenseCooldownTimer:start()
+			self.defenseDurationTimer:stop()
 		end
 		return
 	end
@@ -441,19 +472,44 @@ function Player:processInput()
 	-- input de ataque
 	if self.controls:checkAction(ACT_ATK) then
 		self.weapon:attack()
+		self:wakeUp()
+	end
+
+	if self.state == SLEEPING then
+		return
 	end
 
 	-- input de troca de arma
 	if self.controls:checkAction(ACT_PW) then
 		self:prevWeapon()
+		self:wakeUp()
 	elseif self.controls:checkAction(ACT_NW) then
 		self:nextWeapon()
+		self:wakeUp()
 	end
 
 	-- input de troca de artefato
 	if self.controls:checkAction(ACT_CA) then
 		self:changeArtifact()
 	end
+end
+
+---@param dy number
+function Player:wheelmoved(dy)
+	if not self.weapon
+		or self.state == DYING
+		or self.uiManager:hasActiveScene()
+		or self.inDialogue
+		or self.state == SLEEPING
+	then
+		return
+	end
+	if dy > 0 then
+		self:nextWeapon()
+	else
+		self:prevWeapon()
+	end
+	self:wakeUp()
 end
 
 ---@param weapon Weapon
@@ -607,6 +663,9 @@ end
 
 -- adiciona um objeto interativo candidato à lista do `Player`
 function Player:considerInteractive(obj)
+	if obj.type ~= NPC and not obj.onInteract then
+		return
+	end
 	table.insert(self.candidateInteractives, obj)
 end
 
@@ -741,9 +800,9 @@ function Player:defenseShake(offset, scaleX, scaleY)
 		return Easing.inOutQuart(t - a)
 	end
 
-	local k = self.defendingDurationTimer.duration - 1
+	local k = self.defenseDurationTimer.duration - 1
 	local deg = math.rad(4)
-	local shake = shakeFunc(self.defendingDurationTimer.time, k)
+	local shake = shakeFunc(self.defenseDurationTimer.time, k)
 	local angle = shake * math.sin(40 * (self.age ^ 4)) * deg
 
 	local rotateOffset = shake > 0 and offset or vec(0, 0)
@@ -799,6 +858,29 @@ function Player:dropAllBlessings()
 		end
 	end
 	self.blessingManager.equipped = {}
+end
+
+function Player:sleep()
+	self.state = SLEEPING
+end
+
+function Player:wakeUp()
+	self.sleepTimer:restart()
+	if self.state == SLEEPING then
+		self.state = IDLE
+	end
+end
+
+---@param dt number
+function Player:updateSleep(dt)
+	if self.uiManager:hasActiveScene()
+		or self.inDialogue
+		or self.activeInteraction
+		or self.building then
+		self:wakeUp()
+		return
+	end
+	self.sleepTimer:update(dt)
 end
 
 ----------------------------------------
