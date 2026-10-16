@@ -17,6 +17,7 @@ require("modules.utils.types")
 ---@field callback fun(...?: any)
 ---@field update fun(self, dt: number)
 ---@field start fun(self)
+---@field restart fun(self)
 ---@field stop fun(self)
 ---@field setLabel fun(self, label: string)
 

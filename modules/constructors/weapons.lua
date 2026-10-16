@@ -116,17 +116,27 @@ end
 ------------------------------
 
 ---@param atkEvent AtkEvent
----@param enemy Enemy
--- função de onHit para o ataque do estilingue, que cria um link entre o
-function onHitLinkTwoEnemies(atkEvent, enemy)
+---@param hitEntity Entity
+-- função de onHit para o ataque do estilingue, que conecta o inimigo atingido
+-- ao inimigo mais próximo
+function onHitLinkTwoEnemies(atkEvent, hitEntity)
+	if hitEntity.type ~= ENEMY then
+		return
+	end
+
+	local enemy = hitEntity
 	local target = enemy:nearestEnemy()
 	local room = enemy.room
 
 	if target and room then
-		room.linkManager:addLink(enemy, target, 200, 5)
+		room.linkManager:addLink(SpringLink.new(enemy, target, 200, 5))
 	end
 end
 
-function onHitApplyFear(atkEvent, enemy)
-	enemy:applyFear(atkEvent.attacker, 1.5)
+---@param atkEvent AtkEvent
+---@param hitEntity Entity
+function onHitApplyFear(atkEvent, hitEntity)
+	if hitEntity.type == ENEMY then
+		hitEntity:applyFear(atkEvent.attacker, 1.5)
+	end
 end
