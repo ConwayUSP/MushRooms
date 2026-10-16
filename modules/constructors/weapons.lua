@@ -68,7 +68,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Skull Shooter
 function newSkullShooter()
-	local cooldown = constCooldown(1.25)
+	local cooldown = constCooldown(1.0)
 	local trajectoryFuncBuilder = function()
 		return followTargetMovement(5)
 	end
@@ -124,5 +124,5 @@ function onHitLinkTwoEnemies(atkEvent, enemy)
 end
 
 function onHitApplyFear(atkEvent, enemy)
-	enemy:applyFear(atkEvent.attacker, 0.75)
+	enemy:applyFear(atkEvent.attacker, 1.5)
 end
