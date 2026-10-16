@@ -1,3 +1,5 @@
+require("modules.utils.states")
+
 ----------------------------------------
 -- Funções Utilitárias
 ----------------------------------------
@@ -152,3 +154,15 @@ end
 function areVecsEqual(v1, v2)
 	return v1.x == v2.x and v1.y == v2.y
 end
+
+----------------------------------------
+-- Tabelas
+----------------------------------------
+
+-- vetor unitário de cada direção
+DIR_VEC = {
+	[UP] = vec(0, -1),
+	[DOWN] = vec(0, 1),
+	[LEFT] = vec(-1, 0),
+	[RIGHT] = vec(1, 0),
+}
