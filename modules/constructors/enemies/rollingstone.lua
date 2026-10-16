@@ -122,10 +122,9 @@ local function addRollingStoneAnimations(enemy)
 	end
 
 	----------------- MORRENDO -----------------
-	-- !TODO: animação de morte da pedra rolante
-	local dyingPath = rsSheetPath(enemy, rsStopingState(DOWN))
-	local dyingFrames = rsFrameCount(dyingPath, 32)
-	addAnimation(enemy, dyingPath, DYING, newAnimSetting(dyingFrames, { width = 32, height = 32 }, 0.08, false))
+	local dyingPath = rsSheetPath(enemy, DYING)
+	local dyingFrames = rsFrameCount(dyingPath, 11)
+	addAnimation(enemy, dyingPath, DYING, newAnimSetting(dyingFrames, { width = 76, height = 76 }, 0.08, false))
 	enemy.animations[DYING].onFinish = function()
 		enemy.isReallyDead = true
 		if not enemy.leavesBody then
