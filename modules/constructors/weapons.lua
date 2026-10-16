@@ -74,7 +74,7 @@ function newSkullShooter()
 	end
 	local attack = newSkullAttack(true, 4, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
-	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(30, -5))
+	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(60, -6))
 	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
