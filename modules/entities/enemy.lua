@@ -6,6 +6,7 @@ require("modules.systems.targeting")
 require("modules.entities.mortal")
 require("modules.utils.states")
 require("modules.utils.types")
+require("modules.utils.vec")
 require("modules.systems.shaders")
 require("table")
 
@@ -284,6 +285,7 @@ function Enemy:interruptAttack()
 	self.isAttacking = false
 	self.hasTriggeredAttackThisAnim = false
 	self.attackJustStarted = false
+	self.attackMoveFunc = nil
 	self:resetAttackAnimations()
 end
 

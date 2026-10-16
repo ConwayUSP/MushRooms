@@ -957,6 +957,11 @@ function newPlayerInteractionPromptScene(player)
 
 	scene.onUpdate = function(self, dt)
 		local target = player.interactiveObj
+		-- não exibe o prompt em objetos sem onInteract (como a fogueira)
+		if target and target.type ~= NPC and not target.onInteract then
+			self:hide()
+			return
+		end
 		self.followEntity = target
 		self.anchorOffset.y = -110 + math.sin(love.timer.getTime() * 2) * 4
 

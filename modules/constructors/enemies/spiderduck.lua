@@ -14,13 +14,25 @@ function newSpiderDuck(spawnPos, room)
 	local atkDur = framesAtks * frameDur
 	local framesStart = 5
 	local startDur = framesStart * frameDur
+	local framesBrake = 22 - framesStart - framesAtks
+	local brakeDur = framesBrake * frameDur
 	local attack = newRotatoryAttack(false, atkDur, atkCooldown)
 	local movements = {
 		[attack.name] = function()
-			local moveBuilder = function()
-				return spiralMovement(math.random(40, 50), math.random(20, 25))
+			local flightMove = followTargetMovement(4, 1500)
+			local elapsed = 0
+
+			return function(entity, dt)
+				elapsed = elapsed + dt
+
+				if elapsed <= startDur then
+					applySteering(entity, vec(0, 0), 12)
+				elseif elapsed <= startDur + atkDur then
+					flightMove(entity, dt)
+				elseif elapsed <= startDur + atkDur + brakeDur then
+					applySteering(entity, vec(0, 0), 20)
+				end
 			end
-			return randomMovement(atkDur, startDur, moveBuilder)
 		end,
 	}
 	local atkFrames = {
@@ -34,7 +46,7 @@ function newSpiderDuck(spawnPos, room)
 	local hbs = hitboxes({ hb })
 	local physics = physicsSettings(0.8, 300, 5)
 	local enemy =
-		Enemy.new(SPIDER_DUCK.name, 20, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
+		Enemy.new(SPIDER_DUCK.name, 45, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	local idleAnimSettings = newAnimSetting(2, { width = 32, height = 32 }, 0.4, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
 	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)

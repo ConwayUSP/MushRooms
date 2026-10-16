@@ -113,13 +113,17 @@ function UIManager:activateWorldScene(sceneType)
 end
 
 ---@param sceneType Type
+---@param previousScene? Type
 -- ativa uma cena de um determinado tipo
-function UIManager:activateScene(sceneType)
+function UIManager:activateScene(sceneType, previousScene)
 	if self.scenes[sceneType].active then
 		return
 	end
 
-	self.scenes[sceneType].active = true
+	local scene = self.scenes[sceneType]
+	scene:syncNavTabs(previousScene)
+
+	scene.active = true
 	table.insert(self.activeScenes, sceneType)
 	self:onSceneActivated(sceneType)
 end
@@ -365,10 +369,12 @@ end
 ---@param destScene string
 -- realiza a navegação via botões de UI de uma cena para outra
 function UIManager:applyNavigation(fromScene, destScene)
+	if fromScene == destScene then
+		return
+	end
+
 	self:deactivateScene(fromScene)
-	self:activateScene(destScene)
+	self:activateScene(destScene, fromScene)
+	self.scenes[destScene]:selectActiveNavTab()
 	self.lastPlayerScene = destScene
-	-- muda a seleção para o primeiro elemento que não seja da barra de navegação
-	-- pois ficava estranho entrar em uma UI com um botão de navegação selecionado
-	self.scenes[fromScene]:setSelection(vec(1, 2))
 end

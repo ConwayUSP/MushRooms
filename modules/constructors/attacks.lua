@@ -27,15 +27,16 @@ require("modules.utils.vfxs")
 ---@param cooldown function
 ---@param speed number
 ---@param trajectoryFuncBuilder? function
+---@param hbRadius? number -- raio da hitbox do projétil (padrão 15)
 ---@return Attack
 -- um tiro de pedrinha
-function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
-	local hb = hitbox(Circle.new(15))
+function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, hbRadius)
+	local hb = hitbox(Circle.new(hbRadius or 15))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 15,
+		dmg = 12,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -117,7 +118,7 @@ end
 ---@return Attack
 -- um tiro nuclear
 function newBoomerangueAttack(ally, speed, timing, force)
-	local cooldown = constCooldown(0.4)
+	local cooldown = constCooldown(0.55)
 	local trajectoryFuncBuilder = function()
 		return boomerangMovement(speed * 1.6, timing, force)
 	end
@@ -126,7 +127,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 12,
+		dmg = 8,
 		dur = math.huge,
 		hb = hbs,
 		cooldown = cooldown,
@@ -137,7 +138,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 		restitution = 1,
 		bounces = math.huge,
 		pierces = math.huge,
-		tick = 0.2,
+		tick = 0.4,
 	})
 	local anim = newAnimSetting(12, { width = 32, height = 32 }, 0.1, true, 1)
 	local updateFunc = AttackEvent.baseUpdate
@@ -168,12 +169,13 @@ function newBoomerangueAttack(ally, speed, timing, force)
 end
 
 function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local directions = { "e", "se", "s", "sw", "w", "nw", "n", "ne" }
 	local hb = hitbox(Circle.new(10))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 5,
+		dmg = 15,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -194,10 +196,13 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
-	local rotationFunc = function(e)
-		local angle = math.atan2(e.vel.y, e.vel.x)
-		local flip = flipSecondAndThirdQuadrants(angle)
-		return flip
+	local rotationFunc = function()
+		return 0
+	end
+	local directionKeyFunc = function(e)
+		local angle = (math.atan2(e.vel.y, e.vel.x) + math.pi * 2) % (math.pi * 2)
+		local index = math.floor((angle + math.pi / 8) / (math.pi / 4)) % #directions + 1
+		return directions[index]
 	end
 	local onHitFunc = function(e, t)
 		-- print(SKULL_SHOT.name .. " acertou um alvo")
@@ -205,6 +210,11 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local particles = atkParticles(nil, PARTICLE_WALKING, PARTICLE_BREAKING)
 
 	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
+	local directionalAnimSettings = {}
+	for _, direction in ipairs(directions) do
+		directionalAnimSettings[direction] = animIntact
+	end
+	attack:setDirectionalAnimations(directionalAnimSettings, directionKeyFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -218,7 +228,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 8,
+		dmg = 5,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -228,7 +238,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		friction = 0.8,
 		bounces = 0,
 		pierces = math.huge,
-		tick = 0.5,
+		tick = 0.75,
 	})
 
 	local animIntact = newAnimSetting(16, { width = 32, height = 32 }, 0.1, true, 1, 0)
@@ -262,8 +272,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 
 	local particles = atkParticles(nil, PARTICLE_BLACK_HOLE, nil)
 
-	local attack =
-		Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
+	local attack = Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 20
@@ -277,7 +286,7 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 4,
+		dmg = 3,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -309,15 +318,20 @@ end
 ---@param ally boolean
 ---@param duration number
 ---@param cooldown function
+---@param hb? Hitbox
+---@param name? string
+---@param dmg? number
 ---@return Attack
 -- um ataque rotatório corpo-a-corpo (sem animação)
-function newRotatoryAttack(ally, duration, cooldown, hb)
+function newRotatoryAttack(ally, duration, cooldown, hb, name, dmg)
 	hb = hb or hitbox(Circle.new(50), vec(0, -30))
+	name = name or ROTATORY_ATK.name
+	dmg = dmg or 20
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,
 		ally = ally,
-		dmg = 20,
+		dmg = dmg,
 		dur = duration,
 		hb = hbs,
 		cooldown = cooldown,
@@ -331,7 +345,7 @@ function newRotatoryAttack(ally, duration, cooldown, hb)
 		-- print("Rotatory Attack acertou um alvo")
 	end
 
-	local attack = Attack.new(ROTATORY_ATK.name, settings, updateFunc, onHitFunc, nil)
+	local attack = Attack.new(name, settings, updateFunc, onHitFunc, nil)
 	attack.hasShadow = false
 
 	return attack
@@ -395,10 +409,12 @@ end
 ---@param duration number
 ---@param dmg number
 ---@param hb? Hitboxes
+---@param name? string
 ---@return Attack
 -- embalo do Rolling Stone. Ataque corpo-a-corpo com hitbox um pouco maior que
 -- a do corpo, que acompanha o inimigo enquanto ele rola
-function newRollingRushAttack(ally, duration, dmg, hb)
+function newRollingRushAttack(ally, duration, dmg, hb, name)
+	name = name or ROLLING_RUSH.name
 	hb = hb or hitboxes({ hitbox(Circle.new(40)) })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,
@@ -418,7 +434,7 @@ function newRollingRushAttack(ally, duration, dmg, hb)
 		e.vel = e.attacker.vel
 	end
 
-	local attack = Attack.new(ROLLING_RUSH.name, settings, updateFunc, nil, nil)
+	local attack = Attack.new(name, settings, updateFunc, nil, nil)
 	attack.hasShadow = false
 
 	return attack

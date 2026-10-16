@@ -22,6 +22,8 @@ local INTERACTION_LAYERS = { ELEM_LAYER_1, ELEM_LAYER_2 }
 ---@field hasBg boolean
 ---@field selectionPos Vec
 ---@field layers table<_, table<_, UIElement>>[]
+---@field navTabs table<Type, UIElement>?
+---@field navTabPositions table<Type, Vec>?
 
 UIScene = {}
 UIScene.__index = UIScene
@@ -71,13 +73,14 @@ function UIScene:addElement(element, layer, pos, preserveSelection)
 end
 
 ---@param pos Vec
+---@param instant? boolean
 -- troca a seleção em todas as camadas interativas ao mesmo tempo
-function UIScene:setSelection(pos)
+function UIScene:setSelection(pos, instant)
 	for _, layer in ipairs(INTERACTION_LAYERS) do
 		local current = self.layers[layer][self.selectionPos.y]
 			and self.layers[layer][self.selectionPos.y][self.selectionPos.x]
 		if current then
-			current:deselect()
+			current:deselect(instant)
 		end
 	end
 
@@ -86,12 +89,36 @@ function UIScene:setSelection(pos)
 	for _, layer in ipairs(INTERACTION_LAYERS) do
 		local selected = self.layers[layer][pos.y] and self.layers[layer][pos.y][pos.x]
 		if selected then
-			selected:select()
+			selected:select(instant)
 		end
 	end
 
 	if self.onSelectionChange then
 		self:onSelectionChange()
+	end
+end
+
+-- move o foco para a aba que representa a cena atual sem reiniciar sua animação
+function UIScene:selectActiveNavTab()
+	local pos = self.navTabPositions[self.subtype]
+	if pos then
+		self:setSelection(pos, true)
+	end
+end
+
+---@param previousScene? Type
+-- sincroniza as abas após navegar entre cenas que compartilham a barra de abas
+function UIScene:syncNavTabs(previousScene)
+	if not self.navTabs or not self.navTabs[previousScene] then
+		return
+	end
+
+	for sceneType, tab in pairs(self.navTabs) do
+		if sceneType == self.subtype then
+			tab:select(true)
+		else
+			tab:deselect(true)
+		end
 	end
 end
 
@@ -312,10 +339,24 @@ function UIScene:addNavTabs()
 	navEquip:addAnimations(navAnimSettings)
 	navInv:addAnimations(navAnimSettings)
 	navCraft:addAnimations(navAnimSettings)
+	self.navTabs = {
+		[UI_EQUIPMENT_SCENE] = navEquip,
+		[UI_INVENTORY_SCENE] = navInv,
+		[UI_CRAFTING_SCENE] = navCraft,
+	}
+	self.navTabPositions = {
+		[UI_EQUIPMENT_SCENE] = vec(1, 1),
+		[UI_INVENTORY_SCENE] = vec(2, 1),
+		[UI_CRAFTING_SCENE] = vec(3, 1),
+	}
 
 	self:addElement(navEquip, ELEM_LAYER_1, vec(1, 1), true)
 	self:addElement(navInv, ELEM_LAYER_1, vec(2, 1), true)
 	self:addElement(navCraft, ELEM_LAYER_1, vec(3, 1), true)
+
+	for _, tab in pairs(self.navTabs) do
+		tab:deselect(true)
+	end
 
 	return self
 end

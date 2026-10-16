@@ -23,6 +23,8 @@ require("table")
 ---@field onFinish? function
 ---@field frameCallbacks table<number, AnimationFrameCallback>
 ---@field update function
+---@field reset function
+---@field finish function
 ---@field offset Vec
 
 Animation = {}
@@ -108,13 +110,6 @@ end
 function Animation:update(dt)
 	self.timer = self.timer + dt
 
-	-- laço while + subtração (em vez de zerar o timer) garante que a duração
-	-- real de cada frame seja a mesma em qualquer taxa de quadros: o excesso
-	-- do timer é repassado ao próximo frame e vários frames podem avançar
-	-- num único update caso o dt seja maior que frameDur. A tolerância de
-	-- 1e-9 absorve o erro de ponto flutuante da soma dos dts (ex.: 60 chamadas
-	-- de 1/60 não somam exatamente frameDur, deixando a animação "presa"
-	-- um frame além do fim em algumas taxas de quadros)
 	while self.frameDur > 0 and self.timer >= self.frameDur - 1e-9 do
 		self.timer = self.timer - self.frameDur
 		self.currFrame = self.currFrame + 1
@@ -145,6 +140,12 @@ function Animation:reset()
 	self.currFrame = 1
 	self.timer = 0
 	self.isFinished = false
+end
+
+-- posiciona a animação no último frame sem disparar seu callback de término
+function Animation:finish()
+	self.currFrame = #self.frames
+	self.timer = 0
 end
 
 ----------------------------------------

@@ -67,7 +67,7 @@ function newDemonBall(spawnPos, room)
 	local hbs = hitboxes({ hb })
 	local physics = physicsSettings(0.6, 50, 1)
 
-	local enemy = Enemy.new(DEMON_BALL.name, 1, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
+	local enemy = Enemy.new(DEMON_BALL.name, 3, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 
 	-- a bolota demoníaca não tem sombra
 	enemy.hasShadow = false

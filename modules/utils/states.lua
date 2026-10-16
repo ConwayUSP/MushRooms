@@ -24,6 +24,12 @@ DYING = "dying"
 SLEEPING = "sleeping"
 
 DIRECTIONS = { UP, DOWN, LEFT, RIGHT }
+WALKING_STATE = {
+    [UP] = WALKING_UP,
+    [DOWN] = WALKING_DOWN,
+    [LEFT] = WALKING_LEFT,
+    [RIGHT] = WALKING_RIGHT,
+}
 
 ----------------- NPCS -----------------
 SPEAKING = "speaking"

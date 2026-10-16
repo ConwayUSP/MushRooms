@@ -355,8 +355,9 @@ function randomMovement(duration, baseCooldown, moveBuilder)
 end
 
 ---@param force? number
+---@param targetSpeed? number
 ---@return MovementFunc
-function followTargetMovement(force)
+function followTargetMovement(force, targetSpeed)
 	force = force or 10
 	return function(entity, dt)
 		if not entity.moveTargeting or not entity.moveTargeting.validTarget then
@@ -364,9 +365,34 @@ function followTargetMovement(force)
 		end
 
 		local dir = subVec(entity.moveTargeting.targetPos, entity.pos)
-		local desiredVel = scaleVec(normalize(dir), entity.speed)
+		local desiredVel = scaleVec(normalize(dir), targetSpeed or entity.speed)
 
 		applySteering(entity, desiredVel, force)
+	end
+end
+
+---@param initialSpeedCooldown fun(): number
+---@param finalSpeed? number
+---@param force? number
+---@return MovementFunc
+-- mantém o projétil rápido no início e concentra a frenagem no fim da sua duração
+function deceleratingProjectileMovement(initialSpeedCooldown, finalSpeed, force)
+	local initialSpeed = initialSpeedCooldown()
+	local initialized = false
+
+	return function(entity, dt)
+		local launchSpeed = initialSpeed + (entity.inheritedSpeed or 0)
+
+		if not initialized then
+			entity.vel = scaleVec(polarToVec(entity.direction, 1), launchSpeed)
+			initialized = true
+		end
+
+		local progress = clamp(entity.age / entity.dur, 0, 1)
+		local targetSpeed = lerp(launchSpeed, finalSpeed or 0, Easing.outQuad(progress))
+		local desiredVel = scaleVec(polarToVec(entity.direction, 1), targetSpeed)
+
+		applySteering(entity, desiredVel, force or 60)
 	end
 end
 

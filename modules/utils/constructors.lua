@@ -38,6 +38,7 @@ CONSTRUCTORS[ENEMY] = {
 	[DEMON_BALL.name] = newDemonBall,
 	[ROLLING_STONE.name] = newRollingStone,
 	[SPIDER_DUCK_BOSS.name] = newSpiderDuckBoss,
+	[ANCIENT_MOAI.name] = newAncientMoai,
 }
 
 CONSTRUCTORS[NPC] = {

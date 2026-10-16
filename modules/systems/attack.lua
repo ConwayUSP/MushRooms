@@ -65,6 +65,8 @@ end
 ---@field onShot function
 ---@field trajectoryFuncBuilder? function
 ---@field rotationFunc? function
+---@field directionalAnimSettings? table<string, AnimSettings>
+---@field directionKeyFunc? fun(event: AtkEvent): string
 ---@field events AtkEvent[]
 ---@field weapon? Weapon
 ---@field hasShadow boolean
@@ -123,6 +125,13 @@ function Attack:setOnHit(onHit)
 	self.onHit = onHit
 end
 
+---@param settings table<string, AnimSettings>
+---@param directionKeyFunc fun(event: AtkEvent): string
+function Attack:setDirectionalAnimations(settings, directionKeyFunc)
+	self.directionalAnimSettings = settings
+	self.directionKeyFunc = directionKeyFunc
+end
+
 function Attack:setWeapon(weapon)
 	self.weapon = weapon
 end
@@ -167,8 +176,9 @@ function Attack:update(dt)
 		self.updateEvent(e, dt)
 
 		if self.subtype == MELEE_ATTACK then
-			if e.animations[INTACT] then
-				e.animations[INTACT]:update(dt)
+			local animationState = e:getAnimationState()
+			if e.animations[animationState] then
+				e.animations[animationState]:update(dt)
 			end
 
 			if e.timer <= 0 or e.piercesLeft <= 0 or e.bouncesLeft <= -1 then
@@ -194,8 +204,9 @@ function Attack:update(dt)
 						e.animations[BREAKING]:update(dt)
 					end
 				else
-					if e.animations[e.state] then
-						e.animations[e.state]:update(dt)
+					local animationState = e:getAnimationState()
+					if e.animations[animationState] then
+						e.animations[animationState]:update(dt)
 					end
 					applyPhysics(e, dt)
 				end
@@ -227,6 +238,7 @@ end
 ---@field pos Vec
 ---@field vel Vec
 ---@field acc Vec
+---@field inheritedSpeed number
 ---@field trajectoryFunc? MovementFunc
 ---@field bouncesLeft number
 ---@field piercesLeft number
@@ -256,7 +268,11 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	local atkEvent = setmetatable({}, AttackEvent) ---@diagnostic disable-line
 	local dirVec = polarToVec(direction, 1)
 	local hitboxes = copyHitboxes(attackState.hb)
-	local initialVel = scaleVec(dirVec, attackState.initialSpeed)
+	local inheritedSpeed = 0
+	if attackState.subtype == RANGED_ATTACK and attacker.type == PLAYER then
+		inheritedSpeed = math.max(0, dotProd(attacker.vel, dirVec))
+	end
+	local initialVel = scaleVec(dirVec, attackState.initialSpeed + inheritedSpeed)
 	local initialAcc = scaleVec(dirVec, attackState.accFactor)
 	local physics = physicsSettings(
 		attackState.initialMass,
@@ -279,6 +295,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.timer = attackState.dur -- tempo até o ataque terminar
 	atkEvent.dur = attackState.dur -- duração total do ataque/projétil
 	atkEvent.direction = direction -- ângulo do ataque em radianos
+	atkEvent.inheritedSpeed = inheritedSpeed -- componente da velocidade do jogador na direção do disparo
 	atkEvent.bouncesLeft = attackState.bounces -- número de ricochetes restantes
 	atkEvent.piercesLeft = attackState.pierces -- número de alvos atravessáveis restantes
 	atkEvent.tick = attackState.tick -- tempo mínimo entre acertos em um mesmo alvo
@@ -406,6 +423,15 @@ function AttackEvent:destroy()
 	self.bouncesLeft = -1
 end
 
+---@return string
+function AttackEvent:getAnimationState()
+	if self.state == INTACT and self.atk.directionKeyFunc then
+		return INTACT .. " " .. self.atk.directionKeyFunc(self)
+	end
+
+	return self.state
+end
+
 ----------------------------------------
 -- Funções de Renderização
 ----------------------------------------
@@ -415,8 +441,17 @@ end
 -- adiciona as animações de ataque e destruição à `AttackEvent` de acordo
 function AttackEvent:addAnimation(intactSettings, breakingSettings)
 	---------------- INTACT ----------------
-	local path = pngPathFormat({ "assets", "animations", "attacks", self.name, INTACT })
-	addAnimation(self, path, INTACT, intactSettings)
+	local path
+	if self.atk.directionalAnimSettings then
+		for direction, settings in pairs(self.atk.directionalAnimSettings) do
+			local state = INTACT .. " " .. direction
+			path = pngPathFormat({ "assets", "animations", "attacks", self.name, state })
+			addAnimation(self, path, state, settings)
+		end
+	else
+		path = pngPathFormat({ "assets", "animations", "attacks", self.name, INTACT })
+		addAnimation(self, path, INTACT, intactSettings)
+	end
 	--------------- BREAKING ---------------
 	if breakingSettings then
 		path = pngPathFormat({ "assets", "animations", "attacks", self.name, BREAKING })
@@ -430,12 +465,13 @@ end
 ---@param camera Camera
 -- desenha o evento de ataque no canvas atual segundo a perpectiva da `camera`
 function AttackEvent:draw(camera)
-	if not self.animations[self.state] then
+	local animationState = self:getAnimationState()
+	if not self.animations[animationState] then
 		return
 	end
 
 	local viewX, viewY = camera:viewPos(self.pos)
-	local animation = self.animations[self.state]
+	local animation = self.animations[animationState]
 
 	local rotation
 	if self.rotationFunc then
@@ -448,7 +484,7 @@ function AttackEvent:draw(camera)
 	local flip = self.subtype == MELEE_ATTACK and invertSecondAndThirdQuadrants(rotation) or 1
 
 	love.graphics.draw(
-		self.spriteSheets[self.state],
+		self.spriteSheets[animationState],
 		animation.frames[animation.currFrame],
 		viewX,
 		viewY,
