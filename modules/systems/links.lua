@@ -6,6 +6,7 @@
 ---@field links Link[]
 ---@field linksMap table<Entity, table<Entity, Link>>
 ---@field addLink fun(self, link: Link): Link?
+---@field removeLink fun(self, link: Link)
 
 LinkManager = {}
 LinkManager.__index = LinkManager
@@ -232,12 +233,14 @@ end
 ------------------------------
 
 ---@class GridLink : Link
+---@field entityA GridPuzzlePin pino que iniciou o movimento
+---@field entityB GridPuzzleStone stone movida pelo pino
 
 GridLink = setmetatable({}, { __index = Link })
 GridLink.__index = GridLink
 
----@param entityA PuzzlePin
----@param entityB PuzzleStone
+---@param entityA GridPuzzlePin
+---@param entityB GridPuzzleStone
 ---@param duration number
 ---@return GridLink
 function GridLink.new(entityA, entityB, duration)

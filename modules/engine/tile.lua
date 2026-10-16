@@ -14,6 +14,7 @@ require("modules.utils.vec")
 ---@field position Vec
 ---@field dimensions Size
 ---@field offset Vec
+---@field draw function
 
 Tile = {}
 Tile.__index = Tile

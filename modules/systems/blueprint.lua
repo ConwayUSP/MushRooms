@@ -85,9 +85,13 @@ end
 ---@field roomName string
 ---@field color Color
 ---@field spawnpoints SpawnPoint[]
----@field puzzleGridSettings? PuzzleGridSettings
+---@field puzzles PuzzleBlueprintEntry[]
 ---@field insert fun(self: Blueprint, spawnpoint: SpawnPoint): Blueprint
----@field setPuzzleGrid fun(self: Blueprint, settings: PuzzleGridSettings): Blueprint
+---@field addPuzzle fun(self: Blueprint, constructor: fun(room: Room, settings: table): Puzzle, settings: table): Blueprint
+
+---@class PuzzleBlueprintEntry
+---@field constructor fun(room: Room, settings: table): Puzzle
+---@field settings table
 
 Blueprint = {}
 Blueprint.__index = Blueprint
@@ -105,6 +109,7 @@ function Blueprint.new(roomType, roomName, color)
 	bp.roomName = roomName
 	bp.color = color
 	bp.spawnpoints = {}
+	bp.puzzles = {}
 	return bp
 end
 
@@ -119,10 +124,12 @@ function Blueprint:insert(spawnpoint)
 	return self
 end
 
----@param settings PuzzleGridSettings
+---@param constructor fun(room: Room, settings: table): Puzzle
+---@param settings table
 ---@return Blueprint
-function Blueprint:setPuzzleGrid(settings)
-	self.puzzleGridSettings = settings
+-- registra um puzzle a ser construído quando a sala for criada
+function Blueprint:addPuzzle(constructor, settings)
+	table.insert(self.puzzles, { constructor = constructor, settings = settings })
 	return self
 end
 

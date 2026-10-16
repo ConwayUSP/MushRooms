@@ -1,22 +1,8 @@
-local RoomGeneration = {}
+RoomGeneration = {}
 
 ---@class DecorationExclusionArea
 ---@field min Vec
 ---@field max Vec
-
----@param size Vec dimensões do grid em tiles
----@param margin number
----@return DecorationExclusionArea
--- cria uma área protegida ao redor do grid do puzzle
-function RoomGeneration.puzzleGridExclusionArea(size, margin)
-	local halfWidth = size.x * PuzzleGridManager.TILE_SIZE / 2 + margin
-	local halfHeight = size.y * PuzzleGridManager.TILE_SIZE / 2 + margin
-
-	return {
-		min = vec(-halfWidth, -halfHeight),
-		max = vec(halfWidth, halfHeight),
-	}
-end
 
 ---@param pos Vec
 ---@param excludedAreas? DecorationExclusionArea[]
@@ -200,47 +186,6 @@ local function tryOccupyDecorationArea(occupancy, entity, pos, excludedAreas)
 
 	occupyDecorationArea(occupancy, bounds, layer)
 	return true
-end
-
----@param size Vec dimensões do grid em tiles
----@return PuzzlePinSettings[]
--- cria um pino alinhado a cada tile dos quatro lados do grid
-function RoomGeneration.fullPerimeterWithPins(size)
-	local gridMargin = 36
-	local directionNames = {
-		["0;-1"] = "up",
-		["1;0"] = "right",
-		["0;1"] = "down",
-		["-1;0"] = "left",
-	}
-	local pins = {}
-	local pinHalfExtent = PuzzlePin.FRAME_DIM.width / 2
-
-	for i = 0, 3 do
-		local x = math.floor(math.sin(math.pi / 2 * i) + 0.5)
-		local y = math.floor(-math.cos(math.pi / 2 * i) + 0.5)
-
-		local direction = vec(x, y)
-		local directionName = directionNames[x .. ";" .. y]
-		
-		local isHorizontalSide = x == 0
-		local pinCount = isHorizontalSide and size.x or size.y
-		local gridHalfExtent = (isHorizontalSide and size.y or size.x) * PuzzleGridManager.TILE_SIZE / 2
-		local distanceFromCenter = gridHalfExtent + gridMargin + pinHalfExtent
-		local sideCenter = scaleVec(direction, distanceFromCenter)
-		local tangent = vec(-y, x)
-
-		for k = 1, pinCount do
-			local distanceAlongSide = (k - (pinCount + 1) / 2) * PuzzleGridManager.TILE_SIZE
-			table.insert(pins, {
-				id = "pin-" .. directionName .. "-" .. k,
-				offset = addVec(sideCenter, scaleVec(tangent, distanceAlongSide)),
-				pullDirection = vec(x, y),
-			})
-		end
-	end
-
-	return pins
 end
 
 ----------------------------------------
@@ -507,5 +452,3 @@ insertPossibleTorches = function(blueprint, prob, rng, excludedAreas, occupancy)
 		end
 	end
 end
-
-return RoomGeneration

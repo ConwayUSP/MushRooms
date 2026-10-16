@@ -20,6 +20,7 @@ require("table")
 ---@field currFrame number
 ---@field timer number
 ---@field isFinished boolean
+---@field onFrame function
 ---@field onFinish? function
 ---@field frameCallbacks table<number, AnimationFrameCallback>
 ---@field update function

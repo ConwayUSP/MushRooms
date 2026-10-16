@@ -94,8 +94,8 @@ function renderRooms(camera)
 			love.graphics.setColor(25 / 255, 21 / 255, 83 / 255, 1)
 			love.graphics.rectangle("fill", roomViewPos.x, roomViewPos.y, r.dimensions.width, r.dimensions.height)
 			love.graphics.setColor(1, 1, 1, 1)
-			if r.puzzleGridManager then
-				r.puzzleGridManager:drawBackground(camera)
+			for _, puzzle in ipairs(r.puzzles) do
+				puzzle:drawBackground(camera)
 			end
 
 			::nextroom::
@@ -133,11 +133,6 @@ function renderEntities(camera)
 	end
 
 	for _, r in activeRooms:iter() do
-		if r.puzzleGridManager then
-			for _, piece in ipairs(r.puzzleGridManager.pieces) do
-				addEntityToDrawList(piece, piece.pos.y + getAnchor(piece, FLOOR))
-			end
-		end
 		-- adiciona destrutíveis
 		for _, d in pairs(r.destructibles) do
 			addEntityToDrawList(d, d.pos.y + getAnchor(d, FLOOR))

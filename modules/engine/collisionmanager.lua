@@ -50,7 +50,6 @@ function CollisionManager:startRegistry()
 	reg[PLAYER_ATTACK] = {}
 	reg[ENEMY_ATTACK] = {}
 	reg[OBSTACLE] = {}
-	reg[PUZZLE_PIECE] = {}
 	reg[ROOM] = {}
 
 	return reg
@@ -121,13 +120,6 @@ function CollisionManager:fetchHitboxesByRoom(room)
 		self:register(obs)
 	end
 
-	-- pegando hitboxes das peças do puzzle
-	if room.puzzleGridManager then
-		for _, piece in ipairs(room.puzzleGridManager.pieces) do
-			self:register(piece)
-		end
-	end
-
 	-- pegando hitboxes de paredes
 	for _, wall in pairs(room:getWalls()) do
 		self:register(wall)
@@ -185,13 +177,6 @@ function CollisionManager:clearHitboxesByRoom(room)
 	-- removendo hitboxes de obstáculos
 	for _, obs in pairs(room.obstacles) do
 		self:unregister(obs)
-	end
-
-	-- removendo hitboxes das peças do puzzle
-	if room.puzzleGridManager then
-		for _, piece in ipairs(room.puzzleGridManager.pieces) do
-			self:unregister(piece)
-		end
 	end
 
 	-- removendo hitboxes de paredes
@@ -451,32 +436,10 @@ function CollisionManager:handleCollisions()
 		end
 	end
 
-	-------- ATAQUE / PEÇA DE PUZZLE --------
-	for piece, pieceHb in pairs(registry[PUZZLE_PIECE]) do
-		for attack, attackHb in pairs(registry[PLAYER_ATTACK]) do
-			local hit = checkColision(attackHb.default, attack, pieceHb.default, piece)
-
-			if hit then
-				self:onAttackPuzzlePiece(attack, piece)
-			end
-		end
-
-		for attack, attackHb in pairs(registry[ENEMY_ATTACK]) do
-			local hit = checkColision(attackHb.default, attack, pieceHb.default, piece)
-
-			if hit then
-				self:onAttackPuzzlePiece(attack, piece)
-			end
-		end
-	end
 end
 
 function CollisionManager:handleSolidCollisions(entityA, entityB)
-	if entityA.type == ATTACK_EVENT and entityB.type == PUZZLE_PIECE then
-		self:onAttackPuzzlePiece(entityA, entityB)
-	elseif entityA.type == PUZZLE_PIECE and entityB.type == ATTACK_EVENT then
-		self:onAttackPuzzlePiece(entityB, entityA)
-	elseif entityA.type == ATTACK_EVENT and entityB.type == OBSTACLE then
+	if entityA.type == ATTACK_EVENT and entityB.type == OBSTACLE then
 		self:onAttackObstacle(entityA, entityB)
 	elseif entityA.type == OBSTACLE and entityB.type == ATTACK_EVENT then
 		self:onAttackObstacle(entityB, entityA)
@@ -779,15 +742,3 @@ function CollisionManager:onAttackObstacle(attack, obstacle)
 	attack:reduceBounces()
 end
 
----@param attack AtkEvent
----@param piece PuzzlePiece
--- trata separadamente a colisão entre projéteis e peças de puzzle
-function CollisionManager:onAttackPuzzlePiece(attack, piece)
-	if not attack.active or not attack:registerHit(piece) then
-		return
-	end
-
-	attack:reduceBounces()
-	piece:onAttackHit(attack)
-	attack:onHit(piece)
-end

@@ -1,4 +1,9 @@
-local RoomGeneration = require("modules.utils.roomgeneration")
+----------------------------------------
+-- Importações de Módulos
+----------------------------------------
+
+require("modules.constructors.puzzles.grid")
+require("modules.utils.roomgeneration")
 
 ---@param rng RNG
 ---@return Blueprint
@@ -7,13 +12,13 @@ function newPuzzleRoom1(rng)
 	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 4x4", rgba8(12, 253, 255, 255))
 	local gridSize = vec(4, 4)
 	local decorationMargin = 100
-	local excludedAreas = { RoomGeneration.puzzleGridExclusionArea(gridSize, decorationMargin) }
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:setPuzzleGrid({
+	bp:addPuzzle(GridPuzzle.new, {
 		size = gridSize,
 		centerSize = vec(2, 2),
-		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
 		stones = {
 			{ id = "stone-up-left", cell = vec(1, 1), direction = vec(1, 1) },
 			{ id = "stone-up-right", cell = vec(4, 1), direction = vec(-1, 1) },
@@ -32,13 +37,13 @@ function newPuzzleRoom2(rng)
 	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 6x6", rgba8(12, 253, 255, 255))
 	local gridSize = vec(6, 6)
 	local decorationMargin = 100
-	local excludedAreas = { RoomGeneration.puzzleGridExclusionArea(gridSize, decorationMargin) }
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:setPuzzleGrid({
+	bp:addPuzzle(GridPuzzle.new, {
 		size = gridSize,
 		centerSize = vec(2, 2),
-		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
 		stones = {
 			{ id = "stone-up-left", cell = vec(1, 2), direction = vec(1, 1) },
 			{ id = "stone-up-right", cell = vec(6, 1), direction = vec(-1, 1) },
@@ -57,13 +62,13 @@ function newPuzzleRoom3(rng)
 	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 8x8", rgba8(12, 253, 255, 255))
 	local gridSize = vec(8, 8)
 	local decorationMargin = 100
-	local excludedAreas = { RoomGeneration.puzzleGridExclusionArea(gridSize, decorationMargin) }
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:setPuzzleGrid({
+	bp:addPuzzle(GridPuzzle.new, {
 		size = gridSize,
 		centerSize = vec(2, 2),
-		pins = RoomGeneration.fullPerimeterWithPins(gridSize),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
 		stones = {
 			{ id = "stone-up-left", cell = vec(2, 2), direction = vec(1, 1) },
 			{ id = "stone-up-right", cell = vec(7, 3), direction = vec(-1, 1) },
@@ -175,13 +180,7 @@ function newBossRoom2(rng)
 	local enemyData1 = SpawnData.new(ANCIENT_MOAI, 1.0)
 	sp1:insert(enemyData1)
 	bp:insert(sp1)
-	insertPossibleTorches(bp, 0.8, rng)
-	insertRandomly(bp, NEGATIVE, 14, rng)
-	insertRandomly(bp, MOSS, 9, rng)
-	insertRandomly(bp, CRACKS, 12, rng)
-	insertRandomly(bp, SKELETON, 3, rng)
-	insertIntoGrid(bp, RUBBLE_BIG, 0.07, 6, true, rng)
-	insertIntoGrid(bp, RUBBLE_SMALL, 0.1, 8, true, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 

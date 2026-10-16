@@ -3,7 +3,6 @@
 ----------------------------------------
 require("modules.entities.doorglow")
 require("modules.systems.blueprint")
-require("modules.systems.puzzlegridmanager")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
 require("modules.utils.types")
@@ -47,7 +46,7 @@ walls = BiList.new()
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
----@field puzzleGridManager? PuzzleGridManager presente apenas em salas configuradas com PuzzleGridSettings
+---@field puzzles Puzzle[]
 ---@field doorGlows DoorGlow[]
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
@@ -109,6 +108,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.enemies = {} -- lista de inimigos na sala
 	room.npcs = {} -- lista de NPCs na sala
 	room.obstacles = {} -- lista de obstáculos na sala
+	room.puzzles = {} -- puzzles configurados para a sala
 	room.playersInRoom = Set.new() -- lista de jogadores na sala
 	room.linkManager = LinkManager.new() -- gerenciador de links da sala
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
@@ -117,8 +117,8 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.deactivationTimer = Timer.new(1)
 
 	room:addWallsAndDoors()
-	if blueprint.puzzleGridSettings then
-		PuzzleGridManager.new(room, blueprint.puzzleGridSettings)
+	for _, puzzleEntry in ipairs(blueprint.puzzles) do
+		table.insert(room.puzzles, puzzleEntry.constructor(room, puzzleEntry.settings))
 	end
 
 	return room
@@ -159,8 +159,8 @@ function Room:update(dt)
 	for _, glow in pairs(self.doorGlows) do
 		glow:update(dt)
 	end
-	if self.puzzleGridManager then
-		self.puzzleGridManager:update(dt)
+	for _, puzzle in ipairs(self.puzzles) do
+		puzzle:update(dt)
 	end
 
 	self.linkManager:update(dt)
@@ -240,13 +240,17 @@ function Room:onPlayerEnter(player)
 	end
 
 	self.deactivationTimer:stop()
+
+	for _, puzzle in ipairs(self.puzzles) do
+		puzzle:onPlayerEnter(player)
+	end
 end
 
 ---@param player Player
 -- lida com a saída do player de salas
 function Room:onPlayerExit(player)
-	if self.puzzleGridManager then
-		self.puzzleGridManager:clearPendingPin(player)
+	for _, puzzle in ipairs(self.puzzles) do
+		puzzle:onPlayerExit(player)
 	end
 
 	self.playersInRoom:remove(player.id)

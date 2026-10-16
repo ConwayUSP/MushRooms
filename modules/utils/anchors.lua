@@ -86,8 +86,8 @@ ANCHORS = {
 	ember_mark = floorAnchor(-1000),
 
 	-- Puzzle
-	stone = floorAnchor(18),
-	pin = floorAnchor(8),
+	puzzle_stone = floorAnchor(18),
+	puzzle_pin = floorAnchor(8),
 }
 
 ----------------------------------------
