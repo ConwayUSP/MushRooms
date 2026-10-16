@@ -238,6 +238,7 @@ end
 ---@field pos Vec
 ---@field vel Vec
 ---@field acc Vec
+---@field inheritedSpeed number
 ---@field trajectoryFunc? MovementFunc
 ---@field bouncesLeft number
 ---@field piercesLeft number
@@ -267,7 +268,11 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	local atkEvent = setmetatable({}, AttackEvent) ---@diagnostic disable-line
 	local dirVec = polarToVec(direction, 1)
 	local hitboxes = copyHitboxes(attackState.hb)
-	local initialVel = scaleVec(dirVec, attackState.initialSpeed)
+	local inheritedSpeed = 0
+	if attackState.subtype == RANGED_ATTACK and attacker.type == PLAYER then
+		inheritedSpeed = math.max(0, dotProd(attacker.vel, dirVec))
+	end
+	local initialVel = scaleVec(dirVec, attackState.initialSpeed + inheritedSpeed)
 	local initialAcc = scaleVec(dirVec, attackState.accFactor)
 	local physics = physicsSettings(
 		attackState.initialMass,
@@ -290,6 +295,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.timer = attackState.dur -- tempo até o ataque terminar
 	atkEvent.dur = attackState.dur -- duração total do ataque/projétil
 	atkEvent.direction = direction -- ângulo do ataque em radianos
+	atkEvent.inheritedSpeed = inheritedSpeed -- componente da velocidade do jogador na direção do disparo
 	atkEvent.bouncesLeft = attackState.bounces -- número de ricochetes restantes
 	atkEvent.piercesLeft = attackState.pierces -- número de alvos atravessáveis restantes
 	atkEvent.tick = attackState.tick -- tempo mínimo entre acertos em um mesmo alvo

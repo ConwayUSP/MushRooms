@@ -98,9 +98,13 @@ end
 -- cria uma arma do tipo Flowergun
 function newFlowergun()
 	local cooldown = constCooldown(0.25)
-	local attack = newSeedAttack(true, 0.2, cooldown, 1800, nil)
-	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
-	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(30, -5))
+	local initialSpeedCooldown = randCooldown(1000, 1400)
+	local trajectoryFuncBuilder = function()
+		return deceleratingProjectileMovement(initialSpeedCooldown)
+	end
+	local attack = newSeedAttack(true, 0.55, cooldown, 3000, trajectoryFuncBuilder)
+	attack:addAttackFunc(defaultCircularAttackFunc(-2, 2, math.rad(8)))
+	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(50, 4))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	flowergun:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
