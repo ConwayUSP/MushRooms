@@ -355,8 +355,9 @@ function randomMovement(duration, baseCooldown, moveBuilder)
 end
 
 ---@param force? number
+---@param targetSpeed? number
 ---@return MovementFunc
-function followTargetMovement(force)
+function followTargetMovement(force, targetSpeed)
 	force = force or 10
 	return function(entity, dt)
 		if not entity.moveTargeting or not entity.moveTargeting.validTarget then
@@ -364,7 +365,7 @@ function followTargetMovement(force)
 		end
 
 		local dir = subVec(entity.moveTargeting.targetPos, entity.pos)
-		local desiredVel = scaleVec(normalize(dir), entity.speed)
+		local desiredVel = scaleVec(normalize(dir), targetSpeed or entity.speed)
 
 		applySteering(entity, desiredVel, force)
 	end
