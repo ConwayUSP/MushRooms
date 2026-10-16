@@ -20,11 +20,11 @@ function newKatana()
 	end
 	local hb = hitbox(Circle.new(100))
 	local hbs = hitboxes({ hb })
-	local cooldown = multiCooldown({ 0.1, 0.1, 0.5 })
+	local cooldown = multiCooldown({ 0.25, 0.25, 0.75 })
 	local atkSettings = newAtkSetting({
 		subtype = MELEE_ATTACK,
 		ally = true,
-		dmg = 15,
+		dmg = 12,
 		dur = 0.4,
 		hb = hbs,
 		cooldown = cooldown,
@@ -45,7 +45,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Estilingue
 function newSlingShot()
-	local cooldown = constCooldown(0.4)
+	local cooldown = constCooldown(0.55)
 	local attack = newPebbleShotAttack(true, 4, cooldown, 1200, nil)
 	attack:setOnHit(onHitLinkTwoEnemies)
 	local slingshot = Weapon.new(SLING_SHOT.name, attack, vec(-10, 10), vec(40, -30))
@@ -68,11 +68,11 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Skull Shooter
 function newSkullShooter()
-	local cooldown = constCooldown(0.2)
+	local cooldown = constCooldown(1.25)
 	local trajectoryFuncBuilder = function()
 		return followTargetMovement(5)
 	end
-	local attack = newSkullAttack(true, 10, cooldown, 400, trajectoryFuncBuilder)
+	local attack = newSkullAttack(true, 4, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
 	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(30, -5))
 	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
@@ -84,8 +84,8 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Blackhole
 function newBlackholer()
-	local cooldown = constCooldown(1)
-	local attack = newBlackholeAttack(true, 10, cooldown, 1200, nil)
+	local cooldown = constCooldown(3)
+	local attack = newBlackholeAttack(true, 4, cooldown, 1200, nil)
 	local blackhole = Weapon.new(BLACKHOLER.name, attack, vec(25, 20), vec(30, -5), 1.0)
 	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(6, { width = 36, height = 36 }, 0.1, false, 1)
@@ -97,7 +97,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Flowergun
 function newFlowergun()
-	local cooldown = constCooldown(0.05)
+	local cooldown = constCooldown(0.25)
 	local attack = newSeedAttack(true, 0.2, cooldown, 1800, nil)
 	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
 	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(30, -5))
@@ -124,5 +124,5 @@ function onHitLinkTwoEnemies(atkEvent, enemy)
 end
 
 function onHitApplyFear(atkEvent, enemy)
-	enemy:applyFear(atkEvent.attacker, 3)
+	enemy:applyFear(atkEvent.attacker, 0.75)
 end

@@ -46,7 +46,7 @@ function newSpiderDuck(spawnPos, room)
 	local hbs = hitboxes({ hb })
 	local physics = physicsSettings(0.8, 300, 5)
 	local enemy =
-		Enemy.new(SPIDER_DUCK.name, 20, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
+		Enemy.new(SPIDER_DUCK.name, 45, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	local idleAnimSettings = newAnimSetting(2, { width = 32, height = 32 }, 0.4, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
 	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)

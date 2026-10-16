@@ -35,7 +35,7 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 15,
+		dmg = 12,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -117,7 +117,7 @@ end
 ---@return Attack
 -- um tiro nuclear
 function newBoomerangueAttack(ally, speed, timing, force)
-	local cooldown = constCooldown(0.4)
+	local cooldown = constCooldown(0.55)
 	local trajectoryFuncBuilder = function()
 		return boomerangMovement(speed * 1.6, timing, force)
 	end
@@ -126,7 +126,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 12,
+		dmg = 8,
 		dur = math.huge,
 		hb = hbs,
 		cooldown = cooldown,
@@ -137,7 +137,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 		restitution = 1,
 		bounces = math.huge,
 		pierces = math.huge,
-		tick = 0.2,
+		tick = 0.4,
 	})
 	local anim = newAnimSetting(12, { width = 32, height = 32 }, 0.1, true, 1)
 	local updateFunc = AttackEvent.baseUpdate
@@ -173,7 +173,7 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 5,
+		dmg = 15,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -218,7 +218,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 8,
+		dmg = 5,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -228,7 +228,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		friction = 0.8,
 		bounces = 0,
 		pierces = math.huge,
-		tick = 0.5,
+		tick = 0.75,
 	})
 
 	local animIntact = newAnimSetting(16, { width = 32, height = 32 }, 0.1, true, 1, 0)
@@ -277,7 +277,7 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 4,
+		dmg = 3,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,

@@ -120,8 +120,11 @@ end
 
 function Mortal:applyFear(attacker, duration)
 	if self.type == ENEMY then
-		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_ON_INIT, FEAR_DEFAULT_DUR), avoidAllPlayersStrong)
+		local fearDuration = duration or FEAR_DEFAULT_DUR
+		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_ON_INIT, fearDuration), avoidAllPlayersStrong)
 		self.moveTargeting:applyStrats(TC_ON_INIT)
+		self.fearTimer.duration = fearDuration
+		self.fearTimer.limit = fearDuration
 		self.fearTimer:start()
 		self:interruptAttack()
 	end
