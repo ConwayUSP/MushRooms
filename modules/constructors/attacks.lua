@@ -36,7 +36,7 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, 
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 15,
+		dmg = 12,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -118,7 +118,7 @@ end
 ---@return Attack
 -- um tiro nuclear
 function newBoomerangueAttack(ally, speed, timing, force)
-	local cooldown = constCooldown(0.4)
+	local cooldown = constCooldown(0.55)
 	local trajectoryFuncBuilder = function()
 		return boomerangMovement(speed * 1.6, timing, force)
 	end
@@ -127,7 +127,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 12,
+		dmg = 8,
 		dur = math.huge,
 		hb = hbs,
 		cooldown = cooldown,
@@ -138,7 +138,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 		restitution = 1,
 		bounces = math.huge,
 		pierces = math.huge,
-		tick = 0.2,
+		tick = 0.4,
 	})
 	local anim = newAnimSetting(12, { width = 32, height = 32 }, 0.1, true, 1)
 	local updateFunc = AttackEvent.baseUpdate
@@ -169,12 +169,13 @@ function newBoomerangueAttack(ally, speed, timing, force)
 end
 
 function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
+	local directions = { "e", "se", "s", "sw", "w", "nw", "n", "ne" }
 	local hb = hitbox(Circle.new(10))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 5,
+		dmg = 15,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -195,10 +196,13 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local animIntact = newAnimSetting(1, { width = 32, height = 32 }, 0.1, true, 1)
 	local animBreaking = newAnimSetting(1, { width = 32, height = 32 }, 0.05, false, 1)
 	local updateFunc = AttackEvent.baseUpdate
-	local rotationFunc = function(e)
-		local angle = math.atan2(e.vel.y, e.vel.x)
-		local flip = flipSecondAndThirdQuadrants(angle)
-		return flip
+	local rotationFunc = function()
+		return 0
+	end
+	local directionKeyFunc = function(e)
+		local angle = (math.atan2(e.vel.y, e.vel.x) + math.pi * 2) % (math.pi * 2)
+		local index = math.floor((angle + math.pi / 8) / (math.pi / 4)) % #directions + 1
+		return directions[index]
 	end
 	local onHitFunc = function(e, t)
 		-- print(SKULL_SHOT.name .. " acertou um alvo")
@@ -206,6 +210,11 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local particles = atkParticles(nil, PARTICLE_WALKING, PARTICLE_BREAKING)
 
 	local attack = Attack.new(SKULL_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
+	local directionalAnimSettings = {}
+	for _, direction in ipairs(directions) do
+		directionalAnimSettings[direction] = animIntact
+	end
+	attack:setDirectionalAnimations(directionalAnimSettings, directionKeyFunc)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -219,7 +228,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 8,
+		dmg = 5,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -229,7 +238,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		friction = 0.8,
 		bounces = 0,
 		pierces = math.huge,
-		tick = 0.5,
+		tick = 0.75,
 	})
 
 	local animIntact = newAnimSetting(16, { width = 32, height = 32 }, 0.1, true, 1, 0)
@@ -263,8 +272,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 
 	local particles = atkParticles(nil, PARTICLE_BLACK_HOLE, nil)
 
-	local attack =
-		Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
+	local attack = Attack.new(BLACKHOLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 20
@@ -278,7 +286,7 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 4,
+		dmg = 3,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,

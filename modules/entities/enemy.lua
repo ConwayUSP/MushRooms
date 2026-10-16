@@ -285,6 +285,7 @@ function Enemy:interruptAttack()
 	self.isAttacking = false
 	self.hasTriggeredAttackThisAnim = false
 	self.attackJustStarted = false
+	self.attackMoveFunc = nil
 	self:resetAttackAnimations()
 end
 

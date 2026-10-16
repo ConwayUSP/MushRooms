@@ -371,6 +371,31 @@ function followTargetMovement(force, targetSpeed)
 	end
 end
 
+---@param initialSpeedCooldown fun(): number
+---@param finalSpeed? number
+---@param force? number
+---@return MovementFunc
+-- mantém o projétil rápido no início e concentra a frenagem no fim da sua duração
+function deceleratingProjectileMovement(initialSpeedCooldown, finalSpeed, force)
+	local initialSpeed = initialSpeedCooldown()
+	local initialized = false
+
+	return function(entity, dt)
+		local launchSpeed = initialSpeed + (entity.inheritedSpeed or 0)
+
+		if not initialized then
+			entity.vel = scaleVec(polarToVec(entity.direction, 1), launchSpeed)
+			initialized = true
+		end
+
+		local progress = clamp(entity.age / entity.dur, 0, 1)
+		local targetSpeed = lerp(launchSpeed, finalSpeed or 0, Easing.outQuad(progress))
+		local desiredVel = scaleVec(polarToVec(entity.direction, 1), targetSpeed)
+
+		applySteering(entity, desiredVel, force or 60)
+	end
+end
+
 function followTarget(entity, dt)
 	if not entity.moveTargeting then
 		return

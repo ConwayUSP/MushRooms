@@ -20,11 +20,11 @@ function newKatana()
 	end
 	local hb = hitbox(Circle.new(100))
 	local hbs = hitboxes({ hb })
-	local cooldown = multiCooldown({ 0.1, 0.1, 0.5 })
+	local cooldown = multiCooldown({ 0.25, 0.25, 0.75 })
 	local atkSettings = newAtkSetting({
 		subtype = MELEE_ATTACK,
 		ally = true,
-		dmg = 15,
+		dmg = 12,
 		dur = 0.4,
 		hb = hbs,
 		cooldown = cooldown,
@@ -45,7 +45,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Estilingue
 function newSlingShot()
-	local cooldown = constCooldown(0.4)
+	local cooldown = constCooldown(0.55)
 	local attack = newPebbleShotAttack(true, 4, cooldown, 1200, nil)
 	attack:setOnHit(onHitLinkTwoEnemies)
 	local slingshot = Weapon.new(SLING_SHOT.name, attack, vec(-10, 10), vec(40, -30))
@@ -68,13 +68,13 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Skull Shooter
 function newSkullShooter()
-	local cooldown = constCooldown(0.2)
+	local cooldown = constCooldown(1.0)
 	local trajectoryFuncBuilder = function()
 		return followTargetMovement(5)
 	end
-	local attack = newSkullAttack(true, 10, cooldown, 400, trajectoryFuncBuilder)
+	local attack = newSkullAttack(true, 4, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
-	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(30, -5))
+	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(60, -6))
 	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -84,12 +84,12 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Blackhole
 function newBlackholer()
-	local cooldown = constCooldown(1)
-	local attack = newBlackholeAttack(true, 10, cooldown, 1200, nil)
-	local blackhole = Weapon.new(BLACKHOLER.name, attack, vec(25, 20), vec(30, -5), 1.0)
-	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(6, { width = 36, height = 36 }, 0.1, false, 1)
-	local weaponChargingAnimSettings = newAnimSetting(8, { width = 36, height = 36 }, 0.12, true, 7)
+	local cooldown = constCooldown(2)
+	local attack = newBlackholeAttack(true, 5, cooldown, 1200, nil)
+	local blackhole = Weapon.new(BLACKHOLER.name, attack, vec(25, 20), vec(30, -5), 1.08)
+	local idleAnimSettings = newAnimSetting(4, { width = 40, height = 40 }, 0.5, true, 1, 0)
+	local weaponAtkAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false, 1)
+	local weaponChargingAnimSettings = newAnimSetting(51, { width = 32, height = 32 }, 0.03, true, 36)
 	blackhole:addAnimations(idleAnimSettings, weaponAtkAnimSettings, weaponChargingAnimSettings)
 	return blackhole
 end
@@ -97,10 +97,14 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Flowergun
 function newFlowergun()
-	local cooldown = constCooldown(0.05)
-	local attack = newSeedAttack(true, 0.2, cooldown, 1800, nil)
-	attack:addAttackFunc(defaultCircularAttackFunc(-1, 1, math.rad(8)))
-	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(30, -5))
+	local cooldown = constCooldown(0.25)
+	local initialSpeedCooldown = randCooldown(1000, 1400)
+	local trajectoryFuncBuilder = function()
+		return deceleratingProjectileMovement(initialSpeedCooldown)
+	end
+	local attack = newSeedAttack(true, 0.55, cooldown, 3000, trajectoryFuncBuilder)
+	attack:addAttackFunc(defaultCircularAttackFunc(-2, 2, math.rad(8)))
+	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(50, 4))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	flowergun:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
@@ -124,5 +128,5 @@ function onHitLinkTwoEnemies(atkEvent, enemy)
 end
 
 function onHitApplyFear(atkEvent, enemy)
-	enemy:applyFear(atkEvent.attacker, 3)
+	enemy:applyFear(atkEvent.attacker, 1.5)
 end
