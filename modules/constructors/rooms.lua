@@ -100,7 +100,6 @@ function newBattleRoom1(rng)
 end
 
 ---@return Blueprint
--- sala de boss 1: contém 1 Gato Nuclear ou 1 Pato Aranha no centro
 function newBossRoom1(rng)
 	local bp = Blueprint.new(BOSS_ROOM, "Test Boss Room", rgba8(255, 41, 41, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
@@ -108,6 +107,24 @@ function newBossRoom1(rng)
 	sp1:insert(enemyData1)
 	bp:insert(sp1)
 	insertGeneralDecorations(bp, rng)
+	return bp
+end
+
+---@return Blueprint
+-- sala de boss 2: contém 1 Ancient Moai no centro
+function newBossRoom2(rng)
+	local bp = Blueprint.new(BOSS_ROOM, "Ancient Moai Boss Room", rgba8(180, 120, 60, 255))
+	local sp1 = SpawnPoint.new(vec(0, 0))
+	local enemyData1 = SpawnData.new(ANCIENT_MOAI, 1.0)
+	sp1:insert(enemyData1)
+	bp:insert(sp1)
+	insertPossibleTorches(bp, 0.8, rng)
+	insertRandomly(bp, NEGATIVE, 14, rng)
+	insertRandomly(bp, MOSS, 9, rng)
+	insertRandomly(bp, CRACKS, 12, rng)
+	insertRandomly(bp, SKELETON, 3, rng)
+	insertIntoGrid(bp, RUBBLE_BIG, 0.07, 6, true, rng)
+	insertIntoGrid(bp, RUBBLE_SMALL, 0.1, 8, true, rng)
 	return bp
 end
 
@@ -168,8 +185,8 @@ end
 ---@param scapeGrid boolean
 -- insere na blueprint aleatoriamente de acordo com uma grade de tamanho ajustável
 function insertIntoGrid(blueprint, type, density, gridDim, scapeGrid, rng)
-	for i = -(gridDim/2), (gridDim / 2) do
-		for j = -(gridDim/2), (gridDim / 2) do
+	for i = -(gridDim / 2), (gridDim / 2) do
+		for j = -(gridDim / 2), (gridDim / 2) do
 			local ox, oy = 0, 0
 			local scapeFactor = Room.stdDim.width / (gridDim * 3)
 			if scapeGrid then

@@ -6,6 +6,7 @@ require("modules.systems.targeting")
 require("modules.entities.mortal")
 require("modules.utils.states")
 require("modules.utils.types")
+require("modules.utils.vec")
 require("modules.systems.shaders")
 require("table")
 

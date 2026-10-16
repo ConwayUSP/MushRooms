@@ -27,10 +27,11 @@ require("modules.utils.vfxs")
 ---@param cooldown function
 ---@param speed number
 ---@param trajectoryFuncBuilder? function
+---@param hbRadius? number -- raio da hitbox do projétil (padrão 15)
 ---@return Attack
 -- um tiro de pedrinha
-function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
-	local hb = hitbox(Circle.new(15))
+function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, hbRadius)
+	local hb = hitbox(Circle.new(hbRadius or 15))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
@@ -317,15 +318,20 @@ end
 ---@param ally boolean
 ---@param duration number
 ---@param cooldown function
+---@param hb? Hitbox
+---@param name? string
+---@param dmg? number
 ---@return Attack
 -- um ataque rotatório corpo-a-corpo (sem animação)
-function newRotatoryAttack(ally, duration, cooldown, hb)
+function newRotatoryAttack(ally, duration, cooldown, hb, name, dmg)
 	hb = hb or hitbox(Circle.new(50), vec(0, -30))
+	name = name or ROTATORY_ATK.name
+	dmg = dmg or 20
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,
 		ally = ally,
-		dmg = 20,
+		dmg = dmg,
 		dur = duration,
 		hb = hbs,
 		cooldown = cooldown,
@@ -339,7 +345,7 @@ function newRotatoryAttack(ally, duration, cooldown, hb)
 		-- print("Rotatory Attack acertou um alvo")
 	end
 
-	local attack = Attack.new(ROTATORY_ATK.name, settings, updateFunc, onHitFunc, nil)
+	local attack = Attack.new(name, settings, updateFunc, onHitFunc, nil)
 	attack.hasShadow = false
 
 	return attack
@@ -403,10 +409,12 @@ end
 ---@param duration number
 ---@param dmg number
 ---@param hb? Hitboxes
+---@param name? string
 ---@return Attack
 -- embalo do Rolling Stone. Ataque corpo-a-corpo com hitbox um pouco maior que
 -- a do corpo, que acompanha o inimigo enquanto ele rola
-function newRollingRushAttack(ally, duration, dmg, hb)
+function newRollingRushAttack(ally, duration, dmg, hb, name)
+	name = name or ROLLING_RUSH.name
 	hb = hb or hitboxes({ hitbox(Circle.new(40)) })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,
@@ -426,7 +434,7 @@ function newRollingRushAttack(ally, duration, dmg, hb)
 		e.vel = e.attacker.vel
 	end
 
-	local attack = Attack.new(ROLLING_RUSH.name, settings, updateFunc, nil, nil)
+	local attack = Attack.new(name, settings, updateFunc, nil, nil)
 	attack.hasShadow = false
 
 	return attack

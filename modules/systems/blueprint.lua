@@ -14,7 +14,7 @@ BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2 }
 BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
 BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
 BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
-BLUEPRINTS[BOSS_ROOM] = { newBossRoom1 }
+BLUEPRINTS[BOSS_ROOM] = { newBossRoom1, newBossRoom2 }
 BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
 
 ----------------------------------------

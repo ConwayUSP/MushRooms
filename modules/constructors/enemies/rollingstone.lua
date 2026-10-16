@@ -4,24 +4,17 @@
 
 -- código de direção usado nos nomes dos spritesheets (ex.: "rotating ur")
 local DIR_CODE = { [UP] = "u", [DOWN] = "d", [LEFT] = "l", [RIGHT] = "r" }
--- vetor unitário de cada direção
-local DIR_VEC = {
-	[UP] = vec(0, -1),
-	[DOWN] = vec(0, 1),
-	[LEFT] = vec(-1, 0),
-	[RIGHT] = vec(1, 0),
-}
 -- fases da máquina de estado do Rolling Stone
 local RS_IDLE = "rs idle"
 local RS_ROTATING = "rs rotating"
 local RS_ROLLING = "rs rolling"
 local RS_STOPING = "rs stoping"
 
-local IDLE_DURATION = 1.5 -- tempo que o Rolling Stone fica parado antes de escolher uma direção de ataque
-local ROLL_ACCEL = 4500 -- aceleração do embalo
-local WALL_RESTITUTION = 0.8 -- força do knockback ao bater nas paredes
-local MIN_CLEARANCE = 300 -- espaço mínimo que uma direção precisa ter para ser candidata ao ataque
-local MAX_CLEARANCE = 600 -- distância máxima verificada na checagem de espaço livre
+local IDLE_DURATION = 1.5          -- tempo que o Rolling Stone fica parado antes de escolher uma direção de ataque
+local ROLL_ACCEL = 4500            -- aceleração do embalo
+local WALL_RESTITUTION = 0.8       -- força do knockback ao bater nas paredes
+local MIN_CLEARANCE = 300          -- espaço mínimo que uma direção precisa ter para ser candidata ao ataque
+local MAX_CLEARANCE = 600          -- distância máxima verificada na checagem de espaço livre
 local PLAYER_DIRECTION_WEIGHT = 10 -- viés para a direção cardinal mais próxima do jogador
 
 ---@param fromDir State
