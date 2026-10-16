@@ -18,10 +18,11 @@ local RS_ROLLING = "rs rolling"
 local RS_STOPING = "rs stoping"
 
 local IDLE_DURATION = 1.5 -- tempo que o Rolling Stone fica parado antes de escolher uma direção de ataque
-local ROLL_ACCEL = 3500 -- aceleração do embalo
+local ROLL_ACCEL = 4500 -- aceleração do embalo
 local WALL_RESTITUTION = 0.8 -- força do knockback ao bater nas paredes
 local MIN_CLEARANCE = 300 -- espaço mínimo que uma direção precisa ter para ser candidata ao ataque
 local MAX_CLEARANCE = 600 -- distância máxima verificada na checagem de espaço livre
+local PLAYER_DIRECTION_WEIGHT = 10 -- viés para a direção cardinal mais próxima do jogador
 
 ---@param fromDir State
 ---@param toDir State
@@ -166,6 +167,7 @@ function newRollingStone(spawnPos, room)
 	enemy.lastPhase = RS_IDLE
 	enemy.idleTimer = 0
 	enemy.attackDir = nil
+	enemy.rushesLeft = 0
 	enemy.facing = DIRECTIONS[math.random(#DIRECTIONS)]
 	enemy.rollAccel = ROLL_ACCEL
 	enemy.contactDamage = false
@@ -219,7 +221,7 @@ function newRollingStone(spawnPos, room)
 		local weights = {}
 		local total = 0
 		for _, dir in ipairs(openDirs) do
-			weights[dir] = dir == primary and 4 or 1
+			weights[dir] = dir == primary and PLAYER_DIRECTION_WEIGHT or 1
 			total = total + weights[dir]
 		end
 
@@ -240,6 +242,29 @@ function newRollingStone(spawnPos, room)
 		enemy.phase = enemy.attackDir == enemy.facing and RS_ROLLING or RS_ROTATING
 	end
 
+	local function startRushSequence()
+		enemy.rushesLeft = 1
+		chooseAttackDirection()
+	end
+
+	for _, dir in ipairs(DIRECTIONS) do
+		local state = rsStopingState(dir)
+		enemy.animations[state].onFinish = function()
+			if enemy.phase ~= RS_STOPING then
+				return
+			end
+
+			enemy.facing = enemy.attackDir
+			if enemy.rushesLeft > 0 then
+				enemy.rushesLeft = enemy.rushesLeft - 1
+				chooseAttackDirection()
+			else
+				enemy.phase = RS_IDLE
+				enemy.idleTimer = 0
+			end
+		end
+	end
+
 	-------- sobrescritas da máquina de estado -----------
 
 	enemy.updateState = function(self, dt)
@@ -252,7 +277,7 @@ function newRollingStone(spawnPos, room)
 		if self.phase == RS_IDLE and not self.fearTimer.active then
 			self.idleTimer = self.idleTimer + dt
 			if self.idleTimer >= IDLE_DURATION then
-				chooseAttackDirection()
+				startRushSequence()
 			end
 		end
 
@@ -304,6 +329,7 @@ function newRollingStone(spawnPos, room)
 				self.facing = self.attackDir
 			end
 			stopMovement(self)
+			self.rushesLeft = 0
 			self.phase = RS_IDLE
 			self.idleTimer = 0
 		end
