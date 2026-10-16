@@ -84,12 +84,12 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Blackhole
 function newBlackholer()
-	local cooldown = constCooldown(3)
-	local attack = newBlackholeAttack(true, 4, cooldown, 1200, nil)
-	local blackhole = Weapon.new(BLACKHOLER.name, attack, vec(25, 20), vec(30, -5), 1.0)
-	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(6, { width = 36, height = 36 }, 0.1, false, 1)
-	local weaponChargingAnimSettings = newAnimSetting(8, { width = 36, height = 36 }, 0.12, true, 7)
+	local cooldown = constCooldown(2)
+	local attack = newBlackholeAttack(true, 5, cooldown, 1200, nil)
+	local blackhole = Weapon.new(BLACKHOLER.name, attack, vec(25, 20), vec(30, -5), 1.08)
+	local idleAnimSettings = newAnimSetting(4, { width = 40, height = 40 }, 0.5, true, 1, 0)
+	local weaponAtkAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false, 1)
+	local weaponChargingAnimSettings = newAnimSetting(51, { width = 32, height = 32 }, 0.03, true, 36)
 	blackhole:addAnimations(idleAnimSettings, weaponAtkAnimSettings, weaponChargingAnimSettings)
 	return blackhole
 end
