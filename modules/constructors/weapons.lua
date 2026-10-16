@@ -75,8 +75,8 @@ function newSkullShooter()
 	local attack = newSkullAttack(true, 4, cooldown, 400, trajectoryFuncBuilder)
 	attack:setOnHit(onHitApplyFear)
 	local skullshooter = Weapon.new(SKULL_SHOOTER.name, attack, vec(25, 20), vec(60, -6))
-	local idleAnimSettings = newAnimSetting(4, { width = 36, height = 36 }, 0.5, true, 1)
-	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
+	local idleAnimSettings = newAnimSetting(4, { width = 40, height = 40 }, 0.5, true, 1, 0)
+	local weaponAtkAnimSettings = newAnimSetting(30, { width = 32, height = 32 }, 0.05, false, 1)
 	skullshooter:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return skullshooter
 end
@@ -104,8 +104,8 @@ function newFlowergun()
 	end
 	local attack = newSeedAttack(true, 0.55, cooldown, 3000, trajectoryFuncBuilder)
 	attack:addAttackFunc(defaultCircularAttackFunc(-2, 2, math.rad(8)))
-	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(50, 4))
-	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
+	local flowergun = Weapon.new(FLOWERGUN.name, attack, vec(25, 20), vec(30, 0))
+	local idleAnimSettings = newAnimSetting(1, { width = 36, height = 36 }, 0.5, true, 1)
 	local weaponAtkAnimSettings = newAnimSetting(12, { width = 36, height = 36 }, 0.05, false, 1)
 	flowergun:addAnimations(idleAnimSettings, weaponAtkAnimSettings)
 	return flowergun
