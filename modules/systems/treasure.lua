@@ -54,5 +54,3 @@ function grantTreasureReward(player, reward)
 	globalAudioManager:play(AUDIO_COLLECT, player, "pop")
 	return true
 end
-
-return true

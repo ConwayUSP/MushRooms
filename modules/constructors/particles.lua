@@ -48,6 +48,7 @@ end
 
 ---@return ParticleSystem
 -- fumaça curta usada quando um pilar de tesouro desaparece.
+-- TODO: fazer uma vesão melhor disso
 function newTreasureDisappearParticles()
 	local particleImg = assetManager:getImage("assets/sprites/circle.png")
 	local particles = love.graphics.newParticleSystem(particleImg, 18)

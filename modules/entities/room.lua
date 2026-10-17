@@ -116,7 +116,6 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
 	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
 	room.treasurePillars = {}
-	room.treasureResolved = false
 	room.deactivationTimer = Timer.new(1)
 
 	room:addWallsAndDoors()
@@ -396,19 +395,18 @@ end
 ---@return boolean
 -- tenta conceder a recompensa escolhida e encerra a sala apenas em caso de sucesso.
 function Room:claimTreasure(chosenPillar, player)
-	if self.treasureResolved or not grantTreasureReward(player, chosenPillar.reward) then
+	if #self.treasurePillars == 0 or not grantTreasureReward(player, chosenPillar.reward) then
 		return false
 	end
 
-	self.treasureResolved = true
 	for _, pillar in ipairs(self.treasurePillars) do
-		if pillar ~= chosenPillar then
-			globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar, vec(0, 0), false)
-		end
+		globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar, vec(0, 0), false)
 		pillar:remove()
 	end
+	
 	self.treasurePillars = {}
 	self:setExplored()
+	
 	return true
 end
 
