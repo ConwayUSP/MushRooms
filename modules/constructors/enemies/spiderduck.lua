@@ -49,7 +49,7 @@ function newSpiderDuck(spawnPos, room)
 		Enemy.new(SPIDER_DUCK.name, 45, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	local idleAnimSettings = newAnimSetting(2, { width = 32, height = 32 }, 0.4, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
-	local dyingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.1, false)
+	local dyingAnimSettings = newAnimSetting(5, { width = 36, height = 36 }, 0.1, false)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, dyingAnimSettings, attackAnimSettings)
 	enemy.shadowWidth = 27
 	enemy.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
