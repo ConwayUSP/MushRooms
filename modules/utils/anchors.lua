@@ -43,6 +43,7 @@ ANCHORS = {
 	door_left = floorAnchor(100.0001),
 	door_right = floorAnchor(100),
 	turtle = floorAnchor(10),
+	treasure_pillar = floorAnchor(25),
 
 	-- Inimigos
 	spider_duck = floorAnchor(14),

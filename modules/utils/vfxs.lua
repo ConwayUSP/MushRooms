@@ -46,6 +46,12 @@ PARTICLES_SETTINGS = {
 		directed = true, -- a direção da emissão importa
 		invDirection = true, -- a direção da partícula vai em oposição à entidade
 	},
+	[PARTICLE_TREASURE_DISAPPEAR] = {
+		constructor = function()
+			return newTreasureDisappearParticles()
+		end,
+		emitAtStart = 12,
+	},
 	[PARTICLE_BREAKING] = {
 		constructor = function()
 			return newBreakingParticles()

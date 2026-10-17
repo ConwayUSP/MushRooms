@@ -21,6 +21,7 @@ RESOURCE_ROOM = "resource room"
 BATTLE_ROOM = "battle room"
 BOSS_ROOM = "boss room"
 EVENT_ROOM = "event room"
+TREASURE_ROOM = "treasure room"
 
 ---@alias RoomType
 ---| `PUZZLE_ROOM`
@@ -29,6 +30,7 @@ EVENT_ROOM = "event room"
 ---| `BATTLE_ROOM`
 ---| `BOSS_ROOM`
 ---| `EVENT_ROOM`
+---| `TREASURE_ROOM`
 
 ---------- ATAQUES ----------
 ATTACK = "attack"
@@ -119,6 +121,7 @@ AUDIO_CLOSE = "close audio"
 
 ---------- PARTICLES ----------
 PARTICLE_WALKING = "walking particle"
+PARTICLE_TREASURE_DISAPPEAR = "treasure disappear particle"
 PARTICLE_DEFENSE = "defense particle"
 PARTICLE_HIT = "hit particle"
 PARTICLE_BREAKING = "breaking particle"

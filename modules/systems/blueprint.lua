@@ -16,6 +16,7 @@ BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
 BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
 BLUEPRINTS[BOSS_ROOM] = { newBossRoom1, newBossRoom2 }
 BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
+BLUEPRINTS[TREASURE_ROOM] = { newTreasureRoom1 }
 
 ----------------------------------------
 -- Classe SpawnData
@@ -128,7 +129,8 @@ end
 -- - Sala de recurso: `12%`
 -- - Sala de evento: `8%`
 -- - Sala de NPC: `8%`
--- - Sala de puzzle: `4%`
+-- - Sala de puzzle: `2%`
+-- - Sala de tesouro: `2%`
 -- - Sala de boss: `2%`
 function randRoomType(rng)
 	local r = rng:random()
@@ -140,8 +142,10 @@ function randRoomType(rng)
 		return EVENT_ROOM
 	elseif r < 0.94 then
 		return NPC_ROOM
-	elseif r < 0.98 then
+	elseif r < 0.96 then
 		return PUZZLE_ROOM
+	elseif r < 0.98 then
+		return TREASURE_ROOM
 	else
 		return BOSS_ROOM
 	end
