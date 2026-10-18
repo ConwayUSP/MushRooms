@@ -29,8 +29,13 @@ function LinkManager:addLink(link)
 	local entityA = link.entityA
 	local entityB = link.entityB
 
-	self.linksMap[entityA] = self.linksMap[entityA] or {}
-	self.linksMap[entityB] = self.linksMap[entityB] or {}
+  local dist = lenVec(subVec(entityA.pos, entityB.pos))
+  if dist > 2*maxDistance then
+    return nil
+  end
+
+  self.linksMap[entityA] = self.linksMap[entityA] or {}
+  self.linksMap[entityB] = self.linksMap[entityB] or {}
 
 	local currentLink = self.linksMap[entityA][entityB] or self.linksMap[entityB][entityA]
 
