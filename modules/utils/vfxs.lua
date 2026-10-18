@@ -51,6 +51,10 @@ PARTICLES_SETTINGS = {
 			return newTreasureDisappearParticles()
 		end,
 		emitAtStart = 12,
+	[PARTICLE_PUZZLE_STONE_MOVING] = {
+		constructor = function()
+			return newPuzzleStoneMovingParticles()
+		end,
 	},
 	[PARTICLE_BREAKING] = {
 		constructor = function()

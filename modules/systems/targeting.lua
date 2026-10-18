@@ -49,7 +49,10 @@ function Target.new(subtype, changeTrigger, duration, pos, weight)
 	target.changeTrigger = changeTrigger or TC_ON_INIT
 	target.pos = pos or vec(0, 0)
 	target.weight = weight or 0
-	target.timer = duration and Timer.new(duration) or Timer.new(math.huge)
+    target.timer = duration and Timer.new(duration) or Timer.new(math.huge)
+    if duration then
+        target.timer:start()
+    end
 
 	return target
 end

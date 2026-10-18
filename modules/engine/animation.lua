@@ -7,6 +7,10 @@ require("table")
 -- Classe Animation
 ----------------------------------------
 
+---@class AnimationFrameCallback
+---@field callback fun(animation: Animation)
+---@field remainingCalls? integer
+
 ---@class Animation
 ---@field frames table[]
 ---@field frameDur number
@@ -16,7 +20,9 @@ require("table")
 ---@field currFrame number
 ---@field timer number
 ---@field isFinished boolean
+---@field onFrame function
 ---@field onFinish? function
+---@field frameCallbacks table<number, AnimationFrameCallback>
 ---@field update function
 ---@field reset function
 ---@field finish function
@@ -45,6 +51,7 @@ function Animation.new(frames, frameDur, looping, loopFrame, frameDim, offset, o
 	animation.frameDim = frameDim -- dimensões de cada frame
 	animation.isFinished = false -- se a animação terminou ou não
 	animation.onFinish = onFinish -- callback chamado quando a animação não-loop termina
+	animation.frameCallbacks = {} -- callbacks chamados ao entrar em frames específicos
 	-- atributos fixos na instanciação
 	animation.currFrame = 1      -- frame atual
 	animation.timer = 0          -- tempo decorrido desde a última mudança de frame
@@ -55,19 +62,55 @@ function Animation.new(frames, frameDur, looping, loopFrame, frameDim, offset, o
 	return animation
 end
 
+---@param frame integer
+---@param callback fun(animation: Animation)
+---@param callLimit? integer quantidade máxima de execuções; sem valor, executa sempre
+-- registra uma ação para quando a animação entrar no frame informado
+function Animation:onFrame(frame, callback, callLimit)
+	if callLimit and callLimit <= 0 then
+		self:offFrame(frame)
+		return
+	end
+
+	self.frameCallbacks[frame] = {
+		callback = callback,
+		remainingCalls = callLimit,
+	}
+end
+
+---@param frame integer
+-- remove a ação associada ao frame informado
+function Animation:offFrame(frame)
+	self.frameCallbacks[frame] = nil
+end
+
+-- executa uma única vez o callback associado à entrada no frame atual
+function Animation:triggerOnFrame()
+	local frame = self.currFrame
+	local registration = self.frameCallbacks[frame]
+	if not registration then
+		return
+	end
+
+	registration.callback(self)
+
+	-- preserva alterações feitas pelo próprio callback durante sua execução
+	if self.frameCallbacks[frame] ~= registration or not registration.remainingCalls then
+		return
+	end
+
+	registration.remainingCalls = registration.remainingCalls - 1
+	if registration.remainingCalls <= 0 then
+		self.frameCallbacks[frame] = nil
+	end
+end
+
 ---@param dt number
 -- atualiza o timer, o frame atual, e chama o callback `onFinish`
 -- se for a hora
 function Animation:update(dt)
 	self.timer = self.timer + dt
 
-	-- laço while + subtração (em vez de zerar o timer) garante que a duração
-	-- real de cada frame seja a mesma em qualquer taxa de quadros: o excesso
-	-- do timer é repassado ao próximo frame e vários frames podem avançar
-	-- num único update caso o dt seja maior que frameDur. A tolerância de
-	-- 1e-9 absorve o erro de ponto flutuante da soma dos dts (ex.: 60 chamadas
-	-- de 1/60 não somam exatamente frameDur, deixando a animação "presa"
-	-- um frame além do fim em algumas taxas de quadros)
 	while self.frameDur > 0 and self.timer >= self.frameDur - 1e-9 do
 		self.timer = self.timer - self.frameDur
 		self.currFrame = self.currFrame + 1
@@ -77,6 +120,7 @@ function Animation:update(dt)
 			if self.looping then
 				-- volta pro primeiro frame de loop se a animação for ciclica
 				self.currFrame = self.loopFrame
+				self:triggerOnFrame()
 			else
 				-- trava no último frame e chama callback se existir
 				self.currFrame = #self.frames
@@ -86,6 +130,8 @@ function Animation:update(dt)
 				self.isFinished = true
 				break
 			end
+		else
+			self:triggerOnFrame()
 		end
 	end
 end

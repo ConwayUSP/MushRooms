@@ -100,4 +100,10 @@ function Easing.outBack(t)
 	return 1 + c3 * ((t - 1) ^ 3) + c1 * ((t - 1) ^ 2)
 end
 
+---@type easingFunc
+-- função de suavização exponencial reversa
+function Easing.outExpo(t)
+	return t == 1 and 1 or 1 - 2^(-10 * t)
+end
+
 return Easing

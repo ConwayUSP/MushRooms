@@ -49,6 +49,7 @@ ANCHORS = {
 	spider_duck = floorAnchor(14),
 	nuclear_cat = floorAnchor(16),
 	rolling_stone = floorAnchor(15),
+	ancient_moai = floorAnchor(62),
 
 	-- Jogadores
 	mush = floorAnchor(14),
@@ -84,6 +85,10 @@ ANCHORS = {
 	nuclear_shot = floorAnchor(4),
 	pebble_shot = floorAnchor(4),
 	ember_mark = floorAnchor(-1000),
+
+	-- Puzzle
+	puzzle_stone = floorAnchor(18),
+	puzzle_pin = floorAnchor(8),
 }
 
 ----------------------------------------
@@ -99,7 +104,7 @@ ANCHORS = {
 function getAnchor(obj, anchorType, scale)
 	scale = scale or obj.scale or 3
 
-	local key = obj.object and obj.object.name or obj.name
+	local key = obj.object and obj.object.name or obj.name or obj.kind
 	key = pathlizeName(string.lower(key))
 	local anchor = ANCHORS[key] and ANCHORS[key][anchorType] or nil
 
