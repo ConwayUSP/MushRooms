@@ -52,8 +52,9 @@ CONSTRUCTORS[ARTIFACT] = {
 }
 
 CONSTRUCTORS[DESTRUCTIBLE] = {
-	[BARREL.name] = newBarrel,
-	[JAR.name] = newJar,
+	[BONE_PILE.name] = newBonePile,
+	[DESTRUCTIBLE_ROCK.name] = newDestructibleRock,
+	[COAL_ALTAR.name] = newCoalAltar,
 	[TALL_GRASS.name] = newTallGrass,
 }
 

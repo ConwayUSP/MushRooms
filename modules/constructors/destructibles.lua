@@ -1,41 +1,61 @@
+----------------------------------------
+-- Fontes de Recurso
+----------------------------------------
 ---@param pos Vec
 ---@param room Room
 ---@return Destructible
--- cria um destrutível do tipo Barril
-function newBarrel(pos, room)
-	local loot = Loot.new(newSlingShot(), 0.2, range(1, 1), false)
-	loot:insert(newKatana(), 0.2, range(1, 1), false)
-	loot:insert(newCaskin(), 0.5, range(1, 3), true)
-	local hb = hitbox(Rectangle.new(40, 60))
-	local hbs = hitboxes({ hb })
-	local barrel = Destructible.new(BARREL.name, pos, room, loot, hbs)
+-- cria uma pilha de ossos destrutível (drop de ossos)
+function newBonePile(pos, room)
+	local loot = Loot.new(newTuntun(), 1, range(1, 5), true)
+	local dhb = hitbox(Circle.new(44), vec(3, -6)) 	-- hitbox default
+	local shb = hitbox(Circle.new(22), vec(3, -6))	-- hitbox sólida
+	local hitboxes = hitboxes({ dhb }, { shb })
+	local bones = Destructible.new(BONE_PILE.name, pos, room, loot, hitboxes, STABLE)
 	local animSettings = {}
-	animSettings[INTACT] = newAnimSetting(1, { width = 64, height = 64 }, 1000, true, 1)
-	animSettings[BREAKING] = newAnimSetting(7, { width = 64, height = 64 }, 0.05, false, 1)
-	animSettings[BROKEN] = newAnimSetting(1, { width = 64, height = 64 }, 1000, true, 1)
-	barrel:addAnimations(animSettings)
-	barrel.hasShadow = true
-	barrel.shadowWidth = 20
-	return barrel
+	animSettings[INTACT] = newAnimSetting(1, { width = 48, height = 32 }, 1000, true, 1)
+	animSettings[BREAKING] = newAnimSetting(11, { width = 48, height = 32 }, 0.05, false, 1)
+	animSettings[BROKEN] = newAnimSetting(1, { width = 48, height = 32 }, 1000, true, 1)
+	bones:addAnimations(animSettings)
+	bones.hasShadow = false
+	return bones
 end
 
 ---@param pos Vec
 ---@param room Room
 ---@return Destructible
--- cria um destrutível do tipo Jarro
-function newJar(pos, room)
-	local loot = Loot.new(newArduro(), 0.5, range(1, 2), true)
-	local hb = hitbox(Circle.new(10))
-	local hitboxes = hitboxes({ hb })
-	local jar = Destructible.new(JAR.name, pos, room, loot, hitboxes)
+-- cria um amontoado de pedras destrutível (drop de pedras)
+function newDestructibleRock(pos, room)
+	local loot = Loot.new(newPedacito(), 1, range(1, 7), true)
+	local dhb = hitbox(Circle.new(55), vec(-3, -6)) -- hitbox default
+	local shb = hitbox(Circle.new(30), vec(-3, -6))	-- hitbox sólida
+	local hitboxes = hitboxes({ dhb }, { shb })
+	local rock = Destructible.new(DESTRUCTIBLE_ROCK.name, pos, room, loot, hitboxes, STABLE)
 	local animSettings = {}
-	animSettings[INTACT] = newAnimSetting(1, { width = 64, height = 64 }, 1000, true, 1)
-	animSettings[BREAKING] = newAnimSetting(7, { width = 64, height = 64 }, 0.05, false, 1)
-	animSettings[BROKEN] = newAnimSetting(1, { width = 64, height = 64 }, 1000, true, 1)
-	jar:addAnimations(animSettings)
-	jar.hasShadow = true
-	jar.shadowWidth = 12
-	return jar
+	animSettings[INTACT] = newAnimSetting(1, { width = 60, height = 40 }, 1000, true, 1)
+	animSettings[BREAKING] = newAnimSetting(10, { width = 60, height = 60 }, 0.05, false, 1)
+	animSettings[BROKEN] = newAnimSetting(1, { width = 60, height = 40 }, 1000, true, 1)
+	rock:addAnimations(animSettings)
+	rock.hasShadow = false
+	return rock
+end
+
+---@param pos Vec
+---@param room Room
+---@return Destructible
+-- cria um altar de carvão destrutível (drop de carvão)
+function newCoalAltar(pos, room)
+	local loot = Loot.new(newFafogo(), 1, range(1, 7), true)
+	local dhb = hitbox(Rectangle.new(120, 72), vec(0, -8)) 	-- hitbox default
+	local shb = hitbox(Rectangle.new(100, 36), vec(0, -8)) 	-- hitbox sólida
+	local hitboxes = hitboxes({ dhb }, { shb })
+	local coal = Destructible.new(COAL_ALTAR.name, pos, room, loot, hitboxes, STABLE)
+	local animSettings = {}
+	animSettings[INTACT] = newAnimSetting(1, { width = 48, height = 29 }, 1000, true, 1)
+	animSettings[BREAKING] = newAnimSetting(10, { width = 60, height = 60 }, 0.05, false, 1)
+	animSettings[BROKEN] = newAnimSetting(1, { width = 48, height = 28 }, 1000, true, 1)
+	coal:addAnimations(animSettings)
+	coal.hasShadow = false
+	return coal
 end
 
 ---@param pos Vec

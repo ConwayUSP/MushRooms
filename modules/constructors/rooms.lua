@@ -44,19 +44,22 @@ function newBiguiriRoom(rng)
 end
 
 ---@return Blueprint
--- sala de recurso 1: contém barrís e jarros
+-- sala de recurso 1: contém fontes de recurso
 function newResourceRoom1(rng)
 	local bp = Blueprint.new(RESOURCE_ROOM, "Test Resource Room", rgba8(255, 248, 122, 255))
-	local sp1 = SpawnPoint.new(vec(100, 0))
+	local sp1 = SpawnPoint.new(vec(100, 500))
 	local sp2 = SpawnPoint.new(vec(200, 0))
-	local sp3 = SpawnPoint.new(vec(300, 0))
-	local sp4 = SpawnPoint.new(vec(400, 0))
-	local barrelData = SpawnData.new(BARREL, 0.5)
-	local jarData = SpawnData.new(JAR, 1.0)
-	sp1:insert(barrelData):insert(jarData)
-	sp2:insert(barrelData):insert(jarData)
-	sp3:insert(barrelData):insert(jarData)
-	sp4:insert(barrelData):insert(jarData)
+	local sp3 = SpawnPoint.new(vec(300, -200))
+	local sp4 = SpawnPoint.new(vec(400, 800))
+
+	local bonesData = SpawnData.new(BONE_PILE, 0.333)
+	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.666)
+	local coalData = SpawnData.new(COAL_ALTAR, 1.0)
+	sp1:insert(bonesData):insert(rocksData):insert(coalData)
+	sp2:insert(bonesData):insert(rocksData):insert(coalData)
+	sp3:insert(bonesData):insert(rocksData):insert(coalData)
+	sp4:insert(bonesData):insert(rocksData):insert(coalData)
+	
 	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
 	insertGeneralDecorations(bp, rng)
 	return bp
@@ -115,13 +118,6 @@ end
 -- sala de evento 1: contém barrís, jarros ou inimigos
 function newEventRoom1(rng)
 	local bp = Blueprint.new(EVENT_ROOM, "Test Event Room", rgba8(104, 237, 102, 255))
-	local sp1 = SpawnPoint.new(vec(0, 0))
-	local barrelData = SpawnData.new(BARREL, 0.25)
-	local jarData = SpawnData.new(JAR, 0.5)
-	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.75)
-	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 1.0)
-	sp1:insert(barrelData):insert(jarData):insert(enemyData1):insert(enemyData2)
-	bp:insert(sp1)
 	insertGeneralDecorations(bp, rng)
 	return bp
 end
