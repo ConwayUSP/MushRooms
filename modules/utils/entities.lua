@@ -143,6 +143,7 @@ DOOR_LEFT = registerEntity(INTERACTIVE, "door left")
 DOOR_RIGHT = registerEntity(INTERACTIVE, "door right")
 DOOR_DOWN = registerEntity(INTERACTIVE, "door down")
 TURTLE = registerEntity(INTERACTIVE, "turtle")
+TREASURE_PILLAR = registerEntity(INTERACTIVE, "treasure pillar")
 
 --------------- BÊNÇÃOS ----------------
 ARCHER_BLESSING = registerEntity(BLESSING, "archer blessing")

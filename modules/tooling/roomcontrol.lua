@@ -35,6 +35,9 @@ function _roomDebugHandler(numberKey)
 	elseif numberKey == "6" then
 		_newRoomDebug(debugRoomPos, Room.stdDim, BOSS_ROOM)
 		roomChange = true
+	elseif numberKey == "7" then
+		_newRoomDebug(debugRoomPos, Room.stdDim, TREASURE_ROOM)
+		roomChange = true
 	end
 	if roomChange then
 		collisionManager.roomsDirty = true

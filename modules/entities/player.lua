@@ -28,6 +28,7 @@ require("table")
 
 players = {}
 local MAX_HP = 100		-- limite de hp
+local MAX_WEAPONS = 6 -- limite de armas exibidas na UI de equipamentos
 local TIME_TO_SLEEP = 15 -- limite de tempo inativo até dormir
 local MAX_DEFENSE_DUR = 3 -- limite de tempo que o player pode ficar defendendo sem parar
 
@@ -516,8 +517,8 @@ end
 ---@return boolean
 -- adiciona uma arma ao arsenal do `Player` caso ele não a tenha
 function Player:collectWeapon(weapon)
-	-- previne de pegar a mesma arma novamente
-	if self:hasWeapon(weapon.name) then
+	-- previne de pegar uma arma repetida ou exceder os espaços da UI de equipamentos
+	if self:hasWeapon(weapon.name) or #self.weapons >= MAX_WEAPONS then
 		return false
 	end
 	table.insert(self.weapons, weapon)
@@ -649,7 +650,7 @@ end
 -- verifica se condições-chave para a coleta de um drop
 -- são verdadeiras, caso positivo, coleta o drop
 function Player:tryCollectDrop(drop)
-	if not drop.canPick then
+	if not drop.canPick or not drop.collectable then
 		return
 	end
 	if drop.autoPick then
