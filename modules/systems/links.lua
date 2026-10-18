@@ -29,13 +29,13 @@ function LinkManager:addLink(link)
 	local entityA = link.entityA
 	local entityB = link.entityB
 
-  local dist = lenVec(subVec(entityA.pos, entityB.pos))
-  if dist > 2*maxDistance then
-    return nil
-  end
+	local dist = lenVec(subVec(entityA.pos, entityB.pos))
+	if self.maxDistance and (dist > 2 * self.maxDistance) then
+		return nil
+	end
 
-  self.linksMap[entityA] = self.linksMap[entityA] or {}
-  self.linksMap[entityB] = self.linksMap[entityB] or {}
+	self.linksMap[entityA] = self.linksMap[entityA] or {}
+	self.linksMap[entityB] = self.linksMap[entityB] or {}
 
 	local currentLink = self.linksMap[entityA][entityB] or self.linksMap[entityB][entityA]
 
@@ -252,6 +252,7 @@ function GridLink.new(entityA, entityB, duration)
 	---@type GridLink
 	local self = setmetatable({}, GridLink)
 	Link.init(self, entityA, entityB, duration)
+	self.maxDistance = 300
 	return self
 end
 
