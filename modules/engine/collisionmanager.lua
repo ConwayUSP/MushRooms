@@ -88,6 +88,15 @@ function CollisionManager:fetchHitboxesByRoom(room)
 		end
 	end
 
+	-- pegando hitboxes de ataques persistentes da sala
+	for _, attack in pairs(room.detachedAttacks) do
+		for _, atkEvent in pairs(attack.events) do
+			if atkEvent.active then
+				self:register(atkEvent)
+			end
+		end
+	end
+
 	-- pegando hitboxes de destrutiveis
 	for _, destr in pairs(room.destructibles) do
 		if destr.state == INTACT then
@@ -147,6 +156,13 @@ function CollisionManager:clearHitboxesByRoom(room)
 			end
 		end
 		self:unregister(enemy)
+	end
+
+	-- removendo hitboxes de ataques persistentes da sala
+	for _, attack in pairs(room.detachedAttacks) do
+		for _, atkEvent in pairs(attack.events) do
+			self:unregister(atkEvent)
+		end
 	end
 
 	-- removendo hitboxes de destrutiveis

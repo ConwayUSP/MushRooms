@@ -107,3 +107,40 @@ function seekRandomPoint(tm, target)
 	target.pos = vec(x, y)
 	target.weight = 1
 end
+
+---@param tm TargetManager
+---@param target Target
+-- calcula um vetor de repulsão em relação a outros inimigos próximos para evitar aglomerações
+function avoidNearbyEnemies(tm, target)
+	local owner = tm.owner
+	local room = owner.room
+	target.subtype = TG_SEEK
+	target.weight = 0
+
+	if not room or not room.enemies or #room.enemies <= 1 then
+		return
+	end
+
+	local radius = 45
+	local repulse = vec(0, 0)
+	local count = 0
+
+	for _, other in pairs(room.enemies) do
+		if other ~= owner and other.state ~= DYING then
+			local d = dist(owner.pos, other.pos)
+			if d < radius and d > 0.001 then
+				local factor = (radius - d) / radius
+				local away = scaleVec(normalize(subVec(owner.pos, other.pos)), factor)
+				repulse = addVec(repulse, away)
+				count = count + 1
+			end
+		end
+	end
+
+	if count > 0 then
+		target.pos = addVec(owner.pos, scaleVec(repulse, radius / count))
+		target.weight = 1
+	end
+end
+
+
