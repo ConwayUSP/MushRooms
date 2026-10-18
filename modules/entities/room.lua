@@ -46,6 +46,7 @@ walls = BiList.new()
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
+---@field puzzles Puzzle[]
 ---@field doorGlows DoorGlow[]
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
@@ -107,6 +108,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.enemies = {} -- lista de inimigos na sala
 	room.npcs = {} -- lista de NPCs na sala
 	room.obstacles = {} -- lista de obstáculos na sala
+	room.puzzles = {} -- puzzles configurados para a sala
 	room.playersInRoom = Set.new() -- lista de jogadores na sala
 	room.linkManager = LinkManager.new() -- gerenciador de links da sala
 	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
@@ -115,6 +117,9 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.deactivationTimer = Timer.new(1)
 
 	room:addWallsAndDoors()
+	for _, puzzleEntry in ipairs(blueprint.puzzles) do
+		table.insert(room.puzzles, puzzleEntry.constructor(room, puzzleEntry.settings))
+	end
 
 	return room
 end
@@ -153,6 +158,9 @@ function Room:update(dt)
 	-- atualiza as luzes das portas laterais
 	for _, glow in pairs(self.doorGlows) do
 		glow:update(dt)
+	end
+	for _, puzzle in ipairs(self.puzzles) do
+		puzzle:update(dt)
 	end
 
 	self.linkManager:update(dt)
@@ -232,11 +240,19 @@ function Room:onPlayerEnter(player)
 	end
 
 	self.deactivationTimer:stop()
+
+	for _, puzzle in ipairs(self.puzzles) do
+		puzzle:onPlayerEnter(player)
+	end
 end
 
 ---@param player Player
 -- lida com a saída do player de salas
 function Room:onPlayerExit(player)
+	for _, puzzle in ipairs(self.puzzles) do
+		puzzle:onPlayerExit(player)
+	end
+
 	self.playersInRoom:remove(player.id)
 
 	if self.playersInRoom:size() == 0 then
@@ -358,11 +374,11 @@ end
 ---@param rng RNG
 -- geração dos conteúdos de uma sala
 function Room:populate(spawnpoints, rng)
-	for _, sp in pairs(spawnpoints) do
+	for _, sp in ipairs(spawnpoints) do
 		local n = rng:random()
 		for _, sd in ipairs(sp.spawns) do
 			if n < sd.chance then
-				self:spawn(sd.entity, sp.pos)
+				self:spawn(sd.entity, sp.pos, rng)
 				goto nextspawnpoint
 			end
 		end
@@ -372,11 +388,12 @@ end
 
 ---@param entity any
 ---@param pos Vec
+---@param rng? RNG
 -- instancia uma entidade e a insere na lista correspondente da sala
-function Room:spawn(entity, pos)
+function Room:spawn(entity, pos, rng)
 	local constructor = CONSTRUCTORS[entity.type][entity.name]
 	local real_pos = addVec(pos, self.pos)
-	constructor(real_pos, self) -- instancia a entidade na sala
+	constructor(real_pos, self, rng) -- instancia a entidade na sala
 end
 
 -- coloca paredes e portas ao redor da sala

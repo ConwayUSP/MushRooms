@@ -46,6 +46,11 @@ PARTICLES_SETTINGS = {
 		directed = true, -- a direção da emissão importa
 		invDirection = true, -- a direção da partícula vai em oposição à entidade
 	},
+	[PARTICLE_PUZZLE_STONE_MOVING] = {
+		constructor = function()
+			return newPuzzleStoneMovingParticles()
+		end,
+	},
 	[PARTICLE_BREAKING] = {
 		constructor = function()
 			return newBreakingParticles()
