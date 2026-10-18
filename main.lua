@@ -80,6 +80,18 @@ function love.keypressed(key, scancode, isrepeat)
 	if key == "x" then
 		players[1]:takeDamage(10)
 	end
+	-- p alterna o pixel-snap da câmera (experimento)
+	if key == "p" then
+		pixelSnap = not pixelSnap
+	end
+	-- [ e ] alteram a resolução interna do canvas da câmera (experimento)
+	if key == "[" then
+		pixelScale = math.max(1, pixelScale - 1)
+		newCameras()
+	elseif key == "]" then
+		pixelScale = math.min(6, pixelScale + 1)
+		newCameras()
+	end
 
 	if _roomCondition() then
 		_roomDebugHandler(key)

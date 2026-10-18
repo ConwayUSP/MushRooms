@@ -11,6 +11,15 @@ require("modules.utils.utils")
 ----------------------------------------
 cameras = {}
 
+-- modo experimental de pixel-art perfeita: quantiza o zoom para múltiplos
+-- de 1/(3 * pixelScale) (escala efetiva inteira) e alinha as posições de
+-- desenho à grade de pixels do canvas, eliminando pixels retangulares e tremulação
+pixelSnap = true
+
+-- resolução interna do canvas da câmera: 1 = resolução lógica (viewport),
+-- 2/3/4 = supersampling (menor variação do zoom quantizado, downsample inteiro)
+pixelScale = 1
+
 ----------------------------------------
 -- Classe Camera
 ----------------------------------------
@@ -81,6 +90,12 @@ end
 function Camera:updatePosition(dt)
 	-- suaviza o zoom atual
 	self.zoom = lerp(self.zoom, self.targetZoom, dt * self.zoomSpeed)
+	if pixelSnap then
+		-- quantiza o zoom para múltiplos de 1/(3 * pixelScale): um pixel-fonte
+		-- vira sempre um número inteiro de pixels do canvas (sem pixels retangulares)
+		local q = 3 * pixelScale
+		self.zoom = math.floor(self.zoom * q + 0.5) / q
+	end
 
 	-- ajusda o viewport de acordo com o zoom
 	local viewportZoomed = {
@@ -198,6 +213,13 @@ end
 function Camera:viewPos(entityPos)
 	local vx = entityPos.x - self.cx + self.viewport.width / 2
 	local vy = entityPos.y - self.cy + self.viewport.height / 2
+	if pixelSnap then
+		-- alinha a origem do sprite a um pixel inteiro do canvas após o zoom
+		-- (fator efetivo = zoom * pixelScale, pois o canvas é pixelScale× maior)
+		local factor = self.zoom * pixelScale
+		vx = math.floor((vx - self.viewport.width / 2) * factor + 0.5) / factor + self.viewport.width / 2
+		vy = math.floor((vy - self.viewport.height / 2) * factor + 0.5) / factor + self.viewport.height / 2
+	end
 	return vx, vy
 end
 
@@ -236,6 +258,8 @@ function Camera:draw()
 	love.graphics.clear(25 / 255, 21 / 255, 83 / 255, 1.0)
 	love.graphics.push()
 
+	-- entra no espaço lógico do viewport (o canvas é pixelScale× maior)
+	love.graphics.scale(pixelScale)
 	-- centraliza o zoom
 	love.graphics.translate(self.viewport.width / 2, self.viewport.height / 2)
 	love.graphics.scale(self.zoom)
@@ -256,6 +280,9 @@ function Camera:draw()
 
 	love.graphics.pop()
 
+	-- overlays de tela em espaço lógico do viewport
+	love.graphics.push()
+	love.graphics.scale(pixelScale)
 	-- renderiza o degradê escuro na borda da câmera
 	renderVignette(self)
 	-- barras pretas em espaço de tela (fora do canvas/zoom)
@@ -263,18 +290,31 @@ function Camera:draw()
 	-- escurece o viewport inteiro quando a pausa do player está aberta
 	-- (antes da UI para que os elementos fiquem legíveis por cima)
 	renderPauseDim(self)
-	-- renderiza a UI do jogador associado
-	renderPlayerUIs(self)
+	-- readout de debug do pixel-snap
+	if debugMode then
+		love.graphics.setColor(1, 1, 0, 1)
+		love.graphics.print(string.format(
+			"snap:%s  scale:%d  zoom:%.3f  eff:%dpx",
+			pixelSnap and "ON" or "off", pixelScale, self.zoom,
+			math.floor(self.zoom * 3 * pixelScale + 0.5)
+		), 10, 10)
+		love.graphics.setColor(1, 1, 1, 1)
+	end
 	-- renderiza o cursor de mira por cima de tudo
 	renderAimCursor(self)
+	love.graphics.pop()
+
+	-- UI managers desenham diretamente no canvas em pixels-canvas
+	renderPlayerUIs(self)
 
 	love.graphics.setCanvas()
 
 	love.graphics.push()
-	love.graphics.scale(window.scale)
+	-- downsample do canvas (pixelScale×) para a janela (window.scale×)
+	love.graphics.scale(window.scale / pixelScale)
 
 	-- renderizando os canvas na janela
-	love.graphics.draw(self.canvas, self.canvasPos.x, self.canvasPos.y)
+	love.graphics.draw(self.canvas, self.canvasPos.x * pixelScale, self.canvasPos.y * pixelScale)
 
 	love.graphics.pop()
 end
@@ -286,7 +326,8 @@ end
 ---@param camera Camera
 -- renderiza barras pretas em no topo e na base do canvas
 function renderBlackBars(camera)
-	local maxBarHeight = camera.canvas:getHeight() / 10
+	-- em espaço lógico do viewport (dentro do wrapper scale(pixelScale))
+	local maxBarHeight = camera.viewport.height / 10
 	local barHeight = Easing.outQuad(clamp(camera.cinematicTimer, 0, 1)) * maxBarHeight
 
 	-- desenha barras relativas à região do canvas da câmera
@@ -396,12 +437,12 @@ function newCameras()
 			local camera = Camera.new(
 				players[i].pos,
 				{ width = window.width / numOfCams, height = window.height },
-				love.graphics.newCanvas(window.width / numOfCams, window.height),
+				love.graphics.newCanvas(window.width / numOfCams * pixelScale, window.height * pixelScale),
 				{ x = (i - 1) * (window.width / numOfCams), y = 0 },
 				players[i]
 			)
 			if oldCameras[i] then
-				transferCameraState(camera, oldCameras[i])
+				transferCameraState(oldCameras[i], camera)
 			end
 			table.insert(cameras, camera)
 		else
@@ -419,12 +460,12 @@ function newCameras()
 			local camera = Camera.new(
 				players[i].pos,
 				{ width = window.width / 2, height = window.height / 2 },
-				love.graphics.newCanvas(window.width / 2, window.height / 2),
+				love.graphics.newCanvas(window.width / 2 * pixelScale, window.height / 2 * pixelScale),
 				canvasPositions[i],
 				players[i]
 			)
 			if oldCameras[i] then
-				transferCameraState(camera, oldCameras[i])
+				transferCameraState(oldCameras[i], camera)
 			end
 			table.insert(cameras, camera)
 		end

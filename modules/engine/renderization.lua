@@ -271,6 +271,7 @@ function renderEntities(camera)
 		basicShadowShader:send("shadow_radii", { s.rx, s.ry })
 		basicShadowShader:send("zoom", camera.zoom)
 		basicShadowShader:send("viewport_size", { camera.viewport.width, camera.viewport.height })
+		basicShadowShader:send("pixel_scale", pixelScale)
 		love.graphics.circle("fill", viewX, viewY, s.rx)
 	end
 	love.graphics.setColor(1, 1, 1, 1)

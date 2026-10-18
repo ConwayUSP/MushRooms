@@ -2,10 +2,13 @@ extern vec2 shadow_center;
 extern vec2 shadow_radii;
 extern float zoom;
 extern vec2 viewport_size;
+extern float pixel_scale = 1.0;
 
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+    // converte coordenadas do canvas (pixelScale×) para o espaço lógico do viewport
+    vec2 logical_coords = screen_coords / pixel_scale;
     vec2 viewport_center = viewport_size * 0.5;
-    vec2 unzoomed_coords = (screen_coords - viewport_center) / max(zoom, 0.0001) + viewport_center;
+    vec2 unzoomed_coords = (logical_coords - viewport_center) / max(zoom, 0.0001) + viewport_center;
     vec2 offset = unzoomed_coords - shadow_center;
     vec2 px_coords = floor(offset / 3); // faz os "pixels" entrarem na escala do jogo
     vec2 px_offset = (px_coords + 0.5) * 3;

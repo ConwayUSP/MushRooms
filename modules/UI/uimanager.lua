@@ -262,7 +262,10 @@ function UIManager:draw(camera)
 	-- projetamos o canvas interno para o destino, delegando a transformação para a GPU
 	if camera then
 		love.graphics.setCanvas(camera.canvas)
-		love.graphics.draw(self.canvas, self.canvasPos.x, self.canvasPos.y, 0, self.scaleX or 1, self.scaleY or 1)
+		-- managers sem setParentCanvas (ex: room) escalonam pelo pixelScale
+		local sx = self.scaleX or pixelScale or 1
+		local sy = self.scaleY or pixelScale or 1
+		love.graphics.draw(self.canvas, self.canvasPos.x, self.canvasPos.y, 0, sx, sy)
 	else
 		love.graphics.setCanvas()
 		love.graphics.push()
