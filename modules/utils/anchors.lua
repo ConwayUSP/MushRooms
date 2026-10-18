@@ -35,8 +35,9 @@ ANCHORS = {
 	sling_shot = floorAnchor(8),
 
 	-- Destrutíveis
-	barrel = floorAnchor(10),
-	jar = floorAnchor(4),
+	bone_pile = floorAnchor(12),
+	destructible_rock = floorAnchor(14),
+	coal_altar = floorAnchor(13),
 
 	-- Interagiveis
 	door_up = floorAnchor(20),
