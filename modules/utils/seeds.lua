@@ -23,6 +23,7 @@ function setWorldSeed(seed)
 	if not seed or #seed == 0 then
 		setWorldSeed(DEFAULT_WORLD_SEED)
 	else
+		worldSeedText = seed
 		worldSeed = base36to10(seed)
 	end
 end
