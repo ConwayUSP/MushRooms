@@ -274,6 +274,16 @@ function love.update(dt)
 		goto skipgameplay
 	end
 
+	-- mundo pausado congela salas/colisões/câmeras/partículas, mas
+	-- mantém controles e UI dos players atualizados para o menu de pausa
+	if isWorldPaused() then
+		for _, p in pairs(players) do
+			p.controls:update(dt)
+			p.uiManager:update(dt)
+		end
+		goto skipgameplay
+	end
+
 	DialogueManager:update(dt)
 	------------ Salas ------------
 	for _, r in activeRooms:iter() do
@@ -295,6 +305,9 @@ function love.update(dt)
 	globalVFXManager:update(dt)
 
 	::skipgameplay::
+	-- processa trocas de mundo adiadas (retry/home) após todos os updates
+	processPendingWorldAction()
+
 	-------------- UI -------------
 	globalUIManager:update(dt)
 	updateFPSVisor(dt)

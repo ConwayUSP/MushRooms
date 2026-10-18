@@ -435,6 +435,7 @@ function CollisionManager:handleCollisions()
 			end
 		end
 	end
+
 end
 
 function CollisionManager:handleSolidCollisions(entityA, entityB)
@@ -617,11 +618,10 @@ function CollisionManager:onEnemyHitByPlayerAttack(enemy, attack)
 	if not attack.active then
 		return
 	end
-	if attack.targetsDamaged[enemy] then
+	if not attack:registerHit(enemy, attack.tick) then
 		return
 	end
 
-	attack.targetsDamaged[enemy] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if enemy.invulnerableTimer > 0 then
@@ -663,11 +663,10 @@ function CollisionManager:onPlayerHitByEnemyAttack(player, attack)
 		return
 	end
 
-	if attack.targetsDamaged[player] then
+	if not attack:registerHit(player, attack.tick) then
 		return
 	end
 
-	attack.targetsDamaged[player] = { timer = attack.tick }
 	attack.piercesLeft = attack.piercesLeft - 1
 
 	if not player:takeDamage(attack.dmg) then
@@ -742,3 +741,4 @@ end
 function CollisionManager:onAttackObstacle(attack, obstacle)
 	attack:reduceBounces()
 end
+

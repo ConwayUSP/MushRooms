@@ -57,22 +57,34 @@ function UIElement:update(dt)
 	self.animations[self.state]:update(dt)
 end
 
+---@param instant? boolean
 -- marca o elemento de UI como `selected` e seu estado como `SELECTED`
-function UIElement:select()
+function UIElement:select(instant)
 	self.selected = true
-	if self.animations[self.state] then
-		self.animations[self.state]:reset()
-	end
 	self.state = SELECTED
+	local animation = self.animations[SELECTED]
+	if animation then
+		if instant then
+			animation:finish()
+		else
+			animation:reset()
+		end
+	end
 end
 
+---@param instant? boolean
 -- marca o elemento de UI como não selecionado e seu estado como `IDLE`
-function UIElement:deselect()
+function UIElement:deselect(instant)
 	self.selected = false
-	if self.animations[self.state] then
-		self.animations[self.state]:reset()
-	end
 	self.state = IDLE
+	local animation = self.animations[IDLE]
+	if animation then
+		if instant then
+			animation:finish()
+		else
+			animation:reset()
+		end
+	end
 end
 
 -- define se o elemento representa algo que está em uso, sem alterar seu estado visual.

@@ -32,6 +32,47 @@ function newTurtle(spawnPos, room)
 	turtle:addAnimations(animSettings)
 end
 
+---@param spawnPos Vec
+---@param room Room
+---@param reward any
+---@return Interactive
+function newTreasurePillar(spawnPos, room, reward)
+	local trunkHb = hitbox(Rectangle.new(40, 40), vec(0, 20))
+	local baseHb = hitbox(Rectangle.new(60, 20), vec(0, 50))
+	local triggerHb = hitbox(Circle.new(120))
+	local hbs = hitboxes({}, { trunkHb, baseHb }, { triggerHb })
+	local physics = physicsSettings(math.huge, 0, 0, nil, nil, nil, 0)
+	local onInteract = function(pillar, player)
+		pillar.room:claimTreasure(pillar, player)
+	end
+	local randPillar = tostring(math.random(3))
+	local pillar = Interactive.new(TREASURE_PILLAR.name .. randPillar, spawnPos, hbs, room, physics, onInteract)
+
+	---@diagnostic disable
+	pillar.reward = reward
+	pillar.drop = newDrop(reward, addVec(spawnPos, vec(0, 20)), room, false, spawnPos.y + 20)
+	pillar.drop.canPick = true
+	pillar.drop.collectable = false
+	pillar.drop.drawOffset = vec(0, -90)
+	local animSettings = {}
+	animSettings[IDLE] = newAnimSetting(1, size(40, 60), 1000, true)
+	pillar:addAnimations(animSettings)
+	---@diagnostic enable
+
+	function pillar:remove()
+		collisionManager:unregister(self)
+		if not self.drop.collected then
+			self.drop:setCollected()
+		end
+		local index = tableIndexOf(self.room.interactives, self)
+		if index then
+			table.remove(self.room.interactives, index)
+		end
+	end
+
+	return pillar
+end
+
 ---------- DOORS ----------
 local openDoor = function(door, player)
 	if door.state == OPEN or door.state == OPENING then

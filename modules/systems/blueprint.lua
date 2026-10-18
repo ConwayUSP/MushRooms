@@ -10,12 +10,13 @@ require("modules.utils.types")
 
 local BLUEPRINTS = {}
 
-BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2 }
+BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2, newPuzzleRoom3 }
 BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
 BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
 BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
-BLUEPRINTS[BOSS_ROOM] = { newBossRoom1 }
+BLUEPRINTS[BOSS_ROOM] = { newBossRoom1, newBossRoom2 }
 BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
+BLUEPRINTS[TREASURE_ROOM] = { newTreasureRoom1 }
 
 ----------------------------------------
 -- Classe SpawnData
@@ -85,7 +86,13 @@ end
 ---@field roomName string
 ---@field color Color
 ---@field spawnpoints SpawnPoint[]
+---@field puzzles PuzzleBlueprintEntry[]
 ---@field insert fun(self: Blueprint, spawnpoint: SpawnPoint): Blueprint
+---@field addPuzzle fun(self: Blueprint, constructor: fun(room: Room, settings: table): Puzzle, settings: table): Blueprint
+
+---@class PuzzleBlueprintEntry
+---@field constructor fun(room: Room, settings: table): Puzzle
+---@field settings table
 
 Blueprint = {}
 Blueprint.__index = Blueprint
@@ -103,6 +110,7 @@ function Blueprint.new(roomType, roomName, color)
 	bp.roomName = roomName
 	bp.color = color
 	bp.spawnpoints = {}
+	bp.puzzles = {}
 	return bp
 end
 
@@ -117,6 +125,15 @@ function Blueprint:insert(spawnpoint)
 	return self
 end
 
+---@param constructor fun(room: Room, settings: table): Puzzle
+---@param settings table
+---@return Blueprint
+-- registra um puzzle a ser construído quando a sala for criada
+function Blueprint:addPuzzle(constructor, settings)
+	table.insert(self.puzzles, { constructor = constructor, settings = settings })
+	return self
+end
+
 ----------------------------------------
 -- Funções globais
 ----------------------------------------
@@ -128,7 +145,8 @@ end
 -- - Sala de recurso: `12%`
 -- - Sala de evento: `8%`
 -- - Sala de NPC: `8%`
--- - Sala de puzzle: `4%`
+-- - Sala de puzzle: `2%`
+-- - Sala de tesouro: `2%`
 -- - Sala de boss: `2%`
 function randRoomType(rng)
 	local r = rng:random()
@@ -140,8 +158,10 @@ function randRoomType(rng)
 		return EVENT_ROOM
 	elseif r < 0.94 then
 		return NPC_ROOM
-	elseif r < 0.98 then
+	elseif r < 0.96 then
 		return PUZZLE_ROOM
+	elseif r < 0.98 then
+		return TREASURE_ROOM
 	else
 		return BOSS_ROOM
 	end

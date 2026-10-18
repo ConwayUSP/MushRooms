@@ -38,6 +38,7 @@ CONSTRUCTORS[ENEMY] = {
 	[DEMON_BALL.name] = newDemonBall,
 	[ROLLING_STONE.name] = newRollingStone,
 	[SPIDER_DUCK_BOSS.name] = newSpiderDuckBoss,
+	[ANCIENT_MOAI.name] = newAncientMoai,
 }
 
 CONSTRUCTORS[NPC] = {
@@ -71,6 +72,11 @@ CONSTRUCTORS[OBSTACLE] = {
 	[CANDLE.name] = newCandle,
 	[TORCH.name] = newTorch,
 	[MOSS.name] = newMoss,
+	[MOSS_SMALL.name] = newSmallMoss,
+	[MOSS_BIG.name] = newBigMoss,
+	[MOSS_LEFT.name] = newLeftMoss,
+	[MOSS_RIGHT.name] = newRightMoss,
+	[MOSS_UP.name] = newUpMoss,
 	[NEGATIVE.name] = newNegative,
 	[SKELETON.name] = newSkeleton,
 	[RUBBLE_SMALL.name] = newRubbleSmall,

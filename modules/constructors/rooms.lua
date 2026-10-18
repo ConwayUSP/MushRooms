@@ -1,20 +1,82 @@
+----------------------------------------
+-- Importações de Módulos
+----------------------------------------
+
+require("modules.constructors.puzzles.grid")
+require("modules.utils.roomgeneration")
+
+---@param rng RNG
 ---@return Blueprint
--- sala de puzzle 1: contém nada de mais
+-- sala de puzzle pequena
 function newPuzzleRoom1(rng)
-	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room", rgba8(12, 253, 255, 255))
-	insertGeneralDecorations(bp, rng)
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 4x4", rgba8(12, 253, 255, 255))
+	local gridSize = vec(4, 4)
+	local decorationMargin = 100
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+
+	bp:addPuzzle(GridPuzzle.new, {
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
+		stones = {
+			{ id = "stone-up-left", cell = vec(1, 1), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(4, 1), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(1, 4), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(4, 4), direction = vec(-1, -1) },
+		},
+	})
+
 	return bp
 end
 
+---@param rng RNG
 ---@return Blueprint
--- sala de puzzle 2: contém uma vela (?)
+-- sala de puzzle média
 function newPuzzleRoom2(rng)
-	local bp = Blueprint.new(PUZZLE_ROOM, "Test Puzzle Room 2", rgba8(12, 253, 255, 255))
-	local spCenter = SpawnPoint.new(vec(0, 0))
-	local candleData = SpawnData.new(CANDLE, 1.0)
-	spCenter:insert(candleData)
-	bp:insert(spCenter)
-	insertGeneralDecorations(bp, rng)
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 6x6", rgba8(12, 253, 255, 255))
+	local gridSize = vec(6, 6)
+	local decorationMargin = 100
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+
+	bp:addPuzzle(GridPuzzle.new, {
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
+		stones = {
+			{ id = "stone-up-left", cell = vec(1, 2), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(6, 1), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(2, 6), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(5, 5), direction = vec(-1, -1) },
+		},
+	})
+
+	return bp
+end
+
+---@param rng RNG
+---@return Blueprint
+-- sala de puzzle GRANDE
+function newPuzzleRoom3(rng)
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 8x8", rgba8(12, 253, 255, 255))
+	local gridSize = vec(8, 8)
+	local decorationMargin = 100
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+
+	bp:addPuzzle(GridPuzzle.new, {
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
+		stones = {
+			{ id = "stone-up-left", cell = vec(2, 2), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(7, 3), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(1, 7), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(8, 8), direction = vec(-1, -1) },
+		},
+	})
+
 	return bp
 end
 
@@ -27,7 +89,7 @@ function newNPCRoom1(rng)
 	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 1.0)
 	sp1:insert(tenkarData):insert(shoumShoumData)
 	bp:insert(sp1)
-	insertGeneralDecorations(bp, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
@@ -39,7 +101,7 @@ function newBiguiriRoom(rng)
 	local biguiriData = SpawnData.new(BIGUIRI, 1.0)
 	sp1:insert(biguiriData)
 	bp:insert(sp1)
-	insertGeneralDecorations(bp, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
@@ -61,7 +123,7 @@ function newResourceRoom1(rng)
 	sp4:insert(bonesData):insert(rocksData):insert(coalData)
 	
 	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
-	insertGeneralDecorations(bp, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
@@ -77,7 +139,7 @@ function newResourceRoom2(rng)
 			bp:insert(sp)
 		end
 	end
-	insertGeneralDecorations(bp, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
@@ -98,19 +160,30 @@ function newBattleRoom1(rng)
 	sp3:insert(enemyData1):insert(enemyData2):insert(enemyData3):insert(enemyData4)
 	sp4:insert(enemyData1):insert(enemyData2):insert(enemyData3):insert(enemyData4)
 	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
-	insertGeneralDecorations(bp, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
 ---@return Blueprint
--- sala de boss 1: contém 1 Gato Nuclear ou 1 Pato Aranha no centro
 function newBossRoom1(rng)
 	local bp = Blueprint.new(BOSS_ROOM, "Test Boss Room", rgba8(255, 41, 41, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
 	local enemyData1 = SpawnData.new(SPIDER_DUCK_BOSS, 1.0)
 	sp1:insert(enemyData1)
 	bp:insert(sp1)
-	insertGeneralDecorations(bp, rng)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	return bp
+end
+
+---@return Blueprint
+-- sala de boss 2: contém 1 Ancient Moai no centro
+function newBossRoom2(rng)
+	local bp = Blueprint.new(BOSS_ROOM, "Ancient Moai Boss Room", rgba8(180, 120, 60, 255))
+	local sp1 = SpawnPoint.new(vec(0, 0))
+	local enemyData1 = SpawnData.new(ANCIENT_MOAI, 1.0)
+	sp1:insert(enemyData1)
+	bp:insert(sp1)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
@@ -118,119 +191,20 @@ end
 -- sala de evento 1: contém barrís, jarros ou inimigos
 function newEventRoom1(rng)
 	local bp = Blueprint.new(EVENT_ROOM, "Test Event Room", rgba8(104, 237, 102, 255))
-	insertGeneralDecorations(bp, rng)
+	local sp1 = SpawnPoint.new(vec(0, 0))
+	local barrelData = SpawnData.new(BARREL, 0.25)
+	local jarData = SpawnData.new(JAR, 0.5)
+	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.75)
+	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 1.0)
+	sp1:insert(barrelData):insert(jarData):insert(enemyData1):insert(enemyData2)
+	bp:insert(sp1)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
-----------------------------------------
--- Facilitadores
-----------------------------------------
-
----@param blueprint any
--- insere algumas decorações gerais para facilitar nossa vida
-function insertGeneralDecorations(blueprint, rng)
-	-- !WARNING: essa função é uma generalização bem forte, é recomendado
-	-- fazermos uma personalização mais fina das salas depois
-	insertPossiblePillars(blueprint, 0.6, rng)
-	insertPossibleTorches(blueprint, 0.8, rng)
-	insertRandomly(blueprint, NEGATIVE, 14, rng)
-	insertRandomly(blueprint, MOSS, 9, rng)
-	insertRandomly(blueprint, CRACKS, 12, rng)
-	insertRandomly(blueprint, SKELETON, 3, rng)
-	insertIntoGrid(blueprint, RUBBLE_BIG, 0.07, 6, true, rng)
-	insertIntoGrid(blueprint, RUBBLE_SMALL, 0.1, 8, true, rng)
-end
-
----@param blueprint Blueprint
----@param type EntityReg
----@param amount number
----comment
-function insertRandomly(blueprint, type, amount, rng)
-	for i = 1, amount do
-		local x = rng:random(-(Room.stdDim.width / 2) + 20, (Room.stdDim.width / 2) - 20)
-		local y = rng:random(-(Room.stdDim.height / 2) + 20, (Room.stdDim.height / 2) - 20)
-		local pos = vec(x, y)
-		local sp = SpawnPoint.new(pos)
-		local sd = SpawnData.new(type, 1.0)
-		sp:insert(sd)
-		blueprint:insert(sp)
-	end
-end
-
----@param blueprint Blueprint
----@param type EntityReg
----@param density number
----@param gridDim number
----@param scapeGrid boolean
--- insere na blueprint aleatoriamente de acordo com uma grade de tamanho ajustável
-function insertIntoGrid(blueprint, type, density, gridDim, scapeGrid, rng)
-	for i = -(gridDim/2), (gridDim / 2) do
-		for j = -(gridDim/2), (gridDim / 2) do
-			local ox, oy = 0, 0
-			local scapeFactor = Room.stdDim.width / (gridDim * 3)
-			if scapeGrid then
-				ox = rng:random(-scapeFactor, scapeFactor)
-				oy = rng:random(-scapeFactor, scapeFactor)
-			end
-			local stepSize = Room.stdDim.width / gridDim
-			local pos = vec(i * stepSize + ox, j * stepSize + oy)
-			local sp = SpawnPoint.new(pos)
-			local sd = SpawnData.new(type, density)
-			sp:insert(sd)
-			blueprint:insert(sp)
-		end
-	end
-end
-
----@param blueprint Blueprint
----@param prob number
--- insere 4 pontos com bases de pilares e talvez colunas de pilares.
--- `prob` indica a chance desses 4 pilares serem inseridos
-function insertPossiblePillars(blueprint, prob, rng)
-	local r = rng:random()
-	if r < prob then
-		local pillarPositions = {
-			vec(-400, -700),
-			vec(580, -700),
-			vec(-400, 320),
-			vec(580, 320),
-		}
-		for i = 1, 4 do
-			local spPillar = SpawnPoint.new(pillarPositions[i])
-			local spPillarBase = SpawnPoint.new(addVec(pillarPositions[i], vec(-91, 210)))
-			local spPillarProp = SpawnPoint.new(addVec(pillarPositions[i], vec(-168, 268)))
-			local spPillarDecoration = SpawnPoint.new(addVec(pillarPositions[i], vec(rng:random(-140, 10), 280)))
-			local pillarData = SpawnData.new(PILLAR, 1.0)
-			local pillarBaseData = SpawnData.new(PILLAR_BASE, 1.0)
-			local pillarPropData = SpawnData.new(PILLAR_PROP, 0.1)
-			local pillarDecData1 = SpawnData.new(CANDLE, 0.2)
-			local pillarDecData2 = SpawnData.new(SKELETON, 0.3)
-			spPillar:insert(pillarData)
-			spPillarBase:insert(pillarBaseData)
-			spPillarProp:insert(pillarPropData)
-			spPillarDecoration:insert(pillarDecData1):insert(pillarDecData2)
-			blueprint:insert(spPillar):insert(spPillarBase):insert(spPillarProp):insert(spPillarDecoration)
-		end
-	end
-end
-
----@param blueprint Blueprint
----@param prob number
--- insere tochas na parede de cima da sala
-function insertPossibleTorches(blueprint, prob, rng)
-	local torchPositions = {
-		vec(-600, -900),
-		vec(-200, -900),
-		vec(200, -900),
-		vec(600, -900),
-	}
-	for i = 1, 4 do
-		local r = rng:random()
-		if r < prob then
-			local spTorch = SpawnPoint.new(torchPositions[i])
-			local torchData = SpawnData.new(TORCH, 1.0)
-			spTorch:insert(torchData)
-			blueprint:insert(spTorch)
-		end
-	end
+---@return Blueprint
+-- sala de tesouro: a dupla de recompensas é criada ao popular a sala
+function newTreasureRoom1(rng)
+	local bp = Blueprint.new(TREASURE_ROOM, "Treasure Room", rgba8(255, 210, 74, 255))
+	return bp
 end

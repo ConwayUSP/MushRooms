@@ -58,7 +58,15 @@ end
 -- inicializa as animações do objeto, animSettings deve relacionar estados com `AnimSetting`
 function Interactive:addAnimations(animSettings)
 	for state, settings in pairs(animSettings) do
-		local path = pngPathFormat({ "assets", "animations", "interactives", self.name, state })
+		local path
+		local index = tonumber(self.name:sub(-1))
+
+		if index ~= nil then
+			path = pngPathFormat({ "assets", "animations", "interactives", self.name:sub(0, -2), self.name })
+		else
+			path = pngPathFormat({ "assets", "animations", "interactives", self.name, state })
+		end
+
 		addAnimation(self, path, state, settings)
 	end
 end

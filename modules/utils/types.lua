@@ -21,6 +21,7 @@ RESOURCE_ROOM = "resource room"
 BATTLE_ROOM = "battle room"
 BOSS_ROOM = "boss room"
 EVENT_ROOM = "event room"
+TREASURE_ROOM = "treasure room"
 
 ---@alias RoomType
 ---| `PUZZLE_ROOM`
@@ -29,6 +30,7 @@ EVENT_ROOM = "event room"
 ---| `BATTLE_ROOM`
 ---| `BOSS_ROOM`
 ---| `EVENT_ROOM`
+---| `TREASURE_ROOM`
 
 ---------- ATAQUES ----------
 ATTACK = "attack"
@@ -96,6 +98,9 @@ UI_ARTIFACT_EQUIP_SCENE = "UI artifact equip scene"
 UI_INTERACTION_PROMPT_SCENE = "UI interaction prompt scene"
 UI_ARTIFACT_COOLDOWN_BAR_SCENE = "UI artifact cooldown bar scene"
 UI_DEFENSE_COOLDOWN_BAR_SCENE = "UI defense cooldown bar scene"
+UI_PAUSE_SCENE = "UI pause scene"
+UI_PAUSE_SETTINGS_SCENE = "UI pause settings scene"
+UI_LINK_ELEM = "UI link element"
 
 ---------- ÁUDIOS ----------
 MUSIC_MENU = "menu music"
@@ -119,6 +124,7 @@ AUDIO_CLOSE = "close audio"
 
 ---------- PARTICLES ----------
 PARTICLE_WALKING = "walking particle"
+PARTICLE_TREASURE_DISAPPEAR = "treasure disappear particle"
 PARTICLE_DEFENSE = "defense particle"
 PARTICLE_HIT = "hit particle"
 PARTICLE_BREAKING = "breaking particle"
@@ -127,6 +133,7 @@ PARTICLE_KATANA = "katana particle"
 PARTICLE_EXPLOSION = "explosion particle"
 PARTICLE_BLACK_HOLE = "black hole particle"
 PARTICLE_FLOWER_SHOT = "flower shot particle"
+PARTICLE_PUZZLE_STONE_MOVING = "puzzle stone moving particle"
 
 ---------- ACTIONS ----------
 ACT_ML = "action move left"

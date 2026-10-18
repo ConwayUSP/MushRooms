@@ -6,6 +6,7 @@ require("modules.UI.uiworldscene")
 require("modules.UI.elements.button")
 require("modules.UI.elements.image")
 require("modules.UI.elements.lifebar")
+require("modules.UI.elements.link")
 require("modules.UI.elements.map")
 require("modules.UI.elements.text")
 require("modules.UI.elements.textbox")
@@ -138,6 +139,135 @@ function initControlsScene()
 end
 
 ----------------------------------------
+-- Cenas de Pausa (por player)
+----------------------------------------
+
+function newPauseScene(player)
+	-- sem hasBg: o escurecimento da tela toda é feito por renderPauseDim na câmera
+	local pauseScene = UIScene.new(UI_PAUSE_SCENE, player)
+	local canvasCenter = vec(640, 360)
+
+	-- TÍTULO
+	local title = UITextElem.new(
+		"pause title",
+		vec(canvasCenter.x - 600, canvasCenter.y - 280),
+		size(400, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"PAUSED"
+	)
+
+	-- SEED
+	local seed = UITextElem.new(
+		"seed text",
+		vec(20, 630),
+		size(120, 48),
+		2,
+		nil,
+		rgba8(205, 215, 255, 145),
+		"Seed: " .. worldSeedText
+	)
+
+	-- BOTÕES
+	local resumeBtn = UIButtonElem.new(
+		"menu play btn",
+		vec(canvasCenter.x, canvasCenter.y - 90),
+		size(120, 120),
+		nil,
+		function()
+			player.uiManager:deactivateScene(UI_PAUSE_SCENE)
+		end
+	)
+	local retryBtn = UIButtonElem.new(
+		"pause retry btn",
+		vec(canvasCenter.x, canvasCenter.y + 30),
+		size(120, 120),
+		nil,
+		function()
+			retryGame()
+		end
+	)
+	local homeBtn = UIButtonElem.new(
+		"pause home btn",
+		vec(canvasCenter.x, canvasCenter.y + 150),
+		size(120, 120),
+		nil,
+		function()
+			returnToMenu()
+		end
+	)
+	-- local settingsBtn = UIButtonElem.new(
+	-- 	"menu opt btn",
+	-- 	vec(canvasCenter.x, canvasCenter.y + 220),
+	-- 	size(120, 120),
+	-- 	nil,
+	-- 	function()
+	-- 		player.uiManager:activateScene(UI_PAUSE_SETTINGS_SCENE, UI_PAUSE_SCENE)
+	-- 	end
+	-- )
+
+	-- LINKS (canto inferior direito)
+	local feedbackLink = UILinkElem.new("pause feedback link", vec(1100, 620), size(220, 48), function()
+		love.system.openURL("https://tally.so/r/Dq2YEq")
+	end, rgba8(215, 215, 245, 225), "give feedback", 2)
+	local bugLink = UILinkElem.new("pause bug link", vec(1100, 680), size(220, 48), function()
+		love.system.openURL("https://tally.so/r/rDypQM")
+	end, rgba8(255, 220, 220, 225), "report bug", 2)
+
+	-- ANIMAÇÕES
+	local btnAnimSettings = {}
+	btnAnimSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
+	btnAnimSettings[SELECTED] = newAnimSetting(4, size(32, 32), 0.08, true, 4)
+	resumeBtn:addAnimations(btnAnimSettings)
+	--settingsBtn:addAnimations(btnAnimSettings)
+	retryBtn:addAnimations(btnAnimSettings)
+	homeBtn:addAnimations(btnAnimSettings)
+
+	-- SETUP DA CENA
+	pauseScene:addElement(title, BG_LAYER_1, vec(1, 1))
+	pauseScene:addElement(seed, VISUAL_LAYER_1, vec(1, 1))
+	pauseScene:addElement(resumeBtn, ELEM_LAYER_1, vec(1, 1))
+	pauseScene:addElement(retryBtn, ELEM_LAYER_1, vec(1, 2))
+	pauseScene:addElement(homeBtn, ELEM_LAYER_1, vec(1, 3))
+	--pauseScene:addElement(settingsBtn, ELEM_LAYER_1, vec(1, 4))
+	pauseScene:addElement(feedbackLink, ELEM_LAYER_2, vec(1, 4))
+	pauseScene:addElement(bugLink, ELEM_LAYER_2, vec(1, 5))
+
+	return pauseScene
+end
+
+function newPauseSettingsScene(player)
+	local settingsScene = UIScene.new(UI_PAUSE_SETTINGS_SCENE, player, true)
+
+	-- ELEMENTOS (réplica das opções globais, como cena de player)
+	local controlsBtn = UIButtonElem.new("settings controls btn", vec(656, 260), size(832, 96), nil, function()
+		globalUIManager:activateScene(UI_CONTROLS_SCENE)
+	end)
+	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
+		print("OPÇÕES DE GRÁFICOS")
+	end)
+	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
+		print("CRÉDITOS")
+	end)
+
+	-- ANIMAÇÕES
+	local btnAnimSettings = {}
+	btnAnimSettings[IDLE] = newAnimSetting(5, size(208, 24), 0.04, true, 5)
+	btnAnimSettings[SELECTED] = newAnimSetting(5, size(208, 24), 0.04, true, 5)
+	controlsBtn:addAnimations(btnAnimSettings)
+	displayBtn:addAnimations(btnAnimSettings)
+	creditsBtn:addAnimations(btnAnimSettings)
+
+	-- SETUP DA CENA
+	settingsScene:addElement(controlsBtn, ELEM_LAYER_1, vec(1, 1))
+	settingsScene:addElement(displayBtn, ELEM_LAYER_1, vec(1, 2))
+	settingsScene:addElement(creditsBtn, ELEM_LAYER_1, vec(1, 3))
+
+	return settingsScene
+end
+
+----------------------------------------
 -- Cenas de Player
 ----------------------------------------
 
@@ -152,10 +282,8 @@ function newResourceInventoryScene(player)
 	local ITEMS_PER_PAGE = COLS * ROWS
 	local slotSize = size(114, 114)
 	local slotSpacing = 132
-	local firstSlotPos = vec(
-		slotsCenter.x - ((COLS - 1) * slotSpacing) / 2,
-		slotsCenter.y - ((ROWS - 1) * slotSpacing) / 2
-	)
+	local firstSlotPos =
+		vec(slotsCenter.x - ((COLS - 1) * slotSpacing) / 2, slotsCenter.y - ((ROWS - 1) * slotSpacing) / 2)
 
 	invScene.currentPage = 1
 	invScene.lastInventoryRevision = -1
@@ -223,17 +351,29 @@ function newResourceInventoryScene(player)
 	end
 
 	-- SETAS DE NAVEGAÇÃO
-	local leftArrow = UIButtonElem.new("inventory nav arrow left", vec(slotsCenter.x - 291, slotsCenter.y), size(30, 24), nil, function()
-		print("left arrow pressed")
-		invScene:setInventoryPage(invScene.currentPage - 1)
-	end)
+	local leftArrow = UIButtonElem.new(
+		"inventory nav arrow left",
+		vec(slotsCenter.x - 291, slotsCenter.y),
+		size(30, 24),
+		nil,
+		function()
+			print("left arrow pressed")
+			invScene:setInventoryPage(invScene.currentPage - 1)
+		end
+	)
 	leftArrow:addAnimations(arrowAnimSettings)
 	invScene:addElement(leftArrow, ELEM_LAYER_1, vec(0, 3))
 
-	local rightArrow = UIButtonElem.new("inventory nav arrow right", vec(slotsCenter.x + 291, slotsCenter.y), size(30, 24), nil, function()
-		print("right arrow pressed")
-		invScene:setInventoryPage(invScene.currentPage + 1)
-	end)
+	local rightArrow = UIButtonElem.new(
+		"inventory nav arrow right",
+		vec(slotsCenter.x + 291, slotsCenter.y),
+		size(30, 24),
+		nil,
+		function()
+			print("right arrow pressed")
+			invScene:setInventoryPage(invScene.currentPage + 1)
+		end
+	)
 	rightArrow:addAnimations(arrowAnimSettings)
 	invScene:addElement(rightArrow, ELEM_LAYER_1, vec(COLS + 1, 3))
 
@@ -649,7 +789,7 @@ function newMapScene(player)
 			if getRoomAt(finalPos) == nil then
 				return
 			end
-			
+
 			self.layers[ELEM_LAYER_1][1][1]:setFocus(finalPos)
 		end
 	end
@@ -765,9 +905,12 @@ function newChestScene(player)
 
 	-- se um dos dois inventários atualizaram, sincroniza a cena novamente
 	chestScene.update = function(self, dt)
-		if self.chest
-			and (self.lastPlayerInventoryRevision ~= self.player.inventory.revision
-				or self.lastChestInventoryRevision ~= self.chest.inventory.revision)
+		if
+			self.chest
+			and (
+				self.lastPlayerInventoryRevision ~= self.player.inventory.revision
+				or self.lastChestInventoryRevision ~= self.chest.inventory.revision
+			)
 		then
 			self:syncInventories()
 		end
@@ -821,14 +964,7 @@ function newPlayerDamageBarScene(player)
 		return player.hp, player.maxHp
 	end
 
-	local lifebar = UILifeBarElem.new(
-		"equip player lifebar",
-		vec(0, 0),
-		size(74, 14),
-		lifeCalc,
-		{ l = 11, r = 3 },
-		2
-	)
+	local lifebar = UILifeBarElem.new("equip player lifebar", vec(0, 0), size(74, 14), lifeCalc, { l = 11, r = 3 }, 2)
 	scene:addElement(lifebar, vec(0, 0))
 
 	-- detecta dano ou cura comparando o hp atual com o do frame anterior
@@ -911,7 +1047,6 @@ function newPlayerArtifactEquipScene(player)
 			lastArtifact = newArtifact
 		end
 
-
 		if hideTimer > 0 then
 			-- trazendo o novo ícone para o centro e crescendo ele
 			local timeFactor = Easing.inOutCubic(math.min((ICON_DURATION - hideTimer) / ICON_DURATION * 4, 1))
@@ -925,7 +1060,7 @@ function newPlayerArtifactEquipScene(player)
 			local size = lerp(92, 0, timeFactor)
 			scene.elements[2].elem.size.width = size
 			scene.elements[2].elem.size.height = size
-			
+
 			hideTimer = hideTimer - dt
 			if hideTimer <= 0 then
 				self:hide()
@@ -944,27 +1079,24 @@ end
 function newPlayerInteractionPromptScene(player)
 	local scene = UIWorldScene.new(UI_INTERACTION_PROMPT_SCENE, nil, vec(0, -110), nil)
 
-	local prompt = UITextElem.new(
-		"interaction prompt",
-		vec(0, 0),
-		size(120, 20),
-		1.5,
-		nil,
-		rgba8(255, 255, 255, 255),
-		"?"
-	)
+	local prompt =
+		UITextElem.new("interaction prompt", vec(0, 0), size(120, 20), 1.5, nil, rgba8(255, 255, 255, 255), "?")
 	scene:addElement(prompt, vec(0, 0))
 
 	scene.onUpdate = function(self, dt)
 		local target = player.interactiveObj
+		-- não exibe o prompt em objetos sem onInteract (como a fogueira)
+		if target and target.type ~= NPC and not target.onInteract then
+			self:hide()
+			return
+		end
 		self.followEntity = target
 		self.anchorOffset.y = -110 + math.sin(love.timer.getTime() * 2) * 4
 
 		if target and not player.activeInteraction and not player.inDialogue then
-			local key = player.controls and player.controls.keybinds
-				and player.controls.keybinds[ACT_INT] or nil
+			local key = player.controls and player.controls.keybinds and player.controls.keybinds[ACT_INT] or nil
 			prompt.text = keybindLabel(key)
-			self.anchorOffset.x = -(#prompt.text) * 18
+			self.anchorOffset.x = - #prompt.text * 18
 			self:show()
 		else
 			self:hide()
@@ -992,8 +1124,8 @@ function newPlayerArtifactCooldownBarScene(player)
 
 	local customCalcBarColor = function(self)
 		local revPercent = 1 - self.percent
-		self.color[1] = 0.7 - revPercent * 0.2 -- R
-		self.color[2] = 0.8 + revPercent * 0.2 -- G
+		self.color[1] = 0.7 - revPercent * 0.2        -- R
+		self.color[2] = 0.8 + revPercent * 0.2        -- G
 		self.color[3] = 0.9 + revPercent * revPercent * 0.1 -- B
 	end
 
@@ -1039,7 +1171,6 @@ function newPlayerArtifactCooldownBarScene(player)
 		if self.visible and (not cd or not cd.active) then
 			self:hide()
 		end
-
 	end
 
 	scene:hide()
@@ -1059,8 +1190,8 @@ function newPlayerDefenseCooldownBarScene(player)
 	local customCalcBarColor = function(self)
 		local revPercent = 1 - self.percent
 		self.color[1] = 0.9 + revPercent * revPercent * 0.1 -- R
-		self.color[2] = 0.7 - revPercent * 0.2 -- G
-		self.color[3] = 0.7 - revPercent * 0.3 -- B
+		self.color[2] = 0.7 - revPercent * 0.2        -- G
+		self.color[3] = 0.7 - revPercent * 0.3        -- B
 	end
 
 	local cooldownBar = UILifeBarElem.new(
@@ -1104,9 +1235,9 @@ function newPlayerDefenseCooldownBarScene(player)
 		if self.visible and (not cd or not cd.active) then
 			self:hide()
 		end
-
 	end
 
 	scene:hide()
 	return scene
 end
+
