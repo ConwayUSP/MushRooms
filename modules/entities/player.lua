@@ -414,6 +414,12 @@ function Player:processInput()
 		stopMovement(self)
 	end
 
+	-- dropa o item selecionado na UI de equipamentos/inventário (ACT_DEF)
+	if self.state ~= DYING and self.uiManager:hasActiveScene() and self.controls:justPressed(ACT_DEF) then
+		self:dropSelectedUIItem()
+		return
+	end
+
 	-- basicamente todo input é ignorado se o player está morto ou com uma UI aberta
 	if self.state == DYING or self.uiManager:hasActiveScene() then
 		return
@@ -471,7 +477,7 @@ function Player:processInput()
 	end
 
 	-- input de ataque
-	if self.controls:checkAction(ACT_ATK) then
+	if self.controls:checkAction(ACT_ATK) and self.weapon then
 		self.weapon:attack()
 		self:wakeUp()
 	end
@@ -515,10 +521,10 @@ end
 
 ---@param weapon Weapon
 ---@return boolean
--- adiciona uma arma ao arsenal do `Player` caso ele não a tenha
+-- adiciona uma arma ao arsenal do `Player`
+-- (duplicatas são permitidas; apenas o limite de espaços é respeitado)
 function Player:collectWeapon(weapon)
-	-- previne de pegar uma arma repetida ou exceder os espaços da UI de equipamentos
-	if self:hasWeapon(weapon.name) or #self.weapons >= MAX_WEAPONS then
+	if #self.weapons >= MAX_WEAPONS then
 		return false
 	end
 	table.insert(self.weapons, weapon)
@@ -635,6 +641,9 @@ function Player:collectDrop(drop)
 		if result then
 			self:equipWeapon(drop.object.name)
 		end
+	elseif drop.object.type == ARTIFACT then
+		drop.object:setOwner(self)
+		result = self:collectArtifact(drop.object)
 	elseif drop.object.type == RESOURCE then
 		result = self:collectResource(drop.object)
 	elseif drop.object.type == BLESSING then
@@ -827,7 +836,10 @@ function Player:dropAllWeapons()
 	for _, w in pairs(self.weapons) do
 		if w.atk and w.atk.events then
 			for _, e in pairs(w.atk.events) do
-				CollisionManager:unregister(e)
+				collisionManager:unregister(e)
+				-- sem o Attack:update o trajeto BREAKING nunca roda, então as
+				-- partículas presas ao projétil precisam ser paradas aqui
+				globalVFXManager:stopEntityParticles(e)
 				if e.destroy then
 					e:destroy()
 				end
@@ -846,6 +858,10 @@ function Player:dropAllArtifacts()
 	end
 	self:unequipArtifact()
 	self.artifacts = {}
+	-- sem anéis no inventário ninguém atualiza os timers: limpa a invisibilidade
+	if self.invisible and not hasActiveInvisibility(self.artifacts) then
+		self.invisible = false
+	end
 end
 
 function Player:dropAllBlessings()
@@ -856,6 +872,162 @@ function Player:dropAllBlessings()
 		end
 	end
 	self.blessingManager.equipped = {}
+end
+
+---@param idx number
+---@return boolean
+-- dropa a arma no índice `idx` do arsenal
+function Player:dropWeaponAtIndex(idx)
+	local weapon = self.weapons[idx]
+	if not weapon then
+		return false
+	end
+	-- desregistra os eventos de ataque da arma
+	if weapon.atk and weapon.atk.events then
+		for _, e in pairs(weapon.atk.events) do
+			collisionManager:unregister(e)
+			globalVFXManager:stopEntityParticles(e)
+			if e.destroy then
+				e:destroy()
+			end
+		end
+		weapon.atk.events = {}
+	end
+	-- desequipa se for a arma equipada
+	local wasEquipped = self.weapon == weapon
+	if wasEquipped then
+		self:unequipWeapon()
+	end
+	table.remove(self.weapons, idx)
+	-- se a dropada era a equipada e ainda sobraram armas, equipa outra automaticamente
+	if wasEquipped and #self.weapons > 0 then
+		self.weapon = self.weapons[math.min(idx, #self.weapons)]
+	end
+	spawnDrop(weapon, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+	return true
+end
+
+---@param idx number
+---@return boolean
+-- dropa o artefato no índice `idx`
+function Player:dropArtifactAtIndex(idx)
+	local artifact = self.artifacts[idx]
+	if not artifact then
+		return false
+	end
+	local wasEquipped = self.artifact == artifact
+	if wasEquipped then
+		self:unequipArtifact()
+	end
+	table.remove(self.artifacts, idx)
+	-- se o dropado era o equipado e ainda sobraram artefatos, equipa outro automaticamente
+	if wasEquipped and #self.artifacts > 0 then
+		self.artifact = self.artifacts[math.min(idx, #self.artifacts)]
+	end
+	-- se o anel ativo saiu do inventário, ninguém mais atualiza o timer: limpa a invisibilidade
+	if self.invisible and not hasActiveInvisibility(self.artifacts) then
+		self.invisible = false
+	end
+	spawnDrop(artifact, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+	return true
+end
+
+---@param idx number
+---@return boolean
+-- dropa a benção no índice `idx`
+function Player:dropBlessingAtIndex(idx)
+	local blessing = self.blessingManager.equipped[idx]
+	if not blessing then
+		return false
+	end
+	self.blessingManager:unequip(blessing)
+	spawnDrop(blessing, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+	return true
+end
+
+---@param idx number
+-- dropa 1 unidade do recurso no índice `idx` do inventário
+function Player:dropResourceAtIndex(idx)
+	local resource = self.inventory.items[RESOURCE][idx]
+	if not resource then
+		return
+	end
+	local mockR = {
+		name = resource.name,
+		type = resource.type,
+		image = assetManager:getImage(pngPathFormat({ "assets", "sprites", "resources", resource.name }))
+	}
+	self.inventory:subtractItem(resource)
+	spawnDrop(mockR, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+end
+
+-- dropa o item selecionado na UI de equipamentos ou inventário aberta (ACT_DEF)
+function Player:dropSelectedUIItem()
+	if not self.uiManager:hasActiveScene() then
+		return
+	end
+
+	if self.uiManager:isSceneActive(UI_EQUIPMENT_SCENE) then
+		self:dropSelectedEquipmentItem(self.uiManager.scenes[UI_EQUIPMENT_SCENE])
+	elseif self.uiManager:isSceneActive(UI_INVENTORY_SCENE) then
+		self:dropSelectedInventoryItem(self.uiManager.scenes[UI_INVENTORY_SCENE])
+	end
+end
+
+---@param scene UIScene
+-- dropa o equipamento correspondente à célula selecionada na UI de equipamentos
+function Player:dropSelectedEquipmentItem(scene)
+	local pos = scene.selectionPos
+	local dropped = false
+
+	-- arma: colunas 0-1, linhas 2-4
+	if (pos.x == 0 or pos.x == 1) and pos.y >= 2 and pos.y <= 4 then
+		local idx = (pos.y - 2) * 2 + pos.x + 1
+		dropped = self:dropWeaponAtIndex(idx)
+		if dropped then
+			scene:syncEquipment(WEAPON, self.weapons)
+			scene:setEquipmentInUse(WEAPON, self.weapon)
+		end
+	-- artefato: (2,2) e (3,2)
+	elseif (pos.x == 2 or pos.x == 3) and pos.y == 2 then
+		local idx = pos.x - 1
+		dropped = self:dropArtifactAtIndex(idx)
+		if dropped then
+			scene:syncEquipment(ARTIFACT, self.artifacts)
+			scene:setEquipmentInUse(ARTIFACT, self.artifact)
+		end
+	-- benção: coluna 4, linhas 2-6
+	elseif pos.x == 4 and pos.y >= 2 and pos.y <= 6 then
+		local idx = pos.y - 1
+		dropped = self:dropBlessingAtIndex(idx)
+		if dropped then
+			scene:syncEquipment(BLESSING, self.blessingManager.equipped)
+		end
+	end
+
+	-- se o slot selecionado ficou vazio depois do drop, tira a seleção dele
+	if dropped then
+		local el = scene.layers[ELEM_LAYER_2][pos.y] and scene.layers[ELEM_LAYER_2][pos.y][pos.x]
+		if not el then
+			local slot = scene.layers[ELEM_LAYER_1][pos.y] and scene.layers[ELEM_LAYER_1][pos.y][pos.x]
+			if slot then
+				slot:deselect()
+			end
+		end
+	end
+end
+
+---@param scene UIScene
+-- dropa 1 unidade do recurso no slot selecionado na UI de inventário
+function Player:dropSelectedInventoryItem(scene)
+	local pos = scene.selectionPos
+	-- slots (posições infelizmente hard-coded)
+	if pos.x >= 1 and pos.x <= 4 and pos.y >= 2 and pos.y <= 4 then
+		local slotIdx = (pos.y - 2) * 4 + pos.x
+		local resourceIdx = (scene.currentPage - 1) * 12 + slotIdx
+		self:dropResourceAtIndex(resourceIdx)
+		-- a UI de inventário se resincroniza sozinha via revision no update
+	end
 end
 
 function Player:sleep()

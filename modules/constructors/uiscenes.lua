@@ -535,9 +535,10 @@ function newEquipmentScene(player)
 		else
 			element = UIButtonElem.new("equip " .. equipment.name, pos, size(96, 96), nil, function()
 				if equipmentType == WEAPON then
-					player:equipWeapon(equipment.name)
+					-- equipa a instância clicada (com duplicatas o nome seria ambíguo)
+					player.weapon = equipment
 				elseif equipmentType == ARTIFACT then
-					player:equipArtifact(equipment.name)
+					player.artifact = equipment
 				end
 				equipScene:setEquipmentInUse(equipmentType, equipment)
 			end)
@@ -554,21 +555,24 @@ function newEquipmentScene(player)
 
 	-- coloca em uso o elemento equipado e retira todos os outros
 	function equipScene:setEquipmentInUse(equipmentType, equippedEquipment)
-		local equipmentList = equipmentType == WEAPON and player.weapons or player.artifacts
+		-- varre todos os slots do tipo (e não só os ocupados) pra limpar o
+		-- destaque de slots que ficaram vazios após um drop
+		local maxIdx = equipmentType == WEAPON and 6 or 2
 
-		for idx, equipment in ipairs(equipmentList) do
+		for idx = 1, maxIdx do
 			local _, layerPos = self:getEquipmentSlotPosition(equipmentType, idx)
 			local element = self.layers[ELEM_LAYER_2][layerPos.y] and self.layers[ELEM_LAYER_2][layerPos.y][layerPos.x]
 			local slot = self.layers[ELEM_LAYER_1][layerPos.y] and self.layers[ELEM_LAYER_1][layerPos.y][layerPos.x]
+			local inUse = element ~= nil and element.equipment == equippedEquipment
 
 			-- equipa o elemento em si
 			if element then
-				element:setInUse(equipment == equippedEquipment)
+				element:setInUse(inUse)
 			end
 
 			-- equipa o slot
 			if slot then
-				slot:setInUse(equipment == equippedEquipment)
+				slot:setInUse(inUse)
 			end
 		end
 	end
@@ -1034,7 +1038,7 @@ function newPlayerArtifactEquipScene(player)
 	scene.onUpdate = function(self, dt)
 		if player.artifact ~= lastArtifact then
 			local newArtifact = player.artifact
-			if lastArtifact then
+			if lastArtifact and newArtifact then
 				local path = pngPathFormat({ "assets", "sprites", "icons", ARTIFACT .. "s", newArtifact.name })
 				addAnimation(afterIcon, path, IDLE, newAnimSetting(1, size(32, 32), 1, true))
 				path = pngPathFormat({ "assets", "sprites", "icons", ARTIFACT .. "s", lastArtifact.name })
