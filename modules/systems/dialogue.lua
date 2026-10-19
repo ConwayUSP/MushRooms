@@ -17,14 +17,14 @@ local DIALOGUE_ZOOM = 0.4
 ----------------------------------------
 
 ---@class Dialogue
----@field intro table<string> sequência introdutória
----@field loops table<table<string>> opções de sequência em loop (sorteada a cada conversa)
----@field event table<table<string>> sequências de evento (condicionais)
----@field speaker Npc dono do diálogo
----@field listener Player jogador que está falando
----@field activeSequence table<string> sequência ativa atual
----@field active boolean se o diálogo está ativo
----@field start function começa o diálogo
+---@field intro table<string>
+---@field loops table<table<string>>
+---@field event table<table<string>>
+---@field speaker Npc
+---@field listener Player
+---@field activeSequence table<string>
+---@field active boolean
+---@field start function
 
 Dialogue = {}
 Dialogue.__index = Dialogue
@@ -67,13 +67,13 @@ function Dialogue:start()
 			end
 		end
 
-		-- diálogo padrão (loop): sorteia uma das opções disponíveis
+		-- diálogo padrão (loop) sorteia uma das opções disponíveis
 		if not self.activeSequence then
 			self.activeSequence = self:pickLoop()
 		end
 	end
 
-	-- diálogo vazio (arquivo sem falas): não ativa nada
+	-- diálogo vazio (arquivo sem falas) não ativa nada
 	if not self.activeSequence then
 		return
 	end
@@ -95,7 +95,8 @@ function Dialogue:start()
 end
 
 ---@return table<string>?
--- sorteia uma das opções de diálogo em loop; sem opções, repete o intro
+-- sorteia uma das opções de diálogo em loop.
+-- se não tem loop, repete o intro
 function Dialogue:pickLoop()
 	if #self.loops > 0 then
 		return self.loops[math.random(#self.loops)]
@@ -130,7 +131,7 @@ function Dialogue:endDialogue()
 
 	self.listener.inDialogue = false
 	self.speaker.inDialogue = false
-	self.speaker.state = IDLE -- !warning: se tiver mais de dois estados no NPC, rever essa linha
+	self.speaker.state = IDLE -- !WARNING: se tiver mais de dois estados no NPC, rever essa linha
 	self.active = false
 	self.activeSequence.idx = -1
 	self.activeSequence = nil
@@ -245,8 +246,9 @@ end
 --   condicaoDaOpcaoDeEvento
 --   falas do evento (linha vazia separa os eventos)
 --
--- as falas de [EVENT] seguem a sintaxe antiga: a primeira linha do bloco é a
+-- as falas de [EVENT] seguem a seguinte convenção a primeira linha do bloco é a
 -- chave da condição em `conditionTable` e as demais são as falas exibidas
+
 ---@param path string
 ---@return { intro: table<string>?, loops: table<table<string>>, event: table<table<string>> }
 -- lê um arquivo de diálogo com as tags [INTRO], [LOOP] e [EVENT]
@@ -259,8 +261,7 @@ function parseDialogueFile(path)
 		event = {},
 	}
 
-	-- sem nenhuma tag o arquivo é tratado como apenas intro (tolerância a
-	-- arquivos no formato antigo)
+	-- sem nenhuma tag o arquivo é tratado como apenas intro
 	local section = "intro"
 	local introLines = {}
 	local currentBlock = {}
