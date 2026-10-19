@@ -1,3 +1,5 @@
+[INTRO]
 Você veio roubar minhas coisinhas, certo? Xô, xô!
 
+[LOOP]
 Você veio roubar minhas coisinhas, certo? Xô, xô!

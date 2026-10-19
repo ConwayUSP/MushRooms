@@ -435,21 +435,23 @@ function Player:processInput()
 		return
 	end
 
+	-- avançando o diálogo ao clicar
+	if self.inDialogue and self.controls:checkAction(ACT_CON) then
+		DialogueManager:getDialogueByPlayer(self):advance()
+		return
+	end
+
 	-- inputs de interação: interagir...
 	if self.interactiveObj and self.controls:checkAction(ACT_INT) then
 		if self.interactiveObj.type == NPC then
 			DialogueManager:start(self.interactiveObj.dialogue, self.interactiveObj, self)
+			stopMovement(self)
+			return
 		elseif self.interactiveObj.type == INTERACTIVE then
 			-- define a interação ativa se for uma interação duradoura (como um baú, que se mantém aberto até ser fechado)
 			self.activeInteraction = self.interactiveObj.onInteract and self.interactiveObj.onInteract(self.interactiveObj, self)
 		end
 		stopMovement(self)
-	end
-
-	-- avançando o diálogo ao clicar
-	if self.inDialogue and self.controls:checkAction(ACT_CON) then
-		DialogueManager:getDialogueByPlayer(self):advance()
-		return
 	end
 
 	-- input de uso de artefato
@@ -522,7 +524,6 @@ end
 ---@param weapon Weapon
 ---@return boolean
 -- adiciona uma arma ao arsenal do `Player`
--- (duplicatas são permitidas; apenas o limite de espaços é respeitado)
 function Player:collectWeapon(weapon)
 	if #self.weapons >= MAX_WEAPONS then
 		return false
@@ -837,8 +838,6 @@ function Player:dropAllWeapons()
 		if w.atk and w.atk.events then
 			for _, e in pairs(w.atk.events) do
 				collisionManager:unregister(e)
-				-- sem o Attack:update o trajeto BREAKING nunca roda, então as
-				-- partículas presas ao projétil precisam ser paradas aqui
 				globalVFXManager:stopEntityParticles(e)
 				if e.destroy then
 					e:destroy()

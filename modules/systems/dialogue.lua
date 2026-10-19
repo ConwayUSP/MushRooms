@@ -1,6 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
+require("modules.conditions")
 require("modules.flags")
 require("modules.utils.types")
 require("table")
@@ -17,7 +18,7 @@ local DIALOGUE_ZOOM = 0.4
 
 ---@class Dialogue
 ---@field intro table<string> sequência introdutória
----@field loop table<string> sequência padrão (loop)
+---@field loops table<table<string>> opções de sequência em loop (sorteada a cada conversa)
 ---@field event table<table<string>> sequências de evento (condicionais)
 ---@field speaker Npc dono do diálogo
 ---@field listener Player jogador que está falando
@@ -35,8 +36,8 @@ function Dialogue.new(list)
 	local dialogue = setmetatable({}, Dialogue)
 
 	dialogue.intro = list.intro
-	dialogue.loop = list.loop
-	dialogue.event = list.event
+	dialogue.loops = list.loops or {}
+	dialogue.event = list.event or {}
 
 	dialogue.speaker = nil
 	dialogue.listener = nil
@@ -48,21 +49,9 @@ function Dialogue.new(list)
 end
 
 function Dialogue:start()
-	self.active = true
-	self.listener.inDialogue = true
-	self.speaker.inDialogue = true
-	self.speaker.state = SPEAKING
-
-	globalAudioManager:play(AUDIO_SPEAK, self.speaker, "amnuninamnuminuna")
-
-	local playerCamera = getCameraByPlayer(self.listener)
-	if playerCamera then
-		playerCamera:changeTarget(self.speaker)
-		playerCamera.targetZoom = playerCamera.startingZoom + DIALOGUE_ZOOM
-	end
-
+	-- escolhe a sequência que será exibida
 	-- diálogo introdutório
-	if self.intro.triggered ~= true then
+	if self.intro and self.intro.triggered ~= true then
 		self.activeSequence = self.intro
 	else
 		-- diálogos de evento (condicionais)
@@ -78,14 +67,41 @@ function Dialogue:start()
 			end
 		end
 
-		-- diálogo padrão (loop)
+		-- diálogo padrão (loop): sorteia uma das opções disponíveis
 		if not self.activeSequence then
-			self.activeSequence = self.loop
+			self.activeSequence = self:pickLoop()
 		end
 	end
 
+	-- diálogo vazio (arquivo sem falas): não ativa nada
+	if not self.activeSequence then
+		return
+	end
+
+	self.active = true
+	self.listener.inDialogue = true
+	self.speaker.inDialogue = true
+	self.speaker.state = SPEAKING
+
+	globalAudioManager:play(AUDIO_SPEAK, self.speaker, "amnuninamnuminuna")
+
+	local playerCamera = getCameraByPlayer(self.listener)
+	if playerCamera then
+		playerCamera:changeTarget(self.speaker)
+		playerCamera.targetZoom = playerCamera.startingZoom + DIALOGUE_ZOOM
+	end
+
 	self.activeSequence.idx = 1
-	local text = self.activeSequence.text[self.activeSequence.idx]
+end
+
+---@return table<string>?
+-- sorteia uma das opções de diálogo em loop; sem opções, repete o intro
+function Dialogue:pickLoop()
+	if #self.loops > 0 then
+		return self.loops[math.random(#self.loops)]
+	end
+
+	return self.intro
 end
 
 function Dialogue:advance()
@@ -205,33 +221,6 @@ end
 -- Funções auxiliares
 ----------------------------------------
 
-function parseDialogueBlocks(path)
-	assert(love.filesystem.getInfo(path), "Diálogo inexistente ou caminho incorreto: " .. path)
-
-	local blocks = {}
-	local current = {}
-
-	for line in love.filesystem.lines(path) do
-		-- linha vazia = próximo bloco
-		if line == "" then
-			if #current > 0 then
-				table.insert(blocks, current)
-				current = {}
-			end
-		else
-			table.insert(current, line)
-		end
-	end
-
-	-- último bloco
-	if #current > 0 then
-		table.insert(blocks, current)
-		current = {}
-	end
-
-	return blocks
-end
-
 function newSequence(text, condition)
 	return {
 		text = text,
@@ -241,29 +230,83 @@ function newSequence(text, condition)
 	}
 end
 
-function buildDialogueData(blocks)
+-- formato de arquivo de diálogo:
+--
+--   [INTRO]
+--   falas do diálogo de primeira conversa
+--
+--   [LOOP]
+--   opção 1 da conversa em loop
+--   (linha vazia separa as opções)
+--
+--   opção 2 da conversa em loop
+--
+--   [EVENT]
+--   condicaoDaOpcaoDeEvento
+--   falas do evento (linha vazia separa os eventos)
+--
+-- as falas de [EVENT] seguem a sintaxe antiga: a primeira linha do bloco é a
+-- chave da condição em `conditionTable` e as demais são as falas exibidas
+---@param path string
+---@return { intro: table<string>?, loops: table<table<string>>, event: table<table<string>> }
+-- lê um arquivo de diálogo com as tags [INTRO], [LOOP] e [EVENT]
+function parseDialogueFile(path)
+	assert(love.filesystem.getInfo(path), "Diálogo inexistente ou caminho incorreto: " .. path)
+
 	local data = {
 		intro = nil,
-		loop = nil,
+		loops = {},
 		event = {},
 	}
 
-	if blocks[1] then
-		data.intro = newSequence(blocks[1])
+	-- sem nenhuma tag o arquivo é tratado como apenas intro (tolerância a
+	-- arquivos no formato antigo)
+	local section = "intro"
+	local introLines = {}
+	local currentBlock = {}
+
+	local function closeBlock()
+		if #currentBlock == 0 then
+			return
+		end
+
+		if section == "loop" then
+			table.insert(data.loops, newSequence(currentBlock))
+		elseif section == "event" then
+			local key = currentBlock[1]
+			local text = { unpack(currentBlock, 2) }
+
+			table.insert(data.event, newSequence(text, getCondition(key)))
+		end
+
+		currentBlock = {}
 	end
 
-	if blocks[2] then
-		data.loop = newSequence(blocks[2])
+	for line in love.filesystem.lines(path) do
+		line = line:gsub("\r", "")
+
+		if line == "[INTRO]" then
+			closeBlock()
+			section = "intro"
+		elseif line == "[LOOP]" then
+			closeBlock()
+			section = "loop"
+		elseif line == "[EVENT]" then
+			closeBlock()
+			section = "event"
+		elseif line == "" then
+			-- linha vazia = próximo bloco de loop/evento
+			closeBlock()
+		elseif section == "intro" then
+			table.insert(introLines, line)
+		else
+			table.insert(currentBlock, line)
+		end
 	end
+	closeBlock()
 
-	for i = 3, #blocks do
-		local block = blocks[i]
-		local key = block[1]
-
-		local condition = getCondition(key)
-		local text = { unpack(blocks[i], 2) }
-
-		table.insert(data.event, newSequence(text, condition))
+	if #introLines > 0 then
+		data.intro = newSequence(introLines)
 	end
 
 	return data
