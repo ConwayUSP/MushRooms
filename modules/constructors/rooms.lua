@@ -188,15 +188,13 @@ function newBossRoom2(rng)
 end
 
 ---@return Blueprint
--- sala de evento 1: contém barrís, jarros ou inimigos
+-- sala de evento 1: contém inimigos
 function newEventRoom1(rng)
 	local bp = Blueprint.new(EVENT_ROOM, "Test Event Room", rgba8(104, 237, 102, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
-	local barrelData = SpawnData.new(BARREL, 0.25)
-	local jarData = SpawnData.new(JAR, 0.5)
 	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.75)
 	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 1.0)
-	sp1:insert(barrelData):insert(jarData):insert(enemyData1):insert(enemyData2)
+	sp1:insert(enemyData1):insert(enemyData2)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp

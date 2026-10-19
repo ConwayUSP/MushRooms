@@ -93,30 +93,30 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	local room = setmetatable({}, Room)
 
 	-- atributos que variam
-	room.arrPos = pos -- posição da sala na array de salas
-	room.dimensions = dimensions -- largura e altura da sala
-	room.hb = hitboxes -- hitbox da sala
-	room.limits = limits -- limites da sala nas coordenadas de mundo
+	room.arrPos = pos                                -- posição da sala na array de salas
+	room.dimensions = dimensions                     -- largura e altura da sala
+	room.hb = hitboxes                               -- hitbox da sala
+	room.limits = limits                             -- limites da sala nas coordenadas de mundo
 	room.pos = midpoint(room.limits.p1, room.limits.p2) -- centro da sala nas coordenadas de mundo
-	room.color = blueprint.color -- cor da sala
-	room.roomType = blueprint.roomType -- tipo da sala
-	room.name = blueprint.roomName -- nome da sala
-	room.sprites = sprites -- os sprites da sala em camadas
+	room.color = blueprint.color                     -- cor da sala
+	room.roomType = blueprint.roomType               -- tipo da sala
+	room.name = blueprint.roomName                   -- nome da sala
+	room.sprites = sprites                           -- os sprites da sala em camadas
 	-- atributos fixos na instanciação
-	room.adjacentRooms = {} -- salas adjacentes
-	room.explored = false -- se algum jogador já entrou na sala ou não
-	room.destructibles = {} -- lista de objetos destrutíveis da sala
-	room.interactives = {} -- lista de objetos interativos na sala
-	room.drops = {} -- lista de itens dropados na sala
-	room.enemies = {} -- lista de inimigos na sala
-	room.npcs = {} -- lista de NPCs na sala
-	room.obstacles = {} -- lista de obstáculos na sala
-	room.puzzles = {} -- puzzles configurados para a sala
-	room.playersInRoom = Set.new() -- lista de jogadores na sala
-	room.linkManager = LinkManager.new() -- gerenciador de links da sala
-	room.uiManager = newRoomUIManager(room) -- gerenciador de UI da sala
-	room.doorsTimer = Timer.new(3) -- timer para fechar a sala
-	room.doorGlows = {} -- luzes das portas laterais, vistas de dentro da sala
+	room.adjacentRooms = {}                          -- salas adjacentes
+	room.explored = false                            -- se algum jogador já entrou na sala ou não
+	room.destructibles = {}                          -- lista de objetos destrutíveis da sala
+	room.interactives = {}                           -- lista de objetos interativos na sala
+	room.drops = {}                                  -- lista de itens dropados na sala
+	room.enemies = {}                                -- lista de inimigos na sala
+	room.npcs = {}                                   -- lista de NPCs na sala
+	room.obstacles = {}                              -- lista de obstáculos na sala
+	room.puzzles = {}                                -- puzzles configurados para a sala
+	room.playersInRoom = Set.new()                   -- lista de jogadores na sala
+	room.linkManager = LinkManager.new()             -- gerenciador de links da sala
+	room.uiManager = newRoomUIManager(room)          -- gerenciador de UI da sala
+	room.doorsTimer = Timer.new(3)                   -- timer para fechar a sala
+	room.doorGlows = {}                              -- luzes das portas laterais, vistas de dentro da sala
 	room.treasurePillars = {}
 	room.deactivationTimer = Timer.new(1)
 
@@ -416,13 +416,21 @@ function Room:claimTreasure(chosenPillar, player)
 	end
 
 	for _, pillar in ipairs(self.treasurePillars) do
-		globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar, vec(0, 0), false)
-		pillar:remove()
+		if pillar.drop and not pillar.drop.collected then
+			-- o item não escolhido evapora, o escolhido vai para o jogador
+			if pillar ~= chosenPillar then
+				globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar.drop, vec(0, -90), false)
+			end
+			pillar.drop:setCollected()
+		end
+		-- os pilares ficam na sala, mas sem recompensa e sem interação
+		pillar.reward = nil
+		pillar.onInteract = nil
 	end
-	
+
 	self.treasurePillars = {}
 	self:setExplored()
-	
+
 	return true
 end
 
