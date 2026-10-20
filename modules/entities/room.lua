@@ -42,6 +42,7 @@ walls = BiList.new()
 ---@field interactives Interactive[]
 ---@field drops Drop[]
 ---@field enemies Enemy[]
+---@field detachedAttacks Attack[]
 ---@field npcs Npc[]
 ---@field obstacles Obstacle[]
 ---@field adjacentRooms Vec[]
@@ -109,6 +110,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.interactives = {}                           -- lista de objetos interativos na sala
 	room.drops = {}                                  -- lista de itens dropados na sala
 	room.enemies = {}                                -- lista de inimigos na sala
+	room.detachedAttacks = {}                        -- ataques que permanecem ativos depois do emissor desaparecer
 	room.npcs = {}                                   -- lista de NPCs na sala
 	room.obstacles = {}                              -- lista de obstáculos na sala
 	room.puzzles = {}                                -- puzzles configurados para a sala
@@ -150,6 +152,14 @@ function Room:update(dt)
 	-- atualiza inimigos
 	for _, e in pairs(self.enemies) do
 		e:update(dt)
+	end
+	-- atualiza ataques que não pertencem mais a um inimigo ou jogador ativo
+	for i = #self.detachedAttacks, 1, -1 do
+		local attack = self.detachedAttacks[i]
+		attack:update(dt)
+		if #attack.events == 0 then
+			table.remove(self.detachedAttacks, i)
+		end
 	end
 	-- atualiza NPCs
 	for _, npc in pairs(self.npcs) do

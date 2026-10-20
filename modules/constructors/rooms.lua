@@ -171,6 +171,28 @@ function newBattleRoom1(rng)
 end
 
 ---@return Blueprint
+-- sala de teste: somente Bolotas Demoníacas
+function newDemonBallTestRoom(rng)
+	local bp = Blueprint.new(BATTLE_ROOM, "Demon Ball Test Room", rgba8(255, 100, 50, 255))
+	local sp1 = SpawnPoint.new(vec(200, -200))
+	local sp2 = SpawnPoint.new(vec(-200, 200))
+	local sp3 = SpawnPoint.new(vec(200, 200))
+	local sp4 = SpawnPoint.new(vec(-200, -200))
+	local sp5 = SpawnPoint.new(vec(0, -250))
+	local sp6 = SpawnPoint.new(vec(0, 250))
+	local demonData = SpawnData.new(DEMON_BALL, 1.0)
+	sp1:insert(demonData)
+	sp2:insert(demonData)
+	sp3:insert(demonData)
+	sp4:insert(demonData)
+	sp5:insert(demonData)
+	sp6:insert(demonData)
+	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4):insert(sp5):insert(sp6)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	return bp
+end
+
+---@return Blueprint
 function newBossRoom1(rng)
 	local bp = Blueprint.new(BOSS_ROOM, "Test Boss Room", rgba8(255, 41, 41, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
