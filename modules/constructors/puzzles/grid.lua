@@ -33,6 +33,7 @@ require("modules.utils.vec")
 ---@field nextCompletionPin number próximo pino da animação de conclusão
 ---@field pinFinishTimer Timer controla o intervalo entre pinos finalizados
 ---@field completed boolean informa se o puzzle já foi concluído
+---@field rewards table lista de recompensas a serem geradas ao concluir o puzzle
 
 GridPuzzle = setmetatable({}, { __index = Puzzle })
 GridPuzzle.__index = GridPuzzle
@@ -330,14 +331,17 @@ end
 local function finishNextPin(puzzle)
 	local pin = puzzle.pins[puzzle.nextCompletionPin]
 	if not pin then
+		for _, reward in ipairs(puzzle.rewards) do
+			local impulseVec = {x = math.random(-500,500), y = math.random(-1200, -1000)}
+			spawnDrop(reward(), puzzle.center, puzzle.room, false, -200, impulseVec)
+		end
+
 		return
 	end
 
 	finishPiece(pin)
 	puzzle.nextCompletionPin = puzzle.nextCompletionPin + 1
-	if puzzle.pins[puzzle.nextCompletionPin] then
-		puzzle.pinFinishTimer:restart()
-	end
+	puzzle.pinFinishTimer:restart()
 end
 
 ---@param puzzle GridPuzzle
@@ -356,9 +360,6 @@ local function completePuzzle(puzzle)
 
 	puzzle.nextCompletionPin = 1
 	puzzle.pinFinishTimer:restart()
-
-	print("Completou o puzzle")
-	-- TODO: substituir o print pelo efeito definitivo de conclusão do puzzle.
 end
 
 ---@param puzzle GridPuzzle
@@ -638,7 +639,7 @@ end
 ---@param settings GridPuzzleSettings
 ---@return GridPuzzle
 -- cria um puzzle de grid composto por pinos e stones interativos
-function GridPuzzle.new(room, settings) ---@diagnostic disable-line
+function GridPuzzle.new(room, settings, rewards) ---@diagnostic disable-line
 	---@type GridPuzzle
 	local puzzle = Puzzle.new(room) ---@diagnostic disable-line
 	setmetatable(puzzle, GridPuzzle)
@@ -659,6 +660,7 @@ function GridPuzzle.new(room, settings) ---@diagnostic disable-line
 	puzzle.pinFinishTimer = Timer.new(GridPuzzle.PIN_FINISH_DELAY, false, function()
 		finishNextPin(puzzle)
 	end)
+	puzzle.rewards = rewards or {}
 
 	for y = 1, puzzle.size.y do
 		puzzle.grid[y] = {}
