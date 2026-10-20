@@ -1,7 +1,6 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
 require("modules.constructors.vfxs")
 require("modules.engine.animation")
