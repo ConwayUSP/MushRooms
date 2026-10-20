@@ -61,7 +61,10 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	local vec = vec(x * vecOffset.x, y * vecOffset.y)
 	local finalPos = addVec(coordStart, vec)
 	local onClick = function(self)
-		self.ctx.player:startBuildingMode(CONSTRUCTORS[PRODUCT][recipe.output.name]())
+		local p = self.ctx.player
+		if recipe:canCraftWith(p.inventory) then
+			p:startBuildingMode(CONSTRUCTORS[PRODUCT][itemName](), recipe)
+		end
 	end
 	local itemEl = UIButtonElem.new(itemName, finalPos, size(96, 96), nil, onClick)
 	local animSettings = {}

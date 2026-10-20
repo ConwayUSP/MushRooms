@@ -85,28 +85,34 @@ function Inventory:addItem(item)
 	return true
 end
 
----@param item Resource
+---@param item Resource | EntityReg
+---@param quantity? number
 ---@return boolean
-function Inventory:subtractItem(item)
+-- subtrai de um item determinada quantidade
+-- se a quantidade no inventário é menor, retorna falso e não subtrai
+function Inventory:subtractItem(item, quantity)
+	local qtd = quantity or 1
 	local index = self:hasItem(item)
-	if index then
-		local invItem = self.items[item.type][index]
-
-		if invItem.quantity > 1 then
-			invItem.quantity = invItem.quantity - 1
-		else
-			table.remove(self.items[item.type], index)
-		end
-
-		self:touch()
-		return true
+	if not index then
+		return false
 	end
 
-	return false
+	local invItem = self.items[item.type][index]
+
+	if invItem.quantity > qtd then
+		invItem.quantity = invItem.quantity - qtd
+	elseif invItem.quantity == qtd then
+		table.remove(self.items[item.type], index)
+	else
+		return false
+	end
+
+	self:touch()
+	return true
 end
 
 ---@param item Resource
----@return boolean
+---@return number | false
 function Inventory:hasItem(item)
 	for index, invItem in ipairs(self.items[item.type]) do
 		if invItem.name == item.name then
@@ -115,6 +121,17 @@ function Inventory:hasItem(item)
 	end
 
 	return false
+end
+
+---@param item EntityReg | Resource
+---@return number
+-- dado um item, devolve a quantidade deste contida no inventário
+function Inventory:countItem(item)
+	local idx = self:hasItem(item)
+	if idx then
+		return self.items[item.type][idx].quantity
+	end
+	return 0
 end
 
 ---@param item Resource

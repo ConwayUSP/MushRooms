@@ -16,6 +16,61 @@ require("modules.constructors.uielements")
 -- Cenas Globais
 ----------------------------------------
 
+local INTRO_DURATION = 3
+local INTRO_FADE_DURATION = 0.45
+
+---@param sceneType Type
+---@param logoPath string
+---@param nextScene Type
+---@return UIScene
+local function newIntroScene(sceneType, logoPath, nextScene)
+	local scene = UIScene.new(sceneType)
+	scene.logo = assetManager:getImage(logoPath)
+	scene.elapsed = 0
+
+	function scene:onActive()
+		self.elapsed = 0
+	end
+
+	function scene:advance()
+		self.manager:deactivateScene(self.subtype)
+		self.manager:activateScene(nextScene)
+	end
+
+	function scene:update(dt)
+		self.elapsed = self.elapsed + dt
+		if self.manager.controls:consumeAnyInput() or self.elapsed >= INTRO_DURATION then
+			self:advance()
+		end
+	end
+
+	function scene:draw()
+		local alpha = 1
+		if self.elapsed < INTRO_FADE_DURATION then
+			alpha = self.elapsed / INTRO_FADE_DURATION
+		elseif self.elapsed > INTRO_DURATION - INTRO_FADE_DURATION then
+			alpha = (INTRO_DURATION - self.elapsed) / INTRO_FADE_DURATION
+		end
+
+		local maxSize = 512
+		local scale = math.min(maxSize / self.logo:getWidth(), maxSize / self.logo:getHeight())
+		love.graphics.clear(0, 0, 0, 1)
+		love.graphics.setColor(1, 1, 1, math.max(0, alpha))
+		love.graphics.draw(self.logo, 640, 360, 0, scale, scale, self.logo:getWidth() / 2, self.logo:getHeight() / 2)
+		love.graphics.setColor(1, 1, 1, 1)
+	end
+
+	return scene
+end
+
+function initAmanitaIntroScene()
+	return newIntroScene(UI_INTRO_AMANITA_SCENE, "assets/sprites/logos/logo_amanita.png", UI_INTRO_CONWAY_SCENE)
+end
+
+function initConwayIntroScene()
+	return newIntroScene(UI_INTRO_CONWAY_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE)
+end
+
 function initMenuScene()
 	local menuScene = UIScene.new(UI_MENU_SCENE)
 	-- ELEMENTOS

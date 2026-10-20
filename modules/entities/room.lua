@@ -648,7 +648,7 @@ end
 
 -- cria a sala inicial do jogo e suas 4 vizinhas
 function createInitialRooms()
-	newRoom({ x = 0, y = 0 }, Room.stdDim)
+	newRoom({ x = 0, y = 0 }, Room.stdDim, INITIAL_ROOM)
 	rooms[0][0]:setExplored()
 end
 
