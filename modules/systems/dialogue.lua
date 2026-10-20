@@ -45,6 +45,8 @@ function Dialogue.new(list)
 	dialogue.activeSequence = nil
 	dialogue.active = false
 
+	dialogue.dialogueBoxImg = assetManager:getImage("assets/sprites/UI/dialogue/dialogue_box.png")
+
 	return dialogue
 end
 
@@ -150,10 +152,9 @@ function Dialogue:draw(camera)
 
 	if self.speaker and self.speaker.pos then
 		local viewX, viewY = camera:viewPos(vec(self.speaker.pos.x, self.speaker.pos.y - 120))
-		local dialogueBoxImg = love.graphics.newImage("assets/sprites/UI/dialogue/dialogue_box.png")
-		local width = dialogueBoxImg:getWidth()
+		local width = self.dialogueBoxImg:getWidth()
 		local padding = 20
-		love.graphics.draw(dialogueBoxImg, viewX, viewY, 0, 3, 3, width / 2, 12)
+		love.graphics.draw(self.dialogueBoxImg, viewX, viewY, 0, 3, 3, width / 2, 12)
 		love.graphics.setFont(mushFont)
 		local textX = viewX + padding - width * 1.5
 		local textWidth = width * 3 - 2 * padding

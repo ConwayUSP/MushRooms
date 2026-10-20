@@ -11,12 +11,16 @@ require("modules.constructors.uiscenes")
 function initGlobalUIManager()
 	local globalManager = UIManager.new()
 	local menuScene = initMenuScene()
+	local amanitaIntroScene = initAmanitaIntroScene()
+	local conwayIntroScene = initConwayIntroScene()
 	local settingsScene = initSettingsScene()
 	local controlsScene = initControlsScene()
 	globalManager:addScene(menuScene)
+	globalManager:addScene(amanitaIntroScene)
+	globalManager:addScene(conwayIntroScene)
 	globalManager:addScene(settingsScene)
 	globalManager:addScene(controlsScene)
-	globalManager:activateScene(UI_MENU_SCENE)
+	globalManager:activateScene(UI_INTRO_AMANITA_SCENE)
 
 	return globalManager
 end

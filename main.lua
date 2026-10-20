@@ -1,7 +1,6 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
 require("modules.constructors.vfxs")
 require("modules.engine.animation")
@@ -51,6 +50,7 @@ lightLevels = 7
 ----------------------------------------
 
 function love.keypressed(key, scancode, isrepeat)
+	globalUIManager:registerAnyInput()
 	globalUIManager:handleInput(key)
 	for _, p in pairs(players) do
 		p.uiManager:handleInput(key)
@@ -103,6 +103,26 @@ function love.keypressed(key, scancode, isrepeat)
 	-------- FIM DEBUG --------
 end
 
+function love.gamepadpressed(joystick, button)
+	globalUIManager:registerAnyInput()
+end
+
+function love.joystickpressed(joystick, button)
+	globalUIManager:registerAnyInput()
+end
+
+function love.gamepadaxis(joystick, axis, value)
+	if math.abs(value) >= 0.2 then
+		globalUIManager:registerAnyInput()
+	end
+end
+
+function love.joystickaxis(joystick, axis, value)
+	if math.abs(value) >= 0.2 then
+		globalUIManager:registerAnyInput()
+	end
+end
+
 function love.joystickadded(joystick)
 	if gameCtx == GAMEPLAY_CTX and joystick:isGamepad() then
 		newPlayer(joystick)
@@ -129,6 +149,7 @@ function love.keyreleased(key, scancode)
 end
 
 function love.textinput(t)
+	globalUIManager:registerAnyInput()
 	globalUIManager:handleTextInput(t)
 	for _, p in pairs(players) do
 		p.uiManager:handleTextInput(t)
@@ -147,6 +168,7 @@ local function getKeyboardPlayer()
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
+	globalUIManager:registerAnyInput()
 	if button ~= 1 then
 		return
 	end
@@ -179,6 +201,7 @@ function love.mousepressed(x, y, button, istouch, presses)
 end
 
 function love.wheelmoved(dx, dy)
+	globalUIManager:registerAnyInput()
 	if gameCtx ~= GAMEPLAY_CTX or dy == 0 then
 		return
 	end
