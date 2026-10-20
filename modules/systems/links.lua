@@ -252,7 +252,7 @@ function GridLink.new(entityA, entityB, duration)
 	---@type GridLink
 	local self = setmetatable({}, GridLink)
 	Link.init(self, entityA, entityB, duration)
-	self.maxDistance = 300
+
 	return self
 end
 

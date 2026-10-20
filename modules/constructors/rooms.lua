@@ -210,5 +210,7 @@ end
 -- sala de tesouro: a dupla de recompensas é criada ao popular a sala
 function newTreasureRoom1(rng)
 	local bp = Blueprint.new(TREASURE_ROOM, "Treasure Room", rgba8(255, 210, 74, 255))
+	local excludedAreas = { { min = vec(-200, -100), max = vec(-100, 100) }, { min = vec(100, -100), max = vec(200, 100) } }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 	return bp
 end
