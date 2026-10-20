@@ -633,6 +633,12 @@ function Player:collectResource(resource)
 	return self.inventory:addItem(resource)
 end
 
+---@param item Weapon|Artifact|Blessing
+-- exibe para este jogador a notificação visual de equipamento recebido
+function Player:notifyItemCollected(item)
+	self.uiManager:getOverlayScene(UI_ITEM_COLLECTED_SCENE):push(item)
+end
+
 ---@param drop Drop
 -- coleta um drop e o marca como coletado
 function Player:collectDrop(drop)
@@ -653,6 +659,9 @@ function Player:collectDrop(drop)
 	if result then
 		drop:setCollected()
 		globalAudioManager:play(AUDIO_COLLECT, self, "pop")
+		if drop.object.type == WEAPON or drop.object.type == ARTIFACT or drop.object.type == BLESSING then
+			self:notifyItemCollected(drop.object)
+		end
 	end
 end
 

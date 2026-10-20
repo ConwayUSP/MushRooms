@@ -952,6 +952,54 @@ function newBossLifeBarScene(room)
 	return lifeBarScene
 end
 
+---@param player Player
+---@return UIScene
+-- cena de tela não interativa que organiza as notificações de equipamentos recebidos
+function newItemCollectedScene(player)
+	local scene = UIScene.new(UI_ITEM_COLLECTED_SCENE, player)
+	local MAX_NOTIFICATIONS = 3
+	local DISPLAY_DURATION = 3
+	local BOTTOM_MARGIN = 36
+	local STACK_SPACING = 116
+	scene.notifications = {}
+
+	---@param item Weapon|Artifact|Blessing
+	function scene:push(item)
+		local notification = UIItemCollectedElem.new(item)
+		table.insert(self.notifications, { element = notification, timer = DISPLAY_DURATION })
+		if #self.notifications > MAX_NOTIFICATIONS then
+			table.remove(self.notifications)
+		end
+		self:layoutNotifications()
+	end
+
+	function scene:layoutNotifications()
+		for index, notification in ipairs(self.notifications) do
+			notification.element.pos.y = 720 - BOTTOM_MARGIN - notification.element.size.height / 2 - (index - 1) * STACK_SPACING
+		end
+	end
+
+	function scene:update(dt)
+		for index = #self.notifications, 1, -1 do
+			local notification = self.notifications[index]
+			notification.timer = notification.timer - dt
+			notification.element:update(dt)
+			if notification.timer <= 0 then
+				table.remove(self.notifications, index)
+			end
+		end
+		self:layoutNotifications()
+	end
+
+	function scene:draw()
+		for index = #self.notifications, 1, -1 do
+			self.notifications[index].element:draw()
+		end
+	end
+
+	return scene
+end
+
 ----------------------------------------
 -- Cenas de Mundo
 ----------------------------------------

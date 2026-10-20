@@ -86,3 +86,66 @@ function newCraftingItemPreviewElement(itemName, coords, elSize, path, spriteDim
 
 	return itemEl
 end
+
+---@class UIItemCollectedElem : UIElement
+---@field item any
+---@field itemType Type
+---@field title string
+---@field description string
+UIItemCollectedElem = setmetatable({}, { __index = UIElement })
+UIItemCollectedElem.__index = UIItemCollectedElem
+
+---@param item any
+---@return UIItemCollectedElem
+-- cartão escalável para comunicar que um equipamento foi adquirido
+function UIItemCollectedElem.new(item)
+	local element = setmetatable({}, UIItemCollectedElem)
+	element:init("item collected", UI_IMAGE_ELEM, vec(640, 0), size(520, 104))
+	element.item = item
+	element.itemType = item.type
+	element.title = item.name
+	element.description = item.description or "Descrição indisponível."
+	element.iconSize = 72
+
+	local iconPath
+	if item.type == BLESSING then
+		iconPath = pngPathFormat({ "assets", "sprites", "blessings", item.name })
+	else
+		iconPath = pngPathFormat({ "assets", "sprites", "icons", item.type .. "s", item.name })
+	end
+	addAnimation(element, iconPath, IDLE, newAnimSetting(1, size(32, 32), 1, true, 1))
+
+	return element
+end
+
+function UIItemCollectedElem:draw()
+	local left = self.pos.x - self.size.width / 2
+	local top = self.pos.y - self.size.height / 2
+	local previousFont = love.graphics.getFont()
+
+	-- TODO: criar arte bonitinha para o background ao invés de retângulo simples
+	love.graphics.setColor(0.06, 0.07, 0.1, 0.92)
+	love.graphics.rectangle("fill", left, top, self.size.width, self.size.height)
+	love.graphics.setColor(0.8, 0.76, 0.45, 1)
+	love.graphics.setLineWidth(3)
+	love.graphics.rectangle("line", left + 1.5, top + 1.5, self.size.width - 3, self.size.height - 3)
+
+	local anim = self.animations[IDLE]
+	local iconX = left + 18
+	local iconY = self.pos.y - self.iconSize / 2
+	local iconScale = self.iconSize / anim.frameDim.width
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(self.spriteSheets[IDLE], anim.frames[anim.currFrame], iconX, iconY, 0, iconScale, iconScale)
+
+	local textX = iconX + self.iconSize + 18
+	local textWidth = self.size.width - (textX - left) - 22
+	love.graphics.setFont(mushFont)
+	love.graphics.setColor(1, 0.93, 0.65, 1)
+	love.graphics.printf(self.title, textX, top + 15, textWidth / 1.15, "left", 0, 1.15, 1.15)
+	love.graphics.setColor(0.92, 0.92, 0.96, 1)
+	love.graphics.printf(self.description, textX, top + 46, textWidth, "left")
+
+	love.graphics.setLineWidth(1)
+	love.graphics.setFont(previousFont)
+	love.graphics.setColor(1, 1, 1, 1)
+end
