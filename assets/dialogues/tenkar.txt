@@ -1,17 +1,32 @@
 [INTRO]
-Olha só, você me parece perdido!
-O que faz aqui? Há muitos perigos nessas bandas!
-Faz tempo que não vejo alguém por aqui.
-Essas terras não são mais seguras como antes.
-Tenha cuidado.
+H o l y   C o w ! !
+It's been ages since I've seen anyone with a brain around here!
+Oh, sorry for scaring you.
+My name is Tenkar, greetings :]
+If I’m not being too forward, may I ask you something? -
+- What are you doing in such a forgotten and miserable place?
+You don't know, huh?
+I know the feeling... When I Became, many years ago, I felt the same
+Don't worry, though; be patient, explore, you will understand everything
 
 [LOOP]
-Não estou com todo meu estoque...
-Mas há algumas poções que podem utilizar.
-Olhe os esporos! Talvez com isso vocês possam se curar um pouco.
-Venham aqui! Essas raízes são feitas para vocês, pequeninos.
-Lembro que os Kianters... acho que vocês os chamavam de Myiurys...
-Lembro que usavam essas bases de planta para soltar seus esporos.
+H m m m m m m . . .
+I can't lie, you Became in a weird time
+It's not every day I see someone new in town, you know?
+And most creatures that stay here for too long either get lost or...
+D I E
+But I believe in you :] Remain cautious.
 
-Talvez seja melhor você buscar abrigo e descançar
-Está com uma carinha de acabado...
+E e e h h
+Unfortunately, I don't have anything with me that could help you.
+Its’s what I call "gathering season"
+I am really creative, don't you agree?
+
+[EVENT]
+MET_SHOUM_SHOUM
+W H A A A T ?
+You met another sane mind?
+Sir Shoum Shoum... Never heard about him! but seems like an important guy.
+This is te most movement this floor has had since I was little
+I would be very pleased to meet him, but my legs hurt like legs today
+So I guess I will have to wait for some patches
