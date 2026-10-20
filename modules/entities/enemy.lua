@@ -294,6 +294,9 @@ function Enemy:destroyAttacks()
 	for _, atk in pairs(self.atk) do
 		for _, ev in pairs(atk.events) do
 			collisionManager:unregister(ev)
+			-- o inimigo sai da sala antes do próximo update, então o trajeto
+			-- BREAKING nunca roda e as partículas do projétil precisam parar aqui
+			globalVFXManager:stopEntityParticles(ev)
 			ev:destroy()
 		end
 	end

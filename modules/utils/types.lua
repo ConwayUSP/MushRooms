@@ -98,6 +98,9 @@ UI_ARTIFACT_EQUIP_SCENE = "UI artifact equip scene"
 UI_INTERACTION_PROMPT_SCENE = "UI interaction prompt scene"
 UI_ARTIFACT_COOLDOWN_BAR_SCENE = "UI artifact cooldown bar scene"
 UI_DEFENSE_COOLDOWN_BAR_SCENE = "UI defense cooldown bar scene"
+UI_PAUSE_SCENE = "UI pause scene"
+UI_PAUSE_SETTINGS_SCENE = "UI pause settings scene"
+UI_LINK_ELEM = "UI link element"
 
 ---------- ÁUDIOS ----------
 MUSIC_MENU = "menu music"

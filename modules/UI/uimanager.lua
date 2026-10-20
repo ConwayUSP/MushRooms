@@ -344,6 +344,19 @@ end
 
 ---@param key? string
 function UIManager:handleInput(key)
+	-- abre a pausa quando nada está ativo, fecha quando a pausa é a cena do topo.
+	-- tratado antes de ACT_EXT porque no teclado ambos são "escape".
+	-- se outra cena estiver aberta, cai no ACT_EXT para fechá-la normalmente.
+	if self.player and self.controls:justPressed(ACT_PS) then
+		if self:isSceneActive(UI_PAUSE_SCENE) then
+			self:deactivateScene(UI_PAUSE_SCENE)
+			return
+		elseif not self:hasActiveScene() then
+			self:activateScene(UI_PAUSE_SCENE)
+			stopMovement(self.player)
+			return
+		end
+	end
 	if self.controls:justPressed(ACT_EXT) then
 		if self.player then
 			self:deactivateActiveScene(false)

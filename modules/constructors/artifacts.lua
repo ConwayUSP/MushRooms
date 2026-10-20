@@ -9,6 +9,18 @@ require("modules.utils.types")
 -- Construtores de Artefatos
 ----------------------------------------
 
+---@param artifacts Artifact[]
+---@return boolean
+-- verifica se algum anel de invisibilidade da lista está com o efeito ativo
+function hasActiveInvisibility(artifacts)
+	for _, a in pairs(artifacts) do
+		if a.name == INVISIBILITY_RING.name and a.customData and a.customData.timer.active then
+			return true
+		end
+	end
+	return false
+end
+
 function newInvisibilityRing()
 	-- colocando no customData um timer para a duração do efeito de invisibilidade
 	local customData = { timer = Timer.new(5) }
@@ -19,7 +31,10 @@ function newInvisibilityRing()
 	local customUpdate = function(self, dt)
 		self.customData.timer:update(dt)
 		if self.customData.timer.goingOff then
-			self.owner.invisible = false
+			-- com dois anéis, só tira a invisibilidade se nenhum outro estiver ativo
+			if not hasActiveInvisibility(self.owner.artifacts) then
+				self.owner.invisible = false
+			end
 		end
 	end
 	local ring = Artifact.new(INVISIBILITY_RING.name, INVISIBILITY_RING.description, 20, onUse, customData, customUpdate)

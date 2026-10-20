@@ -54,22 +54,24 @@ HEAD_SLAM = registerEntity(ATTACK, "Head Slam")
 TORNADO_SHOTS = registerEntity(ATTACK, "Tornado Shots")
 
 -------------- ARTEFATOS ---------------
-INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring")
-RAINBOW_DASH = registerEntity(ARTIFACT, "Rainbow Dash", "It's just a puff... But it does look special in some way. Faster...")
+INVISIBILITY_RING = registerEntity(ARTIFACT, "Invisibility Ring", "Is it made of porro? I feel a strange energy. WAIT! WHY IS EVERYONE IGNORING ME?!")
+RAINBOW_DASH = registerEntity(ARTIFACT, "Rainbow Dash", "SooOoOo CoLoRfUlL!!")
 
 ------------- DESTRUTÍVEIS -------------
-JAR = registerEntity(DESTRUCTIBLE, "jar")
-BARREL = registerEntity(DESTRUCTIBLE, "barrel")
+BONE_PILE = registerEntity(DESTRUCTIBLE, "bone pile")
+DESTRUCTIBLE_ROCK = registerEntity(DESTRUCTIBLE, "destructible rock")
+COAL_ALTAR = registerEntity(DESTRUCTIBLE, "coal altar")
 TALL_GRASS = registerEntity(DESTRUCTIBLE, "tall grass")
 
 -------------- RECURSOS ----------------
-CASKIN = registerEntity(RESOURCE, "caskin")
-PEDACITO = registerEntity(RESOURCE, "pedacito")
+CASKIN = registerEntity(RESOURCE, "caskin", "The hot thing on the wall likes to eat it. Brown, rough, and full of scratches. We tried to eat it too, but it was too dry. Next time we will try it with some sauce!!")
+PEDACITO = registerEntity(RESOURCE, "pedacito", "A little piece of the ceiling that decided to leave home. What a stupid idea!")
+FAFOGO = registerEntity(RESOURCE, "fafogo", "A dark and frail pedacito that creates heat. Unfortunately, it makes everything dirty.")
+TUNTUN = registerEntity(RESOURCE, "tuntun", "There are piles and more piles of these out there - some are small, while others are even bigger than Shroom. It seems like they come from the creature’s insides… I wonder if I have one of those inside me too.")
+COSECA = registerEntity(RESOURCE, "coseca")
 PORRO = registerEntity(RESOURCE, "porro")
 WAW = registerEntity(RESOURCE, "waw")
-FAFOGO = registerEntity(RESOURCE, "fafogo")
 PUFF = registerEntity(RESOURCE, "puff")
-COSECA = registerEntity(RESOURCE, "coseca")
 ARDURO = registerEntity(RESOURCE, "arduro")
 COGUMELIUM = registerEntity(RESOURCE, "cogumelium")
 BLUB = registerEntity(RESOURCE, "blub")
@@ -127,7 +129,7 @@ TILES = registerEntity(OBSTACLE, "tiles")
 ------------- CONSTRUÇÕES --------------
 FIRECAMP =
 	registerEntity(BUILDING, "firecamp", "It can be simple and small, but it is warm and attracts good creatures")
-CHEST = registerEntity(BUILDING, "chest", "It's bigger on the inside than it looks... and it's made with love")
+CHEST = registerEntity(BUILDING, "chest", "It's bigger than it looks, but you REALLY don't want to get stuck on it. It smells.")
 ENGINEERING_TABLE = registerEntity(BUILDING, "engineering table")
 KITCHEN = registerEntity(BUILDING, "kitchen")
 FURNACE = registerEntity(BUILDING, "furnace")

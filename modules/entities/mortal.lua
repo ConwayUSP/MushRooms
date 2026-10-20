@@ -42,11 +42,11 @@ function Mortal:init(name, pos, hitboxes, room, entityPhysics, hp)
 	self.hp = hp
 
 	self.defaultInvulnerableTime = 1.0 -- tempo padrão de invulnerabilidade após levar dano
-	self.invulnerableTimer = 0 -- timer de invulnerabilidade após levar dano
+	self.invulnerableTimer = 0      -- timer de invulnerabilidade após levar dano
 
-	self.blinkTimer = 0 -- timer para piscar o sprite do player quando invulnerável
-	self.burningTicks = 0 -- número de ticks restantes para o efeito de queimadura
-	self.burningDamage = 1 -- dano causado por cada tick de queimadura
+	self.blinkTimer = 0             -- timer para piscar o sprite do player quando invulnerável
+	self.burningTicks = 0           -- número de ticks restantes para o efeito de queimadura
+	self.burningDamage = 1          -- dano causado por cada tick de queimadura
 	self.burningTimer = Timer.new(1.5, true, function()
 		self:takeDamage(self.burningDamage)
 		if self.burningTicks > 0 then
@@ -56,8 +56,30 @@ function Mortal:init(name, pos, hitboxes, room, entityPhysics, hp)
 			self.burningTimer:stop()
 		end
 	end)
-	self.healingTimer = Timer.new(math.huge, true) -- timer para cura ao longo do tempo
+	self.healingTimer = Timer.new(math.huge, true)  -- timer para cura ao longo do tempo
 	self.fearTimer = Timer.new(FEAR_DEFAULT_DUR, true) -- timer para efeito de medo
+end
+
+---@param mortal Mortal
+---@return Timer|nil
+-- retorna o timer do anel de invisibilidade cujo efeito está ativo
+function getActiveInvisibilityTimer(mortal)
+	if not mortal.artifacts then
+		return nil
+	end
+	local bestTimer = nil
+	for _, a in ipairs(mortal.artifacts) do
+		if a.name == INVISIBILITY_RING.name and a.customData and a.customData.timer.active then
+			if bestTimer then
+				if bestTimer.time < a.customData.timer.time then
+					bestTimer = a.customData.timer
+				end
+			else
+				bestTimer = a.customData.timer
+			end
+		end
+	end
+	return bestTimer
 end
 
 function Mortal:update(dt)
@@ -121,7 +143,7 @@ end
 function Mortal:applyFear(attacker, duration)
 	if self.type == ENEMY then
 		local fearDuration = duration or FEAR_DEFAULT_DUR
-        self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_EVERY_FRAME, fearDuration), avoidAllPlayersStrong)
+		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_EVERY_FRAME, fearDuration), avoidAllPlayersStrong)
 		self.fearTimer.duration = fearDuration
 		self.fearTimer.limit = fearDuration
 		self.fearTimer:start()
@@ -191,11 +213,9 @@ function Mortal:drawShaders()
 			particleShader:send("heal_color", { 0.7, 0.2, 0.8 })
 		elseif self.invisible then
 			love.graphics.setShader(invisibilityShader)
-			-- seria legal ter um jeito mais ergonômico de fazer isso:
-			if self.artifacts and self.artifacts[1] and self.artifacts[1].name == INVISIBILITY_RING.name then
-				invisibilityShader:send("timer", self.artifacts[1].customData.timer.time)
-			elseif self.artifacts and self.artifacts[2] and self.artifacts[2].name == INVISIBILITY_RING.name then
-				invisibilityShader:send("timer", self.artifacts[2].customData.timer.time)
+			local ringTimer = getActiveInvisibilityTimer(self)
+			if ringTimer then
+				invisibilityShader:send("timer", ringTimer.time)
 			end
 		elseif self.burningTimer.active then
 			local u_min, v_min, u_width, v_height = self:getQuadInfo()

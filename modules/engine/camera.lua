@@ -260,6 +260,9 @@ function Camera:draw()
 	renderVignette(self)
 	-- barras pretas em espaço de tela (fora do canvas/zoom)
 	renderBlackBars(self)
+	-- escurece o viewport inteiro quando a pausa do player está aberta
+	-- (antes da UI para que os elementos fiquem legíveis por cima)
+	renderPauseDim(self)
 	-- renderiza a UI do jogador associado
 	renderPlayerUIs(self)
 	-- renderiza o cursor de mira por cima de tudo
@@ -297,6 +300,24 @@ function renderBlackBars(camera)
 	love.graphics.rectangle("fill", x, y, w, barHeight)
 	-- barra inferior
 	love.graphics.rectangle("fill", x, y + h - barHeight, w, barHeight)
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+---@param camera Camera
+-- escurece o viewport inteiro quando o player associado está com a pausa aberta.
+-- desenhado no canvas da câmera (não no canvas da UI) para cobrir a tela toda,
+-- independente do aspect ratio / letterboxing do UIManager
+function renderPauseDim(camera)
+	local player = camera.playerAttached
+	if not player or not player.uiManager then
+		return
+	end
+	if not player.uiManager:isSceneActive(UI_PAUSE_SCENE) then
+		return
+	end
+
+	love.graphics.setColor(0, 0, 0, 0.4)
+	love.graphics.rectangle("fill", 0, 0, camera.viewport.width, camera.viewport.height)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 

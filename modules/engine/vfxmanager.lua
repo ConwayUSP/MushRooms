@@ -138,6 +138,20 @@ function VFXManager:stopParticle(particleType, entity)
   instance.particle:stop()
 end
 
+---@param entity Entity | AtkEvent
+-- para todas as partículas presas a uma entidade (ex: projéteis de uma arma dropada)
+function VFXManager:stopEntityParticles(entity)
+  local entityParticles = self.particlesInst[entity]
+
+  if not entityParticles then
+    return
+  end
+
+  for _, instance in pairs(entityParticles) do
+    instance.particle:stop()
+  end
+end
+
 ---@param instance ParticleSystem
 ---@param particleType string
 ---@param entity Entity | AtkEvent
