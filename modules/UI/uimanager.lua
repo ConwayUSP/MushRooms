@@ -378,6 +378,11 @@ function UIManager:handleTextInput(t)
 	end
 end
 
+-- encaminha uma entrada física sem mapeamento para o módulo de controles.
+function UIManager:registerAnyInput()
+	self.controls:registerAnyInput()
+end
+
 ---@param fromScene string
 ---@param destScene string
 -- realiza a navegação via botões de UI de uma cena para outra

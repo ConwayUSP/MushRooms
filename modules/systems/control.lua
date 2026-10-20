@@ -40,6 +40,8 @@ end
 ---@field isDown fun(string) : boolean
 ---@field justPressed fun(string) : boolean
 ---@field justReleased fun(string) : boolean
+---@field registerAnyInput fun()
+---@field consumeAnyInput fun() : boolean
 ---@field getStickAngle fun(string) : table<number, number, number> | nil
 ---@field getAimDir fun() : Vec|nil
 ---@field setOwner fun(Player)
@@ -62,6 +64,7 @@ function Controls.new(keybinds, gamepad)
     local controls = setmetatable({}, Controls)
     controls.keybinds = keybinds
     controls.blockAttackUntilRelease = false
+    controls.anyInputPressed = false
 
     -- atributos que variam
     controls.gamepad = gamepad
@@ -216,6 +219,19 @@ end
 ---@return boolean
 function Controls:justReleased(action)
     return self.keyStates[action].justReleased
+end
+
+-- registra uma entrada física que não precisa estar associada a uma ação do jogo.
+function Controls:registerAnyInput()
+    self.anyInputPressed = true
+end
+
+---@return boolean
+-- consome a entrada pendente, usada por telas que avançam com qualquer controle.
+function Controls:consumeAnyInput()
+    local wasPressed = self.anyInputPressed
+    self.anyInputPressed = false
+    return wasPressed
 end
 
 ---@param stick string
