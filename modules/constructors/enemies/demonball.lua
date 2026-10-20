@@ -2,6 +2,21 @@
 --- Bolota Demoníaca
 ----------------------------------------------
 
+local JUMP_FRAME_DUR = 0.065
+local JUMP_START_FRAME = 5 -- frame que a bolota inicia o pulo
+local JUMP_END_FRAME = 10  -- frame que a bolota termina o pulo
+
+local ATTACK_FRAME_COUNT = 18
+local ATTACK_JUMP_START_FRAME = 11 -- frame que a bolota inicia o pulo kamikaze
+local ATTACK_JUMP_END_FRAME = 17   -- frame que a bolota termina o pulo kamikaze
+
+local JUMP_ANGLE_VARIANCE = math.rad(20)
+local MIN_JUMP_SPEED = 400
+local MAX_JUMP_SPEED = 500
+local MIN_ATK_SPEED = 500
+local MAX_ATK_SPEED = 600
+local LANDING_FRICTION = 1 -- fricição aplicada no pouso
+
 -- função de targeting do ataque mira no player mas tem um raio de ação
 local function seekPlayerInRange(tm, target)
 	seekClosestPlayer(tm, target)
@@ -15,21 +30,8 @@ end
 ---@param spawnPos Vec
 ---@param room Room
 ---@return Enemy
--- cria um inimigo do tipo Bolota Demoníaca (essa bolota é uma gambiarra do caralho)
+-- cria um inimigo do tipo Bolota Demoníaca
 function newDemonBall(spawnPos, room)
-	local jumpFrameDur = 0.06
-	local jumpStartFrame = 5 -- frame que a bolota inicia o pulo
-	local jumpEndFrame = 10 -- frame que a bolota termina o pulo
-
-	local attackFrameCount = 18
-	local attackJumpStartFrame = 11 -- frame que a bolota inicia o pulo kamikaze
-	local attackJumpEndFrame = 17 -- frame que a bolota termina o pulo kamikaze
-
-	local jumpAngleVariance = math.rad(20)
-	local minJumpSpeed = 320
-	local maxJumpSpeed = 400
-	local landingFriction = 1 -- fricição aplicada no pouso
-
 	local jumpDir = nil
 	local isJumping = false
 	local previousJumping = false
@@ -47,22 +49,22 @@ function newDemonBall(spawnPos, room)
 	-- se movimenta somente enquanto a bolota está no ar
 	local movementFunc = function(entity, dt)
 		local animation = entity.animations[movementState]
-		isJumping = animation.currFrame >= jumpStartFrame and animation.currFrame <= jumpEndFrame
+		isJumping = animation.currFrame >= JUMP_START_FRAME and animation.currFrame <= JUMP_END_FRAME
 
 		-- se acabou de iniciar o pulo, aplica impulso na direção do player
 		if isJumping and not previousJumping and entity.moveTargeting.validTarget then
 			jumpDir = normalize(subVec(entity.moveTargeting.targetPos, entity.pos))
-			jumpDir = rotateVec(jumpDir, (math.random() * 2 - 1) * jumpAngleVariance)
+			jumpDir = rotateVec(jumpDir, (math.random() * 2 - 1) * JUMP_ANGLE_VARIANCE)
 			movementState = walkingStateFromDirection(jumpDir)
 			entity.friction = 0
 
-			local jumpSpeed = math.random(minJumpSpeed, maxJumpSpeed)
+			local jumpSpeed = math.random(MIN_JUMP_SPEED, MAX_JUMP_SPEED)
 			applyImpulse(entity, scaleVec(jumpDir, entity.mass * jumpSpeed))
 		end
-		
+
 		-- se acabou de pousar do pulo, aplica fricção e reseta a direção do pulo
 		if not isJumping and previousJumping then
-			entity.friction = landingFriction
+			entity.friction = LANDING_FRICTION
 			groundPause = 0.06 + math.random() * 0.10
 			jumpDir = nil
 		end
@@ -70,7 +72,7 @@ function newDemonBall(spawnPos, room)
 		previousJumping = isJumping
 	end
 
-	local jumpDur = attackFrameCount * jumpFrameDur
+	local jumpDur = ATTACK_FRAME_COUNT * JUMP_FRAME_DUR
 	local atkDur = jumpDur / 2
 	local jumpAtk = newDemonJumpAttack(atkDur)
 	local emberAtk = newEmberMarkAttack(false)
@@ -88,8 +90,9 @@ function newDemonBall(spawnPos, room)
 				end
 
 				local animation = entity.animations[entity.state]
-				local isAttackJumping = animation.currFrame >= attackJumpStartFrame and animation.currFrame <= attackJumpEndFrame
-				local isPreJumping = animation.currFrame < attackJumpStartFrame
+				local isAttackJumping = animation.currFrame >= ATTACK_JUMP_START_FRAME
+					and animation.currFrame <= ATTACK_JUMP_END_FRAME
+				local isPreJumping = animation.currFrame < ATTACK_JUMP_START_FRAME
 				local targetPos = entity.atkTargeting.validTarget and entity.atkTargeting.targetPos or nil
 
 				-- se target se distanciou demais, cancela o ataque e volta a se movimentar
@@ -103,17 +106,17 @@ function newDemonBall(spawnPos, room)
 				-- se acabou de iniciar o pulo kamikaze, aplica impulso na direção do player
 				if isAttackJumping and not previousAttackJumping and targetPos then
 					attackJumpDir = normalize(subVec(targetPos, entity.pos))
-					attackJumpDir = rotateVec(attackJumpDir, (math.random() * 2 - 1) * jumpAngleVariance)
+					attackJumpDir = rotateVec(attackJumpDir, (math.random() * 2 - 1) * JUMP_ANGLE_VARIANCE)
 					entity.friction = 0
 
 					-- TODO: talvez seja melhor trocar applyImpulse por outra função, para que o pulo kamikaze seja mais "assertivo"
-					local jumpSpeed = math.random(minJumpSpeed, maxJumpSpeed)
+					local jumpSpeed = math.random(MIN_ATK_SPEED, MAX_ATK_SPEED)
 					applyImpulse(entity, scaleVec(attackJumpDir, entity.mass * jumpSpeed))
 				end
-				
+
 				-- se acabou de pousar do pulo kamikaze, aplica fricção e reseta a direção do pulo
 				if not isAttackJumping and previousAttackJumping then
-					entity.friction = landingFriction
+					entity.friction = LANDING_FRICTION
 					attackJumpDir = nil
 				end
 
@@ -124,17 +127,17 @@ function newDemonBall(spawnPos, room)
 
 	-- configs do ataque kamikaze
 	local atkFrames = {
-		[jumpAtk.name] = attackJumpStartFrame,
+		[jumpAtk.name] = ATTACK_JUMP_START_FRAME,
 	}
 	local attackAnimSettings = {
-		[jumpAtk.name] = newAnimSetting(attackFrameCount, { width = 18, height = 36 }, jumpFrameDur, false),
+		[jumpAtk.name] = newAnimSetting(ATTACK_FRAME_COUNT, { width = 18, height = 36 }, JUMP_FRAME_DUR, false),
 	}
 
 	-- física e hitboxes
 	local atks = { jumpAtk }
 	local hb = hitbox(Circle.new(10), vec(0, 10))
 	local hbs = hitboxes({ hb })
-	local physics = physicsSettings(0.6, 50, landingFriction)
+	local physics = physicsSettings(0.6, 50, LANDING_FRICTION)
 
 	local enemy = Enemy.new(DEMON_BALL.name, 3, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	enemy.attackRange = math.random(150, 200)
@@ -143,13 +146,13 @@ function newDemonBall(spawnPos, room)
 
 	-- animações
 	local idleAnimSettings = newAnimSetting(2, { width = 18, height = 36 }, 0.45, true, 1)
-	local walkingAnimSettings = newAnimSetting(14, { width = 18, height = 36 }, jumpFrameDur, true, 1)
+	local walkingAnimSettings = newAnimSetting(14, { width = 18, height = 36 }, JUMP_FRAME_DUR, true, 1)
 	local dyingAnimSettings = newAnimSetting(1, { width = 1, height = 1 }, 0.1, false)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, dyingAnimSettings, attackAnimSettings)
 
 	enemy.state = movementState
 	local initialFrame = math.random(1, walkingAnimSettings.numFrames)
-	local initialTimer = math.random() * jumpFrameDur
+	local initialTimer = math.random() * JUMP_FRAME_DUR
 	for _, state in ipairs({ WALKING_UP, WALKING_DOWN, WALKING_LEFT, WALKING_RIGHT }) do
 		enemy.animations[state].currFrame = initialFrame
 		enemy.animations[state].timer = initialTimer
@@ -209,4 +212,3 @@ function newDemonBall(spawnPos, room)
 
 	return enemy
 end
-
