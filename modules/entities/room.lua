@@ -124,7 +124,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 
 	room:addWallsAndDoors()
 	for _, puzzleEntry in ipairs(blueprint.puzzles) do
-		table.insert(room.puzzles, puzzleEntry.constructor(room, puzzleEntry.settings))
+		table.insert(room.puzzles, puzzleEntry.constructor(room, puzzleEntry.settings, puzzleEntry.rewards))
 	end
 
 	return room

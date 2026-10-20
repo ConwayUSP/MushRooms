@@ -15,7 +15,7 @@ function newPuzzleRoom1(rng)
 	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:addPuzzle(GridPuzzle.new, {
+	local settings = {
 		size = gridSize,
 		centerSize = vec(2, 2),
 		pins = GridPuzzle.fullPerimeterPins(gridSize),
@@ -25,7 +25,9 @@ function newPuzzleRoom1(rng)
 			{ id = "stone-down-left", cell = vec(1, 4), direction = vec(1, -1) },
 			{ id = "stone-down-right", cell = vec(4, 4), direction = vec(-1, -1) },
 		},
-	})
+	}
+	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
 end
@@ -40,7 +42,7 @@ function newPuzzleRoom2(rng)
 	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:addPuzzle(GridPuzzle.new, {
+	local settings = {
 		size = gridSize,
 		centerSize = vec(2, 2),
 		pins = GridPuzzle.fullPerimeterPins(gridSize),
@@ -50,7 +52,9 @@ function newPuzzleRoom2(rng)
 			{ id = "stone-down-left", cell = vec(2, 6), direction = vec(1, -1) },
 			{ id = "stone-down-right", cell = vec(5, 5), direction = vec(-1, -1) },
 		},
-	})
+	}
+	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
 end
@@ -65,7 +69,7 @@ function newPuzzleRoom3(rng)
 	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:addPuzzle(GridPuzzle.new, {
+	local settings = {
 		size = gridSize,
 		centerSize = vec(2, 2),
 		pins = GridPuzzle.fullPerimeterPins(gridSize),
@@ -75,7 +79,9 @@ function newPuzzleRoom3(rng)
 			{ id = "stone-down-left", cell = vec(1, 7), direction = vec(1, -1) },
 			{ id = "stone-down-right", cell = vec(8, 8), direction = vec(-1, -1) },
 		},
-	})
+	}
+	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
 end
