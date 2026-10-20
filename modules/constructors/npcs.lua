@@ -58,16 +58,16 @@ end
 ---@return Npc
 -- cria Biguiri... o que ele está fazendo aqui?
 function initBiguiri(spawnPos, room)
-	local hb = hitbox(Circle.new(20))
-	local triggerHb = hitbox(Circle.new(130))
-	local hbs = hitboxes({ hb }, {}, { triggerHb })
+	local triggerHb = hitbox(Circle.new(250), vec(0, 100))
+	local hbs = hitboxes({ }, {}, { triggerHb })
 	description = newNpcDescription(BIGUIRI.name, "Easter Egg", "Um rapaz muito maneiro", SEDENTARY)
 	npc = Npc.new(description, spawnPos, hbs, room)
 	local animSettings = {}
-	animSettings[IDLE] = newAnimSetting(16, { width = 120, height = 120 }, 0.4, true, 1, 4, vec(0, -600))
-	animSettings[SPEAKING] = newAnimSetting(16, { width = 120, height = 120 }, 0.4, true, 1, 4, vec(0, -600))
+	animSettings[IDLE] = newAnimSetting(16, { width = 120, height = 120 }, 0.4, true, 1, 4, vec(0, -12))
+	animSettings[SPEAKING] = newAnimSetting(16, { width = 120, height = 120 }, 0.4, true, 1, 4, vec(0, -12))
 	npc:addAnimations(animSettings)
 	npc.dialogue = biguiriDialogue()
-	npc.shadowWidth = 100
+	npc.shadowWidth = 80
+	npc.shadowDist = -40
 	return npc
 end

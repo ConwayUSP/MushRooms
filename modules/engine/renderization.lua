@@ -216,7 +216,10 @@ function renderEntities(camera)
 	for _, obj in ipairs(drawList) do
 		if obj.it and obj.it.hasShadow then
 			local sx = (obj.it.pos and obj.it.pos.x) or 0
-			local sy = obj.y - 1
+			local sy = obj.y
+			if obj.it.shadowDist then
+				sy = sy + obj.it.shadowDist
+			end
 			local frameWidth
 			local scale = obj.it.scale or 3
 			if obj.it.shadowWidth then

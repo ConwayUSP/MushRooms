@@ -59,7 +59,7 @@ ANCHORS = {
 	shroom = floorAnchor(13),
 
 	-- NPCs
-	glob = floorAnchor(16),
+	biguiri = floorAnchor(100),
 
 	-- Obstáculos
 	wall_up = floorAnchor(31.2), -- desempate com a porta
@@ -71,7 +71,7 @@ ANCHORS = {
 	pillar_base = floorAnchor(10),
 	negative = floorAnchor(-10000), -- basicamente a coisa que deve ser renderizada mais em baixo
 	cracks = floorAnchor(-9000), -- fica bem em baixo...
-	moss = floorAnchor(-8000), -- também muito em baixo, mas acima dos negativos
+	moss = floorAnchor(-8000),   -- também muito em baixo, mas acima dos negativos
 	rubble_small = floorAnchor(0.3),
 	rubble_big = floorAnchor(-6),
 	torch = floorAnchor(200),
