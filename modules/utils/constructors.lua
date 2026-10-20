@@ -83,6 +83,10 @@ CONSTRUCTORS[OBSTACLE] = {
 	[RUBBLE_SMALL.name] = newRubbleSmall,
 	[RUBBLE_BIG.name] = newRubbleBig,
 	[CRACKS.name] = newCracks,
+	[TUTORIAL_BINDING.name .. " " .. ACT_UA] = newTutorialBindingArtifact,
+	[TUTORIAL_BINDING.name .. " " .. ACT_ATK] = newTutorialBindingAttack,
+	[TUTORIAL_BINDING.name .. " " .. ACT_DEF] = newTutorialBindingDefense,
+	-- [TUTORIAL_BINDING.name .. " " .. ACT_OUI] = newTutorialBindingUI
 }
 
 CONSTRUCTORS[INTERACTIVE] = {

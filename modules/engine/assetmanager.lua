@@ -22,10 +22,19 @@ end
 
 function AssetManager:getImage(path)
 	-- para nós só carregarmos as imagens do disco "uma vez"
-	if not self.imageCache[path] then
-		local img = love.graphics.newImage(path)
-		img:setFilter("nearest", "nearest")
-		self.imageCache[path] = img
+	if self.imageCache[path] == nil then
+		local ok, img = pcall(love.graphics.newImage, path)
+
+		if not ok then
+			self.imageCache[path] = false
+		else
+			img:setFilter("nearest", "nearest")
+			self.imageCache[path] = img
+		end
+	end
+
+	if self.imageCache[path] == false then
+		return nil
 	end
 
 	return self.imageCache[path]

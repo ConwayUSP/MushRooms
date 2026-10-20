@@ -783,9 +783,30 @@ end
 ---@return Blueprint
 -- sala inicial do primeiro andar
 function newInitialRoom1(rng)
-	local bp = Blueprint.new(INITIAL_ROOM, "Initial Room", rgba8(255, 255, 255, 255))
-	RoomGeneration.insertGeneralDecorations(bp, rng)
-	-- TODO: botar decoração bonitinha aqui
+	local bp = Blueprint.new(INITIAL_ROOM, "Initial Room First Floor", rgba8(255, 255, 255, 255))
+	local START_POS = vec(0, 150)
+	local GAP = 220
+	local spawnPoints = {}
 
+	for i = 1, 3 do
+		local idx = i - 2
+		local k = 1.2
+		table.insert(spawnPoints, SpawnPoint.new(vec(START_POS.x + GAP * (idx * k), START_POS.y)))
+	end
+
+	local actions = { ACT_ATK, ACT_UA, ACT_DEF }
+	for i, spawnPoint in ipairs(spawnPoints) do
+		local action = actions[i]
+		local entityReg = {
+			type = TUTORIAL_BINDING.type,
+			name = TUTORIAL_BINDING.name .. " " .. action,
+		}
+
+		spawnPoint:insert(SpawnData.new(entityReg, 1))
+		bp:insert(spawnPoint)
+	end
+
+	local excludedAreas = { { min = addVec(START_POS, vec(-300, -150)), max = addVec(START_POS, vec(300, 150)) } }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 	return bp
 end

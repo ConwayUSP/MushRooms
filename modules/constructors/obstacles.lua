@@ -237,3 +237,73 @@ function newCracks(spawnPos, room, rng)
 
 	return obs
 end
+
+local function formatBinding(binding)
+	return binding:upper()
+end
+
+---@param spawnPos Vec
+---@param room Room
+---@param name string
+---@param rng? RNG
+---@return Obstacle
+local function newTutorialBinding(spawnPos, room, name, action, rng)
+	local hbs = hitboxes({}, {}, {})
+	local obs = Obstacle.new(name .. " " .. action, hbs, spawnPos, room, false, true, rng)
+	obs:addAnimations(newAnimSetting(1, size(46, 46), 1000, false))
+
+	---@diagnostic disable
+	obs.action = action
+	obs.bindingsByPlayer = {}
+	---@diagnostic enable
+
+	function obs:draw(camera)
+		Obstacle.draw(self, camera)
+
+		local player = camera.playerAttached
+		if not player or not player.controls then
+			return
+		end
+
+		local binding = player.controls.keybinds[self.action]
+		if not binding then
+			return
+		end
+
+		self.bindingsByPlayer[player] = binding
+		local viewX, viewY = camera:viewPos(self.pos)
+		local anim = self.animations[IDLE]
+
+		local path = pngPathFormat({ "assets", "sprites", "icons", "controls", binding })
+		local image = assetManager:getImage(path)
+		if image then
+			love.graphics.draw(image, viewX, viewY + anim.frameDim.height * self.scale / 2 + 16, 0, 2, 2, image:getWidth() / 2, image:getHeight() / 2)
+		else
+			love.graphics.setColor(0.05, 0.06, 0.10)
+			local text = formatBinding(binding)
+			local font = love.graphics.getFont()
+			local textWidth = font:getWidth(text)
+			local textHeight = font:getHeight()
+			love.graphics.print(text, viewX - textWidth / 2, viewY + anim.frameDim.height * self.scale / 2 + 16 - textHeight / 2)
+			love.graphics.setColor(1, 1, 1)
+		end
+	end
+
+	return obs
+end
+
+function newTutorialBindingArtifact(spawnPos, room, rng)
+	return newTutorialBinding(spawnPos, room, TUTORIAL_BINDING.name, ACT_UA, rng)
+end
+
+function newTutorialBindingAttack(spawnPos, room, rng)
+	return newTutorialBinding(spawnPos, room, TUTORIAL_BINDING.name, ACT_ATK, rng)
+end
+
+function newTutorialBindingDefense(spawnPos, room, rng)
+	return newTutorialBinding(spawnPos, room, TUTORIAL_BINDING.name, ACT_DEF, rng)
+end
+
+-- function newTutorialBindingUI(spawnPos, room, rng)
+-- 	return newTutorialBinding(spawnPos, room, TUTORIAL_BINDING.name, ACT_OUI, rng)
+-- end

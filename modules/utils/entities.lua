@@ -126,6 +126,7 @@ PAPER = registerEntity(OBSTACLE, "paper")
 RUBBLE_SMALL = registerEntity(OBSTACLE, "rubble small")
 RUBBLE_BIG = registerEntity(OBSTACLE, "rubble big")
 TILES = registerEntity(OBSTACLE, "tiles")
+TUTORIAL_BINDING = registerEntity(OBSTACLE, "tutorial binding")
 
 ------------- CONSTRUÇÕES --------------
 FIRECAMP =
