@@ -122,8 +122,8 @@ end
 function Npc:draw(camera)
 	local viewX, viewY = camera:viewPos(self.pos)
 	local animation = self.animations[self.state]
-	local offsetX = animation.frameDim.width / 2
-	local offsetY = animation.frameDim.height / 2
+	local offsetX = animation.offset.x
+	local offsetY = animation.offset.y
 
 	if self.reachable and not self.inDialogue then
 		drawFrameWithOutline(
