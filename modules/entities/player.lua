@@ -54,6 +54,7 @@ local MAX_DEFENSE_DUR = 3 -- limite de tempo que o player pode ficar defendendo 
 ---@field weapon Weapon
 ---@field artifacts Artifact[]
 ---@field artifact Artifact
+---@field collectedItems table<Type, table<string, boolean>>
 ---@field invulnerableTimer number
 ---@field blinkTimer number
 ---@field addAnimations function
@@ -107,6 +108,7 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.weapon = nil -- arma equipada
 	player.artifacts = {} -- lista de artefatos (itens ativos) que o jogador possui
 	player.artifact = nil -- artefato equipado
+	player.collectedItems = {} -- itens distintos já recebidos, separados por tipo
 	player.inDialogue = false -- se o player está em diálogo
 	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
 	player.activeInteraction = nil -- objeto com o qual o player está interagindo agora (pode ser nenhum)
@@ -634,8 +636,29 @@ function Player:collectResource(resource)
 end
 
 ---@param item Weapon|Artifact|Blessing
--- exibe para este jogador a notificação visual de equipamento recebido
+---@return boolean
+-- registra um item distinto e retorna se ele ainda não havia sido coletado
+function Player:registerCollectedItem(item)
+	local itemsOfType = self.collectedItems[item.type]
+	if not itemsOfType then
+		itemsOfType = {}
+		self.collectedItems[item.type] = itemsOfType
+	end
+
+	if itemsOfType[item.name] then
+		return false
+	end
+
+	itemsOfType[item.name] = true
+	return true
+end
+
+---@param item Weapon|Artifact|Blessing
+-- mostra uma notificação apenas no primeiro recebimento de cada item distinto
 function Player:notifyItemCollected(item)
+	if not self:registerCollectedItem(item) then
+		return
+	end
 	self.uiManager:getOverlayScene(UI_ITEM_COLLECTED_SCENE):push(item)
 end
 
