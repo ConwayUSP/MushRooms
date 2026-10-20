@@ -41,11 +41,17 @@ function UIMapElem:addSprites()
 		current = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_current.png"),
 		unvisited = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_unvisited.png"),
 		visited = assetManager:getImage("assets/animations/ui/map_room_slot/map_room_visited.png"),
+
 		Mush_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_mush_icon.png"),
 		Musho_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_musho_icon.png"),
 		Roomy_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_roomy_icon.png"),
 		Shroom_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_shroom_icon.png"),
 		Tenkar_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_tenkar.png"),
+		ShoumShoum_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_shoumshoum.png"),
+		start_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_start.png"),
+		puzzle_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_puzzle.png"),
+		treasure_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_treasure.png"),
+
 		boss_unvisited = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_boss_unvisited.png"),
 		boss_visited = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_boss_visited.png"),
 	}
@@ -92,6 +98,11 @@ function UIMapElem:calcOffsets(state, roomX, roomY)
 	local offsetY = h / 2 - (roomY - self.focus.y) * (hSlot + p)
 
 	return offsetX, offsetY
+end
+
+function UIMapElem:drawIcon(icon, viewX, viewY, roomX, roomY)
+	offsetX, offsetY = self:calcOffsets(icon, roomX, roomY)
+	love.graphics.draw(self.sprites[icon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 end
 
 -- calcula o offset do ícone do jogador dentro do slot (relativo a posição do jogador na sala)
@@ -147,15 +158,26 @@ function UIMapElem:draw(camera)
 				love.graphics.draw(self.sprites[roomStatus], viewX, viewY, 0, 3, 3, offsetX, offsetY)
 
 				-- MISC ICONS
-				if room.roomType == BOSS_ROOM then
-					local bossIcon = room.explored and "boss_visited" or "boss_unvisited"
-					offsetX, offsetY = self:calcOffsets(bossIcon, roomX, roomY)
-					love.graphics.draw(self.sprites[bossIcon], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+				if room.arrPos.x == 0 and room.arrPos.y == 0 then
+					self:drawIcon("start_icon", viewX, viewY, roomX, roomY)
+
+				elseif room.roomType == PUZZLE_ROOM then
+					self:drawIcon("puzzle_icon", viewX, viewY, roomX, roomY)
+
+				elseif room.roomType == TREASURE_ROOM then
+					self:drawIcon("treasure_icon", viewX, viewY, roomX, roomY)
+
+				elseif room.roomType == BOSS_ROOM then
+					self:drawIcon(room.explored and "boss_visited" or "boss_unvisited", viewX, viewY, roomX, roomY)
+
 				elseif room.roomType == NPC_ROOM then
 					for _, npc in ipairs(room.npcs) do
-						if npc.name == "Tenkar" then
-							offsetX, offsetY = self:calcOffsets("Tenkar_icon", roomX, roomY)
-							love.graphics.draw(self.sprites["Tenkar_icon"], viewX, viewY, 0, 3, 3, offsetX, offsetY)
+						if npc.name == TENKAR.name then
+							self:drawIcon("Tenkar_icon", viewX, viewY, roomX, roomY)
+
+						elseif npc.name == SHOUM_SHOUM.name then
+							self:drawIcon("ShoumShoum_icon", viewX, viewY, roomX, roomY)
+
 						end
 					end
 				end
