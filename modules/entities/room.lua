@@ -429,7 +429,7 @@ function Room:claimTreasure(chosenPillar, player)
 		if pillar.drop and not pillar.drop.collected then
 			-- o item não escolhido evapora, o escolhido vai para o jogador
 			if pillar ~= chosenPillar then
-				globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar.drop, vec(0, -90), false)
+				globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar.drop, vec(0, -70), false)
 			end
 			pillar.drop:setCollected()
 		end
