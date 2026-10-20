@@ -22,6 +22,7 @@ BATTLE_ROOM = "battle room"
 BOSS_ROOM = "boss room"
 EVENT_ROOM = "event room"
 TREASURE_ROOM = "treasure room"
+INITIAL_ROOM = "initial room"
 
 ---@alias RoomType
 ---| `PUZZLE_ROOM`
@@ -31,6 +32,7 @@ TREASURE_ROOM = "treasure room"
 ---| `BOSS_ROOM`
 ---| `EVENT_ROOM`
 ---| `TREASURE_ROOM`
+---| `INITIAL_ROOM`
 
 ---------- ATAQUES ----------
 ATTACK = "attack"

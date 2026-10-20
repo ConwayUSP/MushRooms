@@ -214,3 +214,13 @@ function newTreasureRoom1(rng)
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 	return bp
 end
+
+---@return Blueprint
+-- sala inicial do primeiro andar
+function newInitialRoom1(rng)
+	local bp = Blueprint.new(INITIAL_ROOM, "Initial Room", rgba8(255, 255, 255, 255))
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	-- TODO: botar decoração bonitinha aqui
+
+	return bp
+end
