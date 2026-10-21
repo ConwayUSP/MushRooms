@@ -43,11 +43,9 @@ function newResourceItemElement(resource, pos, onClick, quantityBounds)
 		local previousFont = love.graphics.getFont()
 		local r, g, b, a = love.graphics.getColor()
 
-		love.graphics.setFont(mushBigFont)
-		love.graphics.setColor(0, 0, 0, 0.85)
-		love.graphics.printf(quantity, textX + 3, textY - 3, textWidth, "right") -- texto sombreado
-		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.printf(quantity, textX, textY, textWidth, "right")   -- texto normal
+		love.graphics.setFont(mushMidFont)
+		love.graphics.setColor(110 / 255, 175 / 255, 112 / 255, 1)
+		love.graphics.printf(quantity, textX, textY, textWidth, "right") -- texto normal
 
 		love.graphics.setFont(previousFont)
 		love.graphics.setColor(r, g, b, a)

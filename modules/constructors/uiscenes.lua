@@ -804,9 +804,42 @@ function newCraftingScene(player)
 				local spritePath = pngPathFormat({ "assets", "sprites", "resources", resName })
 				local ingredientEl =
 					newCraftingItemPreviewElement(resName, vec(slotX, ingredientsY), size(96, 96), spritePath, 32)
+
+				-- "tenho/preciso" no canto do slot, igual aos slots do inventário
+				local owned = self.player.inventory:countItem(input[1])
+				ingredientEl.count = owned .. "/" .. qty
+				ingredientEl.draw = function(el, camera)
+					UIElement.draw(el, camera)
+
+					local viewX, viewY = el.pos.x, el.pos.y
+					if camera then
+						viewX, viewY = camera:viewPos(el.pos)
+					end
+
+					local padding = 10
+					local textX = viewX - sizeMiniSlot.width / 2 + 6
+					local textY = viewY + sizeMiniSlot.height / 2 - mushFont:getHeight() - padding
+					local textWidth = sizeMiniSlot.width - padding * 2
+					local previousFont = love.graphics.getFont()
+					local r, g, b, a = love.graphics.getColor()
+
+					love.graphics.setFont(mushMidFont)
+					love.graphics.setColor(105 / 255, 163 / 255, 179 / 255, 1) -- cor da borda do slot
+					love.graphics.printf(el.count, textX, textY, textWidth, "right")
+
+					love.graphics.setFont(previousFont)
+					love.graphics.setColor(r, g, b, a)
+				end
+
 				self:addElement(ingredientEl, VISUAL_LAYER_2, vec(i, 4))
 			end
 		end
+	end
+
+	-- refaz os detalhes ao abrir a cena: os recursos do jogador podem ter
+	-- mudado desde a última vez que ela foi vista
+	function invScene:onActive()
+		self:onSelectionChange()
 	end
 
 	invScene:onSelectionChange()

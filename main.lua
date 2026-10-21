@@ -264,6 +264,7 @@ function love.load()
 
 	-- definindo a fonte padrão do jogo
 	mushFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 16)
+	mushMidFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 24)
 	mushBigFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 32)
 	love.graphics.setFont(mushFont)
 
