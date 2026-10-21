@@ -10,11 +10,11 @@ require("modules.utils.types")
 
 local BLUEPRINTS = {}
 
-BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1, newPuzzleRoom2, newPuzzleRoom3 }
-BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
-BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
-BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
-BLUEPRINTS[BOSS_ROOM] = { newBossRoom1, newBossRoom2 }
+BLUEPRINTS[PUZZLE_ROOM] = { newSmallPuzzleRoom, newMediumPuzzleRoom, newBigPuzzleRoom }
+BLUEPRINTS[RESOURCE_ROOM] = { new2SpotsResourceRoom, new3SpotsResourceRoom, new4SpotsResourceRoom, new2BonesSpotsResourceRoom, new3BonesSpotsResourceRoom, new4BonesSpotsResourceRoom, new2RocksSpotsResourceRoom, new3RocksSpotsResourceRoom, new4RocksSpotsResourceRoom, new2CoalSpotsResourceRoom, new3CoalSpotsResourceRoom, new4CoalSpotsResourceRoom }
+BLUEPRINTS[NPC_ROOM] = { newNPCRoomEast, newNPCRoomWest, newNPCRoomNorth, newNPCRoomSouth, newNPCRoomMiddle }
+BLUEPRINTS[BATTLE_ROOM] = { new3SpotsBattleRoom, new4SpotsBattleRoom, new5SpotsBattleRoom, new3SpiderDucksBattleRoom, new4SpiderDucksBattleRoom, new5SpiderDucksBattleRoom, new3NuclearCatsBattleRoom, new4NuclearCatsBattleRoom, new5NuclearCatsBattleRoom, new3RollingStonesBattleRoom, new4RollingStonesBattleRoom, new5RollingStonesBattleRoom, new3DemonBallsBattleRoom, new4DemonBallsBattleRoom, new5DemonBallsBattleRoom }
+BLUEPRINTS[BOSS_ROOM] = { newAncientMoaiBossRoom } --newBossRoom1
 BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
 BLUEPRINTS[TREASURE_ROOM] = { newTreasureRoom1 }
 
