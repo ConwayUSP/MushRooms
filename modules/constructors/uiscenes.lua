@@ -16,14 +16,11 @@ require("modules.constructors.uielements")
 -- Cenas Globais
 ----------------------------------------
 
-local INTRO_DURATION = 3
-local INTRO_FADE_DURATION = 0.45
-
 ---@param sceneType Type
 ---@param logoPath string
 ---@param nextScene Type
 ---@return UIScene
-local function newIntroScene(sceneType, logoPath, nextScene)
+local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur, fadeOutDur)
 	local scene = UIScene.new(sceneType)
 	scene.logo = assetManager:getImage(logoPath)
 	scene.elapsed = 0
@@ -39,17 +36,17 @@ local function newIntroScene(sceneType, logoPath, nextScene)
 
 	function scene:update(dt)
 		self.elapsed = self.elapsed + dt
-		if self.manager.controls:consumeAnyInput() or self.elapsed >= INTRO_DURATION then
+		if self.manager.controls:consumeAnyInput() or self.elapsed >= introDur then
 			self:advance()
 		end
 	end
 
 	function scene:draw()
 		local alpha = 1
-		if self.elapsed < INTRO_FADE_DURATION then
-			alpha = self.elapsed / INTRO_FADE_DURATION
-		elseif self.elapsed > INTRO_DURATION - INTRO_FADE_DURATION then
-			alpha = (INTRO_DURATION - self.elapsed) / INTRO_FADE_DURATION
+		if self.elapsed < fadeInDur then
+			alpha = self.elapsed / fadeInDur
+		elseif self.elapsed > introDur - fadeOutDur then
+			alpha = (introDur - self.elapsed) / fadeOutDur
 		end
 
 		local maxSize = 512
@@ -64,11 +61,18 @@ local function newIntroScene(sceneType, logoPath, nextScene)
 end
 
 function initAmanitaIntroScene()
-	return newIntroScene(UI_INTRO_AMANITA_SCENE, "assets/sprites/logos/logo_amanita.png", UI_INTRO_CONWAY_SCENE)
+	return newIntroScene(
+		UI_INTRO_AMANITA_SCENE,
+		"assets/sprites/logos/logo_amanita.png",
+		UI_INTRO_CONWAY_SCENE,
+		4,
+		1.5,
+		0.5
+	)
 end
 
 function initConwayIntroScene()
-	return newIntroScene(UI_INTRO_CONWAY_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE)
+	return newIntroScene(UI_INTRO_CONWAY_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 0.5, 1.5)
 end
 
 function initMenuScene()
@@ -1299,4 +1303,3 @@ function newPlayerDefenseCooldownBarScene(player)
 	scene:hide()
 	return scene
 end
-
