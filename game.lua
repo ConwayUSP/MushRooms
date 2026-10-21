@@ -91,6 +91,8 @@ local function cleanupWorld()
 	-- reseta VFX (partículas presas a entidades mortas)
 	globalVFXManager.particlesInst = {}
 	globalVFXManager.animInstances = {}
+	-- para loops de som presos a entidades que serão descartadas
+	globalAudioManager:stopLoopingSounds()
 end
 
 --- agenda a troca para o menu no fim do frame atual

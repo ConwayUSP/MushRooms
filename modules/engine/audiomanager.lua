@@ -59,6 +59,7 @@ function AudioManager.init()
 		local am = setmetatable({}, AudioManager)
 		am.activeAudios = {} -- lista de estruturas com informações sobre os áudios ativos
 		am.typeCounts = {} -- contador para o limite de áudios simultâneos
+		am.loopsToResume = {} -- loops de efeito parados aguardando um resumeLoopingSounds
 		am.musicPlaying = nil
 
 		am.audioPool = {} -- guarda áudios criados para serem reutilizados depois
@@ -228,6 +229,7 @@ function AudioManager:play(audioType, owner, path)
 		source = clone,
 		type = audioType,
 		owner = owner,
+		path = path, -- caminho relativo usado na chamada (necessário para retomar o loop)
 		lastPos = clone:tell(),
 		hasVariance = variance ~= nil,
 		isMusic = isMusic,
@@ -263,6 +265,35 @@ function AudioManager:stopAllFrom(owner)
 			self.typeCounts[audio.type] = self.typeCounts[audio.type] - 1
 			table.remove(self.activeAudios, i)
 		end
+	end
+end
+
+-- para todos os sons de efeito em loop e os guarda para um futuro resumeLoopingSounds.
+-- cada chamada redefine a fila de retomada, então sair do mundo descarta o que estiver pausado
+function AudioManager:stopLoopingSounds()
+	self.loopsToResume = {}
+	for i = #self.activeAudios, 1, -1 do
+		local audio = self.activeAudios[i]
+		if audio.source:isLooping() and not audio.isMusic then
+			audio.source:stop()
+			self.typeCounts[audio.type] = self.typeCounts[audio.type] - 1
+
+			table.insert(self.loopsToResume, { type = audio.type, owner = audio.owner, path = audio.path })
+
+			local poolKey = audio.poolKey
+			self.audioPool[poolKey] = self.audioPool[poolKey] or {}
+			table.insert(self.audioPool[poolKey], audio.source)
+			table.remove(self.activeAudios, i)
+		end
+	end
+end
+
+-- retoma os loops guardados por stopLoopingSounds (ex: ao despausar o jogo)
+function AudioManager:resumeLoopingSounds()
+	local loops = self.loopsToResume
+	self.loopsToResume = {}
+	for _, l in ipairs(loops) do
+		self:play(l.type, l.owner, l.path)
 	end
 end
 

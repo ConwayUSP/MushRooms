@@ -42,6 +42,7 @@ window = { scale = 1, initialW = 1280, initialH = 720 }
 gameCtx = MENU_CTX
 local updateProfile
 local drawProfile
+local worldWasPaused = false -- se o mundo estava pausado no frame anterior
 
 lightLevels = 7
 
@@ -293,6 +294,16 @@ function love.update(dt)
 	-- viewport) e a posição do cursor de cada jogador de teclado/mouse
 	mouseManager:update(dt)
 
+	-- sincroniza os loops de som (passos, defesa...) com a pausa do mundo.
+	-- ao pausar, para os loops; ao despausar, retoma exatamente os mesmos
+	local worldPaused = isWorldPaused()
+	if worldPaused and not worldWasPaused then
+		globalAudioManager:stopLoopingSounds()
+	elseif worldWasPaused and not worldPaused then
+		globalAudioManager:resumeLoopingSounds()
+	end
+	worldWasPaused = worldPaused
+
 	-- pulando o update de gameplay enquanto está no menu
 	if gameCtx == MENU_CTX then
 		goto skipgameplay
@@ -300,7 +311,7 @@ function love.update(dt)
 
 	-- mundo pausado congela salas/colisões/câmeras/partículas, mas
 	-- mantém controles e UI dos players atualizados para o menu de pausa
-	if isWorldPaused() then
+	if worldPaused then
 		for _, p in pairs(players) do
 			p.controls:update(dt)
 			p.uiManager:update(dt)
