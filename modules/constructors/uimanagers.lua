@@ -15,11 +15,13 @@ function initGlobalUIManager()
 	local conwayIntroScene = initConwayIntroScene()
 	local settingsScene = initSettingsScene()
 	local controlsScene = initControlsScene()
+	local graphicsScene = initGraphicsSettingsScene()
 	globalManager:addScene(menuScene)
 	globalManager:addScene(amanitaIntroScene)
 	globalManager:addScene(conwayIntroScene)
 	globalManager:addScene(settingsScene)
 	globalManager:addScene(controlsScene)
+	globalManager:addScene(graphicsScene)
 	globalManager:activateScene(UI_INTRO_AMANITA_SCENE)
 
 	return globalManager

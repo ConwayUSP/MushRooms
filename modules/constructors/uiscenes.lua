@@ -10,6 +10,7 @@ require("modules.UI.elements.link")
 require("modules.UI.elements.map")
 require("modules.UI.elements.text")
 require("modules.UI.elements.textbox")
+require("modules.UI.elements.switch")
 require("modules.constructors.uielements")
 
 ----------------------------------------
@@ -124,7 +125,7 @@ function initSettingsScene()
 		globalUIManager:activateScene(UI_CONTROLS_SCENE)
 	end)
 	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
-		print("OPÇÕES DE GRÁFICOS")
+		globalUIManager:activateScene(UI_GRAPHICS_SCENE)
 	end)
 	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
 		print("CRÉDITOS")
@@ -195,6 +196,74 @@ function initControlsScene()
 	controlsScene:addElement(joystickBinds, BG_LAYER_2, vec(3, 1))
 
 	return controlsScene
+end
+
+function initGraphicsSettingsScene()
+	local graphicsScene = UIScene.new(UI_GRAPHICS_SCENE)
+	-- ELEMENTOS
+	local graphicsBg = UIImageElem.new("graphics settings bg", vec(640, 360), size(1280, 720))
+	local fullscreenLabel = UITextElem.new(
+		"fullscreen label",
+		vec(430, 216),
+		size(260, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"Fullscreen",
+		true
+	)
+	local fullscreenSwitch = UISwitchElem.new("switch", vec(770, 240), size(96, 48), nil, love.window.getFullscreen(), function(isOn)
+		love.window.setFullscreen(isOn)
+	end)
+	local vsyncLabel = UITextElem.new(
+		"vsync label",
+		vec(430, 336),
+		size(260, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"VSync",
+		true
+	)
+	local vsyncSwitch = UISwitchElem.new("switch", vec(770, 360), size(96, 48), nil, love.window.getVSync() ~= 0, function(isOn)
+		love.window.setVSync(isOn and 1 or 0)
+	end)
+	local fpsLabel = UITextElem.new(
+		"fps label",
+		vec(430, 456),
+		size(260, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"FPS Counter",
+		true
+	)
+	local fpsSwitch = UISwitchElem.new("switch", vec(770, 480), size(96, 48), nil, showFPSCounter, function(isOn)
+		showFPSCounter = isOn
+	end)
+
+	-- ANIMAÇÕES
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(320, 180), 1000, true, 1)
+	graphicsBg:addAnimations(bgAnimSettings)
+
+	-- SETUP DA CENA
+	graphicsScene:addElement(graphicsBg, BG_LAYER_1, vec(1, 1))
+	graphicsScene:addElement(fullscreenLabel, BG_LAYER_2, vec(1, 1))
+	graphicsScene:addElement(fullscreenSwitch, ELEM_LAYER_1, vec(1, 1))
+	graphicsScene:addElement(vsyncLabel, BG_LAYER_2, vec(2, 1))
+	graphicsScene:addElement(vsyncSwitch, ELEM_LAYER_1, vec(1, 2))
+	graphicsScene:addElement(fpsLabel, BG_LAYER_2, vec(3, 1))
+	graphicsScene:addElement(fpsSwitch, ELEM_LAYER_1, vec(1, 3))
+
+	-- reflete os valores atuais toda vez que a cena é aberta
+	graphicsScene.onActive = function()
+		fullscreenSwitch:setOn(love.window.getFullscreen())
+		vsyncSwitch:setOn(love.window.getVSync() ~= 0)
+		fpsSwitch:setOn(showFPSCounter)
+	end
+
+	return graphicsScene
 end
 
 ----------------------------------------
@@ -304,7 +373,7 @@ function newPauseSettingsScene(player)
 		globalUIManager:activateScene(UI_CONTROLS_SCENE)
 	end)
 	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
-		print("OPÇÕES DE GRÁFICOS")
+		globalUIManager:activateScene(UI_GRAPHICS_SCENE)
 	end)
 	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
 		print("CRÉDITOS")

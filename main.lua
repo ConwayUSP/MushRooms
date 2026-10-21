@@ -371,7 +371,7 @@ function love.draw()
 
 	globalUIManager:draw()
 
-	if debugMode then
+	if debugMode or showFPSCounter then
 		drawFPSVisor()
 	end
 
