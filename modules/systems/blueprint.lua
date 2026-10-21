@@ -13,13 +13,12 @@ local BLUEPRINTS = {}
 BLUEPRINTS[PUZZLE_ROOM] = { newPuzzleRoom1 }
 BLUEPRINTS[RESOURCE_ROOM] = { newResourceRoom1, newResourceRoom2 }
 BLUEPRINTS[NPC_ROOM] = { newNPCRoom1, newBiguiriRoom }
--- BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
-BLUEPRINTS[BATTLE_ROOM] = { newDemonBallTestRoom }
+BLUEPRINTS[BATTLE_ROOM] = { newBattleRoom1 }
 BLUEPRINTS[BOSS_ROOM] = { newBossRoom1, newBossRoom2 }
 BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
 BLUEPRINTS[TREASURE_ROOM] = { newTreasureRoom1 }
 -- TODO: fazer ser escalável para que cada andar tenha sua própria sala inicial
-BLUEPRINTS[INITIAL_ROOM] = { newInitialRoom1 } 
+BLUEPRINTS[INITIAL_ROOM] = { newInitialRoom1 }
 
 ----------------------------------------
 -- Classe SpawnData

@@ -233,7 +233,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		hb = hbs,
 		cooldown = cooldown,
 		initialSpeed = speed,
-		initialMass = 0.1,
+		initialMass = 0, -- massa 0 = corpo estático no motor de colisão
 		restitution = 0,
 		friction = 0.8,
 		bounces = 0,
@@ -248,8 +248,8 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		local room = e.attacker.room
 		for _, enemy in pairs(room.enemies) do
 			-- valores puramente experimentais, ainda podem (e devem) ser ajustados :D
-			local radius = 500
-			local mass = 20000000
+			local radius = 600
+			local mass = 18000000
 
 			local dir = subVec(e.pos, enemy.pos)
 			local d = lenVec(dir)
