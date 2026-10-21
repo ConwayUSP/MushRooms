@@ -30,7 +30,8 @@ players = {}
 local MAX_HP = 100		-- limite de hp
 local MAX_WEAPONS = 6 -- limite de armas exibidas na UI de equipamentos
 local TIME_TO_SLEEP = 15 -- limite de tempo inativo até dormir
-local MAX_DEFENSE_DUR = 3 -- limite de tempo que o player pode ficar defendendo sem parar
+local MAX_DEFENSE_DUR = 2.5 -- limite de tempo que o player pode ficar defendendo sem parar
+local DEFAULT_COOLDOWN_DUR = 2 -- limite de tempo que o player deve esperar antes de poder defender novamente
 
 ----------------------------------------
 -- Classe Player
@@ -119,12 +120,12 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.building = nil -- construção que o player está posicionando para construir
 	player.recipe = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
-	player.defaultInvulnerableTime = 0.3
+	player.defaultInvulnerableTime = 0.25
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
 	player.atkSpeed = 1 -- porcentagem de velocidade de ataque do jogador (1 = 100%)
 	player.age = 0
-	player.defenseCooldownTimer = Timer.new(2)
+	player.defenseCooldownTimer = Timer.new(DEFAULT_COOLDOWN_DUR)
 	player.defenseDurationTimer = Timer.new(MAX_DEFENSE_DUR, true)
 	player.sleepTimer = Timer.new(TIME_TO_SLEEP, true)
 	player.specialMovement = nil
@@ -286,7 +287,10 @@ end
 function Player:checkEndDefense(dt)
 	self.defenseCooldownTimer:update(dt)
 	self.defenseDurationTimer:update(dt)
-	if not self.controls:checkAction(ACT_DEF) or self.state == DYING then
+	if self.defenseCooldownTimer.completed and self.defenseDurationTimer.completed then
+		self.defenseDurationTimer:stop()
+	end
+	if (self.defenseDurationTimer.active and not self.controls:isDown(ACT_DEF)) or self.state == DYING then
 		self.defenseDurationTimer:stop()
 	end
 end
@@ -459,14 +463,19 @@ function Player:processInput()
 
 	-- input de defesa
 	if self.controls:checkAction(ACT_DEF) then
+		-- tentou defender durante cooldown
 		if self.defenseCooldownTimer.active then
 			self.uiManager:activateWorldScene(UI_DEFENSE_COOLDOWN_BAR_SCENE)
 		end
+
+		-- se não está ativo, não completou e não está em cooldown, então ativa a defesa
 		if not self.defenseDurationTimer.active and not self.defenseDurationTimer.completed and not self.defenseCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
 			globalAudioManager:play(AUDIO_DEFENSE, self, "pop")
 			self.defenseDurationTimer:start()
 			self.defenseCooldownTimer:stop()
+
+		-- se a defesa terminou e o cooldown não terminou (e não está ativo), então inicia o cooldown
 		elseif not self.defenseCooldownTimer.active and not self.defenseCooldownTimer.completed and self.defenseDurationTimer.completed then
 			self.defenseCooldownTimer:start()
 			self.defenseDurationTimer:stop()
@@ -713,6 +722,10 @@ end
 ---@param damage number
 -- diminui a vida do player e treme sua câmera um pouco
 function Player:takeDamage(damage)
+	if self.defenseDurationTimer.active then
+		damage = 0
+	end
+
 	Mortal.takeDamage(self, damage)
 	getCameraByPlayer(self):shake(damage / 5, 0.5)
 end
@@ -794,6 +807,10 @@ function Player:draw(camera)
 end
 
 function Player:defenseShake(offset, scaleX, scaleY)
+	if not self.defenseDurationTimer.active then
+		return vec(0, 0), 0
+	end
+
 	local shakeFunc = function(t, a)
 		if t < a or t > a + 1 then
 			return 0
