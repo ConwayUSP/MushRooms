@@ -979,7 +979,7 @@ function Player:dropResourceAtIndex(idx)
 		image = assetManager:getImage(pngPathFormat({ "assets", "sprites", "resources", resource.name }))
 	}
 	self.inventory:subtractItem(resource)
-	spawnDrop(mockR, self.pos, self.room, false, getAnchor(self, FLOOR), {x = math.random(-500,500), y = math.random(-500,500)})
+	spawnDrop(mockR, self.pos, self.room, true, 80, {x = math.random(-200,200), y = math.random(100, 300)})
 end
 
 -- dropa o item selecionado na UI de equipamentos ou inventário aberta (ACT_DEF)
