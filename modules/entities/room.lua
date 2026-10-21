@@ -48,6 +48,7 @@ walls = BiList.new()
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
+---@field uiManager UIManager
 ---@field puzzles Puzzle[]
 ---@field doorGlows DoorGlow[]
 ---@field treasurePillars Interactive[]
@@ -242,7 +243,7 @@ function Room:onPlayerEnter(player)
 	self:createAdjacentRooms()
 
 	if self.roomType == BOSS_ROOM then
-		self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+		-- TODO: remover ou abaixar a música ambiente pra um clima de tesão
 	end
 
 	if not self.explored then
@@ -380,7 +381,9 @@ function Room:updateDoorsLogic(dt)
 		end
 	end
 	if self.doorsTimer.goingOff then
-		self:closeDoors()
+		if self.roomType ~= BOSS_ROOM then
+			self:closeDoors()
+		end
 	end
 end
 

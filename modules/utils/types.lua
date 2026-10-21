@@ -129,6 +129,7 @@ AUDIO_CLOSE = "close audio"
 ---------- PARTICLES ----------
 PARTICLE_WALKING = "walking particle"
 PARTICLE_TREASURE_DISAPPEAR = "treasure disappear particle"
+PARTICLE_MOAI_BOSS_STARTING = "moai boss starting particle"
 PARTICLE_DEFENSE = "defense particle"
 PARTICLE_HIT = "hit particle"
 PARTICLE_BREAKING = "breaking particle"

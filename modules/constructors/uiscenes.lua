@@ -1037,6 +1037,7 @@ function newBossLifeBarScene(room)
 	end
 
 	local lifeBarEl = UILifeBarElem.new("boss lifebar", vec(640, 50), size(640, 64), lifeCalc)
+	-- TODO: acrescentar elemento com NOME do(s) boss(s) logo acima da LifeBar
 
 	-- SETUP DA CENA
 	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))

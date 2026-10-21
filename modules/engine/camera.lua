@@ -36,6 +36,7 @@ cameras = {}
 ---@field cinematicTimer number
 ---@field viewPos function
 ---@field changeTarget function
+---@field shake fun(self: Camera, intensity: number, duration: number)
 
 Camera = {}
 Camera.__index = Camera
@@ -192,7 +193,7 @@ function Camera:changeTarget(target)
 end
 
 ---@param entityPos Vec
----@return Vec
+---@return number, number
 -- retorna a posição da entidade dada pelo parâmetro `entityPos`
 -- no frame de referência relativo à posição da câmera
 function Camera:viewPos(entityPos)

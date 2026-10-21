@@ -49,7 +49,7 @@ function initShoumShoum(spawnPos, room)
 	animSettings[SPEAKING] = newAnimSetting(2, { width = 50, height = 50 }, 0.4, true)
 	npc:addAnimations(animSettings)
 	npc.dialogue = shoumShoumDialogue()
-	npc.shadowWidth = 30
+	npc.shadowWidth = 70
 	return npc
 end
 

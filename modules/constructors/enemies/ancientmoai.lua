@@ -3,6 +3,8 @@
 ----------------------------------------------
 
 -- fases da máquina de estado do Ancient Moai
+local MOAI_STATIC = "moai static"
+local MOAI_STARTING = "moai starting"
 local MOAI_IDLE = "moai idle"
 local MOAI_RUSH = "moai rush"
 local MOAI_BRAKE = "moai brake"
@@ -20,6 +22,7 @@ local TORNADO_ATK = 3
 
 -- constantes de comportamento
 local IDLE_DURATION = 0.5        -- espera antes de escolher um ataque
+local STARTING_DURATION = 4      -- espera antes de iniciar combate após acordado
 local RETRY_DELAY = 0.4          -- espera quando nenhum ataque está pronto
 local STOP_MARGIN = 200          -- margem de segurança entre o ponto de parada e a parede
 local RUSH_OVERSHOOT_MIN = 200   -- quantos px no mínimo o boss vai mirar além do player no rush
@@ -52,7 +55,35 @@ local SLAM_WEIGHT = 2
 local CENTERED_OFFSET = vec(0, -35)
 local NEUTRAL_OFFSET = vec(0, 0)
 
----@param enemy Enemy
+---@class Moai : Enemy
+---@field phase MoaiPhases
+---@field idleTimer number
+---@field startingTimer number
+---@field nextDecisionDelay number
+---@field attackDir string
+---@field facing string
+---@field rushStopDist any
+---@field rushTravel number
+---@field slamReps integer
+---@field slamRep integer
+---@field slamImpactDone boolean
+---@field tornadoTimer number
+---@field emitTimer number
+---@field emitStarted boolean
+---@field spiralAngle number
+---@field awakened boolean         -- se já foi atingido
+
+---@alias MoaiPhases
+---| `MOAI_STATIC`
+---| `MOAI_STARTING`
+---| `MOAI_IDLE`
+---| `MOAI_RUSH`
+---| `MOAI_BRAKE`
+---| `MOAI_COLLISION`
+---| `MOAI_SLAM`
+---| `MOAI_TORNADO`
+
+---@param enemy Moai
 ---@param state State
 ---@return string
 -- caminho da spritesheet de um estado do Moai Anciente
@@ -84,7 +115,7 @@ end
 -- estado de tornado shots
 local TORNADO_STATE = ATTACKING .. " Tornado Shots"
 
----@param enemy Enemy
+---@param enemy Moai
 ---@return State
 -- direção cardinal mais próxima do alvo de movimento do inimigo
 local function cardinalDirToTarget(enemy)
@@ -99,9 +130,9 @@ local function cardinalDirToTarget(enemy)
 	end
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- carrega as animações do Ancient Moai (muitos mais estados que um inimigo
--- comum, então registramos manualmente em vez de usar Enemy:addAnimations)
+-- comum, então registramos manualmente em vez de usar Moai:addAnimations)
 local function addMoaiAnimations(enemy)
 	----------------- ANDANDO / PARADO -----------------
 	for _, dir in ipairs(DIRECTIONS) do
@@ -175,7 +206,7 @@ local function addMoaiAnimations(enemy)
 	end
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- encerra imediatamente os eventos de ataque do embalo
 local function stopRushAttack(enemy)
 	local atk = enemy.atk[RUSH_ATK]
@@ -190,7 +221,7 @@ local function stopRushAttack(enemy)
 	end
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- volta para o estado ocioso e reinicia o timer de decisão
 local function backToIdle(enemy)
 	enemy.phase = MOAI_IDLE
@@ -198,7 +229,7 @@ local function backToIdle(enemy)
 	enemy.nextDecisionDelay = IDLE_DURATION
 end
 
----@param enemy Enemy
+---@param enemy Moai
 ---@param intensity number
 ---@param duration number
 -- treme a câmera de todos os players presentes na sala do inimigo
@@ -211,7 +242,7 @@ local function shakeRoomCameras(enemy, intensity, duration)
 	end
 end
 
----@param enemy Enemy
+---@param enemy Moai
 ---@return boolean
 -- verifica se há espaço livre em alguma direção para o embalo
 local function hasRushSpace(enemy)
@@ -223,7 +254,7 @@ local function hasRushSpace(enemy)
 	return false
 end
 
----@param enemy Enemy
+---@param enemy Moai
 ---@return State
 -- embalo prefere a direção do player quando há espaço livre.
 -- caso contrário, sorteia entre as direções com espaço livre (com mais peso
@@ -264,7 +295,7 @@ local function pickRushDirection(enemy)
 	return primary
 end
 
----@param enemy Enemy
+---@param enemy Moai
 ---@return number?
 -- decide a distância em que o embalo deve frear. Mira parar um pouco depois
 -- do player no eixo do embalo. Retorna nil se o embalo deve ir
@@ -295,7 +326,7 @@ local function pickRushStopDistance(enemy)
 	return nil
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- inicia o ataque de embalo
 local function startRush(enemy)
 	enemy.attackDir = pickRushDirection(enemy)
@@ -309,7 +340,7 @@ local function startRush(enemy)
 	enemy.atk[RUSH_ATK]:attack(enemy, vec(enemy.pos.x, enemy.pos.y), math.atan2(dir.y, dir.x))
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- inicia o ataque de head slam, escolhendo quantas repetições serão feitas
 local function startSlam(enemy)
 	stopMovement(enemy)
@@ -321,7 +352,7 @@ local function startSlam(enemy)
 	enemy.phase = MOAI_SLAM
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- inicia o ataque de tornado
 local function startTornado(enemy)
 	stopMovement(enemy)
@@ -333,7 +364,7 @@ local function startTornado(enemy)
 	enemy.phase = MOAI_TORNADO
 end
 
----@param enemy Enemy
+---@param enemy Moai
 ---@param dt number
 -- atualiza a emissão em espiral de tiros e o encerramento do tornado.
 -- a emissão começa após `TORNADO_EMIT_DELAY` e a frequência sobe linearmente
@@ -366,7 +397,7 @@ local function updateTornado(enemy, dt)
 	end
 end
 
----@param enemy Enemy
+---@param enemy Moai
 -- aplica uma força de freio proporcional à velocidade atual, sem
 -- inverter o sentido do movimento
 local function applyBrake(enemy)
@@ -379,7 +410,7 @@ local function applyBrake(enemy)
 	applyForce(enemy, scaleVec(normalize(enemy.vel), -BRAKE_FACTOR * speed * enemy.friction * enemy.mass))
 end
 
----@param enemy Enemy
+---@param enemy Moai
 ---@return boolean
 -- sorteia um ataque disponível entre os pesos configurados.
 -- retorna `false` se nenhum ataque está disponível
@@ -418,9 +449,30 @@ local function chooseNextAttack(enemy)
 	return true
 end
 
+---@param enemy Moai
+local function wakeUpMoai(enemy)
+	enemy.awakened = true
+	enemy.room:closeDoors()
+	enemy.phase = MOAI_STARTING
+	globalVFXManager:playParticle(PARTICLE_MOAI_BOSS_STARTING, enemy, vec(0, 150))
+	shakeRoomCameras(enemy, 15, STARTING_DURATION)
+	-- TODO: tocar algum som de pedra sem mexendo muito forte
+	globalAudioManager:play(AUDIO_COLLIDE, enemy, "wurr")
+end
+
+---@param enemy Moai
+local function startCombatMoai(enemy)
+	enemy.room.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+	enemy.phase = MOAI_IDLE
+	enemy.facing = DIRECTIONS[math.random(#DIRECTIONS)]
+	enemy.state = IDLE .. " " .. enemy.facing
+	globalVFXManager:stopParticle(PARTICLE_MOAI_BOSS_STARTING, enemy)
+	-- TODO: iniciar música de combate do BOSS
+end
+
 ---@param spawnPos Vec
 ---@param room Room
----@return Enemy
+---@return Moai
 -- cria um inimigo do tipo Ancient Moai
 function newAncientMoai(spawnPos, room)
 	local physics = physicsSettings(40, 160, 3, nil, nil, nil, 0.5)
@@ -437,15 +489,17 @@ function newAncientMoai(spawnPos, room)
 		followTargetMovement(),
 		{ rushAtk, slamAtk, tornadoAtk },
 		hbs,
-		room
+		room,
+		{}
 	)
-	enemy.facing = DIRECTIONS[math.random(#DIRECTIONS)]
+	
+	---@cast enemy Moai
+	enemy.facing = DOWN
 	enemy.state = IDLE .. " " .. enemy.facing
-
-	-- máquina de estados do Ancient Moai
-	enemy.phase = MOAI_IDLE
+	enemy.phase = MOAI_STATIC
 	enemy.idleTimer = 0
 	enemy.nextDecisionDelay = IDLE_DURATION
+	enemy.startingTimer = STARTING_DURATION
 	enemy.attackDir = enemy.facing
 	enemy.rushStopDist = nil
 	enemy.rushTravel = 0
@@ -456,6 +510,7 @@ function newAncientMoai(spawnPos, room)
 	enemy.emitTimer = 0
 	enemy.emitStarted = false
 	enemy.spiralAngle = 0
+	enemy.awakened = false
 
 	-- o construtor do embalo usa constCooldown(0); damos a ele um cooldown
 	-- variável para não encadear embalos direto (slam/tornado já têm os seus)
@@ -463,6 +518,7 @@ function newAncientMoai(spawnPos, room)
 
 	enemy.isBoss = true
 	enemy.shadowWidth = 90
+	enemy.shadowDist = -20
 
 	addMoaiAnimations(enemy)
 
@@ -473,14 +529,14 @@ function newAncientMoai(spawnPos, room)
 	-------- sobrescritas da máquina de estado -----------
 
 	-- só atualiza cooldowns e eventos; o início/gatilho dos ataques é manual
-	enemy.updateAttack = function(self, dt)
+	enemy.updateAttack = function(self, dt) ---@diagnostic disable-line
 		for _, atk in pairs(self.atk) do
 			atk:updateTimer(dt)
 			atk:update(dt)
 		end
 	end
 
-	enemy.updateMotion = function(self, dt)
+	enemy.updateMotion = function(self, dt) ---@diagnostic disable-line
 		if self.state == DYING then
 			return
 		end
@@ -509,10 +565,18 @@ function newAncientMoai(spawnPos, room)
 		-- se está em MOAI_IDLE fica parado
 	end
 
-	enemy.updateState = function(self, dt)
-		if self.state == DYING then
+	enemy.updateState = function(self, dt) ---@diagnostic disable-line
+		if self.state == DYING or self.phase == MOAI_STATIC then
 			self.animations[DYING]:update(dt)
 			return
+		end
+
+		if self.phase == MOAI_STARTING then
+			self.startingTimer = self.startingTimer - dt
+
+			if self.startingTimer <= 0 then
+				startCombatMoai(self)
+			end
 		end
 
 		-- depois de ficar parado, escolhe o próximo ataque
@@ -572,7 +636,7 @@ function newAncientMoai(spawnPos, room)
 		end
 	end
 
-	enemy.interruptAttack = function(self)
+	enemy.interruptAttack = function(self) ---@diagnostic disable-line
 		Enemy.interruptAttack(self)
 
 		if self.phase == MOAI_RUSH then
@@ -586,7 +650,7 @@ function newAncientMoai(spawnPos, room)
 	end
 
 	-- chamado pelo CollisionManager quando ele bate numa parede
-	enemy.onSolidHit = function(self)
+	enemy.onSolidHit = function(self) ---@diagnostic disable-line
 		if self.state == DYING or self.phase ~= MOAI_RUSH then
 			return
 		end
@@ -598,6 +662,14 @@ function newAncientMoai(spawnPos, room)
 		self.nextDecisionDelay = WALL_STUN_DURATION
 		self:takeDamage(WALL_CRASH_DMG)
 		shakeRoomCameras(self, SHAKE_WALL_I, SHAKE_WALL_DUR)
+	end
+
+	enemy.takeDamage = function (self, dmg)
+		Enemy.takeDamage(self, dmg)
+
+		if not self.awakened then
+			wakeUpMoai(self)
+		end
 	end
 
 	return enemy

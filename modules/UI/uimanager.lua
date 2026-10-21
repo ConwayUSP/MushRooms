@@ -13,6 +13,7 @@
 ---@field activeScenes Type[]
 ---@field parentCanvas table
 ---@field parentCanvasPos Vec
+---@field toggleScene fun(self: UIManager, sceneType: Type)
 
 UIManager = {}
 UIManager.__index = UIManager
