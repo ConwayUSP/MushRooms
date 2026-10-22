@@ -8,7 +8,7 @@ require("modules.utils.roomgeneration")
 ---@param rng RNG
 -- Tipos de sala x quantidade
 -- - Sala de puzzle: 3
--- - Sala de NPC: 5
+-- - Sala de NPC: 3
 -- - Sala de recurso: 12
 -- - Sala de combate: 15
 -- - Sala de boss: 1
@@ -96,45 +96,36 @@ function newBigPuzzleRoom(rng)
 end
 
 ---@return Blueprint
--- sala de NPC 1: contém Tenkar, Shoum-Shoum e Biguiri perto da porta leste
-function newNPCRoomEast(rng)
+-- sala de NPC 1: contém Tenkar perto da porta leste
+function newTenkarRoom(rng)
 	local bp = Blueprint.new(NPC_ROOM, "NPC Room East Side", rgba8(120, 58, 242, 255))
 	local sp1 = SpawnPoint.new(vec(250, 0))
-	local tenkarData = SpawnData.new(TENKAR, 0.45)
-	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 0.9)
-	local biguiriData = SpawnData.new(BIGUIRI, 1.0)
-	local barrelData = SpawnData.new(BARREL, 0.2)
-	sp1:insert(tenkarData):insert(shoumShoumData):insert(biguiriData)
+	local tenkarData = SpawnData.new(TENKAR, 1.0)
+	sp1:insert(tenkarData)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
 ---@return Blueprint
--- sala de NPC 2: contém Tenkar, Shoum-Shoum e Biguiri perto da porta oeste
-function newNPCRoomWest(rng)
+-- sala de NPC 2: contém Shoum-Shoum da porta oeste
+function newShoumShoumRoom(rng)
 	local bp = Blueprint.new(NPC_ROOM, "NPC Room West Side", rgba8(120, 58, 242, 255))
 	local sp1 = SpawnPoint.new(vec(-250, 0))
-	local tenkarData = SpawnData.new(TENKAR, 0.45)
-	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 0.9)
-	local biguiriData = SpawnData.new(BIGUIRI, 1.0)
-	local barrelData = SpawnData.new(BARREL, 0.2)
-	sp1:insert(tenkarData):insert(shoumShoumData):insert(biguiriData)
+	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 1.0)
+	sp1:insert(shoumShoumData)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
 
 ---@return Blueprint
--- sala de NPC 3: contém Tenkar, Shoum-Shoum e Biguiri perto da porta norte
-function newNPCRoomNorth(rng)
+-- sala de NPC 3: contém Biguiri perto da porta norte
+function newBiguiriRoom(rng)
 	local bp = Blueprint.new(NPC_ROOM, "NPC Room North Side", rgba8(120, 58, 242, 255))
 	local sp1 = SpawnPoint.new(vec(0, -250))
-	local tenkarData = SpawnData.new(TENKAR, 0.45)
-	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 0.9)
 	local biguiriData = SpawnData.new(BIGUIRI, 1.0)
-	local barrelData = SpawnData.new(BARREL, 0.2)
-	sp1:insert(tenkarData):insert(shoumShoumData):insert(biguiriData)
+	sp1:insert(biguiriData)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
@@ -148,7 +139,6 @@ function newNPCRoomSouth(rng)
 	local tenkarData = SpawnData.new(TENKAR, 0.45)
 	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 0.9)
 	local biguiriData = SpawnData.new(BIGUIRI, 1.0)
-	local barrelData = SpawnData.new(BARREL, 0.2)
 	sp1:insert(tenkarData):insert(shoumShoumData):insert(biguiriData)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
@@ -163,7 +153,6 @@ function newNPCRoomMiddle(rng)
 	local tenkarData = SpawnData.new(TENKAR, 0.45)
 	local shoumShoumData = SpawnData.new(SHOUM_SHOUM, 0.9)
 	local biguiriData = SpawnData.new(BIGUIRI, 1.0)
-	local barrelData = SpawnData.new(BARREL, 0.2)
 	sp1:insert(tenkarData):insert(shoumShoumData):insert(biguiriData)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
@@ -700,19 +689,6 @@ function newAncientMoaiBossRoom(rng)
 	local sp1 = SpawnPoint.new(vec(0, 0))
 	local enemyData1 = SpawnData.new(ANCIENT_MOAI, 1.0)
 	sp1:insert(enemyData1)
-	bp:insert(sp1)
-	RoomGeneration.insertGeneralDecorations(bp, rng)
-	return bp
-end
-
----@return Blueprint
--- sala de evento 1: contém símbolos dos setores de pedra
-function newEventRoom1(rng)
-	local bp = Blueprint.new(EVENT_ROOM, "Test Event Room", rgba8(104, 237, 102, 255))
-	local sp1 = SpawnPoint.new(vec(0, 0))
-	local enemyData1 = SpawnData.new(SPIDER_DUCK, 0.75)
-	local enemyData2 = SpawnData.new(NUCLEAR_CAT, 1.0)
-	sp1:insert(enemyData1):insert(enemyData2)
 	bp:insert(sp1)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp

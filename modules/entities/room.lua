@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.entities.doorglow")
 require("modules.systems.blueprint")
+require("modules.systems.roomgenerator")
 require("modules.systems.treasure")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
@@ -623,9 +624,7 @@ function newRoom(pos, dimensions, roomType)
 
 	-- criando um gerador de números pseudo-aleatórios para a sala
 	local roomRNG = love.math.newRandomGenerator(getRoomSeed(worldSeed, pos.x, pos.y))
-	-- escolhendo uma blueprint para a sala
-	roomType = roomType or randRoomType(roomRNG)
-	local blueprint = randRoomBlueprint(roomType, roomRNG)
+	local blueprint = randRoomBlueprint(roomType, roomRNG, pos)
 
 	-- posicionando a sala
 	local leftLimit = pos.x * (dimensions.width + Room.spacingH) - Room.spacingH

@@ -88,6 +88,7 @@ local function cleanupWorld()
 	doors = BiList.new()
 	walls = BiList.new()
 	cameras = {}
+	resetRoomGenerator(1)
 	-- reseta VFX (partículas presas a entidades mortas)
 	globalVFXManager.particlesInst = {}
 	globalVFXManager.animInstances = {}
