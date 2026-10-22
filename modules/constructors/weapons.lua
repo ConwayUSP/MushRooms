@@ -68,7 +68,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Skull Shooter
 function newSkullShooter()
-	local cooldown = constCooldown(1.0)
+	local cooldown = constCooldown(0.8)
 	local trajectoryFuncBuilder = function()
 		return followTargetMovement(5)
 	end
@@ -136,7 +136,8 @@ end
 ---@param atkEvent AtkEvent
 ---@param hitEntity Entity
 function onHitApplyFear(atkEvent, hitEntity)
-	if hitEntity.type == ENEMY then
+	local CHANCE = 0.5
+	if hitEntity.type == ENEMY and math.random() <= CHANCE then
 		hitEntity:applyFear(atkEvent.attacker, 1.5)
 	end
 end

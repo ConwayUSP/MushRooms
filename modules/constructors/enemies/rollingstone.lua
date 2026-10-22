@@ -4,6 +4,7 @@
 
 -- código de direção usado nos nomes dos spritesheets (ex.: "rotating ur")
 local DIR_CODE = { [UP] = "u", [DOWN] = "d", [LEFT] = "l", [RIGHT] = "r" }
+
 -- fases da máquina de estado do Rolling Stone
 local RS_IDLE = "rs idle"
 local RS_ROTATING = "rs rotating"
@@ -16,6 +17,22 @@ local WALL_RESTITUTION = 0.8       -- força do knockback ao bater nas paredes
 local MIN_CLEARANCE = 300          -- espaço mínimo que uma direção precisa ter para ser candidata ao ataque
 local MAX_CLEARANCE = 600          -- distância máxima verificada na checagem de espaço livre
 local PLAYER_DIRECTION_WEIGHT = 10 -- viés para a direção cardinal mais próxima do jogador
+
+---@class RollingStone : Enemy
+---@field phase MoaiPhases
+---@field idleTimer number
+---@field attackDir string
+---@field facing string
+---@field lastPhase RollingStonePhases
+---@field rushesLeft number
+---@field rollAccel number
+---@field contactDamage boolean
+
+---@alias RollingStonePhases
+---| `RS_IDLE`
+---| `RS_ROTATING`
+---| `RS_ROLLING`
+---| `RS_STOPING`
 
 ---@param fromDir State
 ---@param toDir State
@@ -57,7 +74,7 @@ local function rsFrameCount(path, quad)
 	return math.floor((img:getWidth() + gap) / (quad + gap))
 end
 
----@param enemy Enemy
+---@param enemy RollingStone
 -- carrega as animações do pedregulho (tem muito mais animação do que um inimigo comum)
 local function addRollingStoneAnimations(enemy)
 	----------------- IDLE -----------------
@@ -126,7 +143,7 @@ local function addRollingStoneAnimations(enemy)
 	end
 end
 
----@param enemy Enemy
+---@param enemy RollingStone
 -- encerra imediatamente os eventos de ataque do embalo
 local function stopRushAttack(enemy)
 	local atk = enemy.atk[1]
@@ -143,7 +160,7 @@ end
 
 ---@param spawnPos Vec
 ---@param room Room
----@return Enemy
+---@return RollingStone
 -- cria um inimigo do tipo Rolling Stone: ele fica parado, escolhe uma
 -- direção, vira para ela e se embala em linha reta até bater na parede
 function newRollingStone(spawnPos, room)
@@ -151,10 +168,11 @@ function newRollingStone(spawnPos, room)
 	local hbs = hitboxes({ hitbox(Circle.new(32)) }, { hitbox(Circle.new(30)) })
 	local rollAtk = newRollingRushAttack(false, 4.0, 20, hitboxes({ hitbox(Circle.new(40)) }))
 
-	local enemy = Enemy.new(ROLLING_STONE.name, 75, spawnPos, physics, function() end, { rollAtk }, hbs, room)
+	local enemy = Enemy.new(ROLLING_STONE.name, 65, spawnPos, physics, function() end, { rollAtk }, hbs, room)
 	enemy.state = "idle down"
 
 	-- Máquina de estados do Rolling Stone
+	---@cast enemy RollingStone
 	enemy.phase = RS_IDLE
 	enemy.lastPhase = RS_IDLE
 	enemy.idleTimer = 0

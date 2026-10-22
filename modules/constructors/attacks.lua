@@ -127,7 +127,7 @@ function newBoomerangueAttack(ally, speed, timing, force)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 8,
+		dmg = 18,
 		dur = math.huge,
 		hb = hbs,
 		cooldown = cooldown,
@@ -175,7 +175,7 @@ function newSkullAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 15,
+		dmg = 12,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -228,7 +228,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 5,
+		dmg = 8,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,
@@ -286,7 +286,7 @@ function newSeedAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, onShot
 	local settings = newAtkSetting({
 		subtype = RANGED_ATTACK,
 		ally = ally,
-		dmg = 3,
+		dmg = 6,
 		dur = dur,
 		hb = hbs,
 		cooldown = cooldown,

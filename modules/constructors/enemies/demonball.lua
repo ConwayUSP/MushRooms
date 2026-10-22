@@ -139,7 +139,7 @@ function newDemonBall(spawnPos, room)
 	local hbs = hitboxes({ hb })
 	local physics = physicsSettings(0.6, 50, LANDING_FRICTION)
 
-	local enemy = Enemy.new(DEMON_BALL.name, 3, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
+	local enemy = Enemy.new(DEMON_BALL.name, 30, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
 	enemy.attackRange = math.random(150, 200)
 	enemy.hasShadow = true
 	enemy.leavesBody = false

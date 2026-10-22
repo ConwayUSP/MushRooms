@@ -20,7 +20,7 @@ function newNuclearCat(spawnPos, room)
 	local attackAnimSettings = {
 		[attack.name] = newAnimSetting(28, { width = 32, height = 32 }, 0.1, false),
 	}
-	local enemy = Enemy.new(NUCLEAR_CAT.name, 60, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames)
+	local enemy = Enemy.new(NUCLEAR_CAT.name, 50, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames)
 	local idleAnimSettings = newAnimSetting(15, { width = 32, height = 32 }, 0.15, true, 1)
 	local walkingAnimSettings = newAnimSetting(4, { width = 32, height = 32 }, 0.15, true, 1)
 	local dyingAnimSettings = newAnimSetting(33, { width = 32, height = 32 }, 0.08, false, 1)
