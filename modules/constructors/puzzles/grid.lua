@@ -552,6 +552,12 @@ local function interactWithStone(puzzle, stone, player)
 			stone.moveLink = activeLink
 			clearPendingPin(puzzle, player)
 		end
+	else
+		-- TODO: tocar um sonzinho de "erro", pra indicar que deu ruim
+		local pin = puzzle.pendingPinsByPlayer[player]
+		globalAudioManager:play(AUDIO_PRESS, pin, "pfffft")
+		
+		clearPendingPin(puzzle, player)
 	end
 end
 
