@@ -2,6 +2,9 @@
 -- Contador de FPS com gráfico
 ----------------------------------------
 
+-- liga/desliga o contador pelo menu de opções (sessão atual)
+showFPSCounter = false
+
 local tickRate = 0.1
 local fpsHistory = {}
 local FPS_HIST_SIZE = 60

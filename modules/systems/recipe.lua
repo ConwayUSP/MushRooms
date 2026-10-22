@@ -32,11 +32,29 @@ function Recipe.new(inputs, output)
 	return recipe
 end
 
----@param resources table<Resource, number>
+---@param inv Inventory
 ---@return boolean
--- Confere se a lista `resources` possui o que é necessário
--- para craftar esta receita
-function Recipe:canCraftWith(resources)
-	-- !TODO: implementar essa bagaça
+-- Confere se o inventário do player em questão possui
+-- o que é necessário para craftar esta receita
+function Recipe:canCraftWith(inv)
+	for _, inp in pairs(self.inputs) do
+		if inv:countItem(inp[1]) < inp[2] then
+			return false
+		end
+	end
+	return true
+end
+
+---@param inv Inventory
+---@return boolean
+-- checa se consegue craftar e consome os itens se conseguir
+function Recipe:consumeItems(inv)
+	if not self:canCraftWith(inv) then
+		return false
+	end
+
+	for _, inp in pairs(self.inputs) do
+		inv:subtractItem(inp[1], inp[2])
+	end
 	return true
 end

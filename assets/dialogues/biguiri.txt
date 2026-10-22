@@ -1,7 +1,5 @@
 [INTRO]
-Você sabia que Birigui é a capital dos calçados infantis?
-Na verdade meu nome é Renan, mas ninguém sabe disso.
-A não ser você... ops!
+Did you know that Birigui is the capital of children's footwear?
 
 [LOOP]
-Eu adoro biribol...
+I love biribol...

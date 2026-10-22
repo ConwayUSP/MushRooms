@@ -13,6 +13,7 @@
 ---@field activeScenes Type[]
 ---@field parentCanvas table
 ---@field parentCanvasPos Vec
+---@field toggleScene fun(self: UIManager, sceneType: Type)
 
 UIManager = {}
 UIManager.__index = UIManager
@@ -376,6 +377,11 @@ function UIManager:handleTextInput(t)
 	if activeScene then
 		self.scenes[activeScene]:handleTextInput(t)
 	end
+end
+
+-- encaminha uma entrada física sem mapeamento para o módulo de controles.
+function UIManager:registerAnyInput()
+	self.controls:registerAnyInput()
 end
 
 ---@param fromScene string

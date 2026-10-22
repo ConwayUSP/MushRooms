@@ -42,11 +42,13 @@ walls = BiList.new()
 ---@field interactives Interactive[]
 ---@field drops Drop[]
 ---@field enemies Enemy[]
+---@field detachedAttacks Attack[]
 ---@field npcs Npc[]
 ---@field obstacles Obstacle[]
 ---@field adjacentRooms Vec[]
 ---@field playersInRoom Set
 ---@field linkManager LinkManager
+---@field uiManager UIManager
 ---@field puzzles Puzzle[]
 ---@field doorGlows DoorGlow[]
 ---@field treasurePillars Interactive[]
@@ -109,6 +111,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.interactives = {}                           -- lista de objetos interativos na sala
 	room.drops = {}                                  -- lista de itens dropados na sala
 	room.enemies = {}                                -- lista de inimigos na sala
+	room.detachedAttacks = {}                        -- ataques que permanecem ativos depois do emissor desaparecer
 	room.npcs = {}                                   -- lista de NPCs na sala
 	room.obstacles = {}                              -- lista de obstáculos na sala
 	room.puzzles = {}                                -- puzzles configurados para a sala
@@ -122,7 +125,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 
 	room:addWallsAndDoors()
 	for _, puzzleEntry in ipairs(blueprint.puzzles) do
-		table.insert(room.puzzles, puzzleEntry.constructor(room, puzzleEntry.settings))
+		table.insert(room.puzzles, puzzleEntry.constructor(room, puzzleEntry.settings, puzzleEntry.rewards))
 	end
 
 	return room
@@ -150,6 +153,14 @@ function Room:update(dt)
 	-- atualiza inimigos
 	for _, e in pairs(self.enemies) do
 		e:update(dt)
+	end
+	-- atualiza ataques que não pertencem mais a um inimigo ou jogador ativo
+	for i = #self.detachedAttacks, 1, -1 do
+		local attack = self.detachedAttacks[i]
+		attack:update(dt)
+		if #attack.events == 0 then
+			table.remove(self.detachedAttacks, i)
+		end
 	end
 	-- atualiza NPCs
 	for _, npc in pairs(self.npcs) do
@@ -232,7 +243,7 @@ function Room:onPlayerEnter(player)
 	self:createAdjacentRooms()
 
 	if self.roomType == BOSS_ROOM then
-		self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+		-- TODO: remover ou abaixar a música ambiente pra um clima de tesão
 	end
 
 	if not self.explored then
@@ -370,7 +381,9 @@ function Room:updateDoorsLogic(dt)
 		end
 	end
 	if self.doorsTimer.goingOff then
-		self:closeDoors()
+		if self.roomType ~= BOSS_ROOM then
+			self:closeDoors()
+		end
 	end
 end
 
@@ -419,7 +432,7 @@ function Room:claimTreasure(chosenPillar, player)
 		if pillar.drop and not pillar.drop.collected then
 			-- o item não escolhido evapora, o escolhido vai para o jogador
 			if pillar ~= chosenPillar then
-				globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar.drop, vec(0, -90), false)
+				globalVFXManager:playParticle(PARTICLE_TREASURE_DISAPPEAR, pillar.drop, vec(0, -70), false)
 			end
 			pillar.drop:setCollected()
 		end
@@ -638,7 +651,7 @@ end
 
 -- cria a sala inicial do jogo e suas 4 vizinhas
 function createInitialRooms()
-	newRoom({ x = 0, y = 0 }, Room.stdDim)
+	newRoom({ x = 0, y = 0 }, Room.stdDim, INITIAL_ROOM)
 	rooms[0][0]:setExplored()
 end
 

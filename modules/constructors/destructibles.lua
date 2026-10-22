@@ -51,7 +51,7 @@ function newCoalAltar(pos, room)
 	local coal = Destructible.new(COAL_ALTAR.name, pos, room, loot, hitboxes, STABLE)
 	local animSettings = {}
 	animSettings[INTACT] = newAnimSetting(1, { width = 48, height = 29 }, 1000, true, 1)
-	animSettings[BREAKING] = newAnimSetting(10, { width = 60, height = 60 }, 0.05, false, 1)
+	animSettings[BREAKING] = newAnimSetting(7, { width = 60, height = 60 }, 0.05, false, 1)
 	animSettings[BROKEN] = newAnimSetting(1, { width = 48, height = 28 }, 1000, true, 1)
 	coal:addAnimations(animSettings)
 	coal.hasShadow = false

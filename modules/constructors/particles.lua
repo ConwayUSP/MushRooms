@@ -48,26 +48,35 @@ end
 
 ---@return ParticleSystem
 -- fumaça curta usada quando um pilar de tesouro desaparece.
--- TODO: fazer uma vesão melhor disso
 function newTreasureDisappearParticles()
-	local particleImg = assetManager:getImage("assets/sprites/circle.png")
-	local particles = love.graphics.newParticleSystem(particleImg, 18)
-	particles:setPosition(0, 0)
-	particles:setParticleLifetime(0.3, 0.6)
-	particles:setEmissionRate(0)
-  particles:setSizes(0.05, 0.15)
-	particles:setSizeVariation(0.1)
-	particles:setSpin(math.pi)
-	particles:setSpinVariation(0.5)
-	particles:setColors(1.0, 1.0, 1.0, 0.5, 0.8, 0.8, 0.8, 0.0)
-	particles:setLinearAcceleration(0, -100)
-	particles:setSpread(math.pi / 4)
-  particles:setDirection(-math.pi / 2)
-  particles:setEmissionArea("normal", 10, 2)
-	particles:setSpeed(70)
-	particles:stop()
-	return particles
+	local particleImg = assetManager:getImage(pngPathFormat({ "assets", "sprites", "circle" }))
+	local ps = love.graphics.newParticleSystem(particleImg, 250)
+
+	ps:setColors(0.55078125, 0.48573231697083, 0.45396423339844, 1, 0.38671875, 0.35933876037598, 0.34291076660156, 0.41666665673256, 0.51953125, 0.40632772445679, 0.39776611328125, 0.026515152305365)
+	ps:setDirection(-1.5707963705063)
+	ps:setEmissionArea("ellipse", 2.0412668228149, 2.0412668228149, 0, false)
+	ps:setEmissionRate(246.255451202393)
+	ps:setEmitterLifetime(0.07274858951569)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, 0, 0, 0)
+	ps:setLinearDamping(0, 0)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(0.84735202789307, 1.6003778457642)
+	ps:setRadialAcceleration(0, 0)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0.08, 0.20, 0.04)
+	ps:setSizeVariation(0.1)
+	ps:setSpeed(105.062152862549, 207.71934509277)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(0.6917268037796)
+	ps:setTangentialAcceleration(0, 0)
+	ps:stop()
+
+	return ps
 end
+
 
 ---@return ParticleSystem
 -- variante independente da poeira de caminhada para o movimento das pedras do puzzle
@@ -317,3 +326,34 @@ function newFlowerShotParticles()
 
 	return ps
 end
+
+---@return ParticleSystem
+function newMoaisBossStartingParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 282)
+
+	ps:setColors(0.55078125, 0.48573231697083, 0.45396423339844, 1, 0.38671875, 0.35933876037598, 0.34291076660156, 0.41666665673256, 0.51953125, 0.40632772445679, 0.39776611328125, 0.026515152305365)
+	ps:setDirection(-1.5707963705063)
+	ps:setEmissionArea("uniform", 145.474609375, 1.9432859420776, 0, false)
+	ps:setEmissionRate(209.04571533203)
+	ps:setEmitterLifetime(3.8)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, 0, 0, 0)
+	ps:setLinearDamping(0, 0)
+	ps:setOffset(50, 50)
+	ps:setParticleLifetime(0.83239555358887, 1.6638013124466)
+	ps:setRadialAcceleration(0, 0)
+	ps:setRelativeRotation(false)
+	ps:setRotation(0, 0)
+	ps:setSizes(0.06494667291641, 0.22221557617188, 0.035508986115456)
+	ps:setSizeVariation(0.10223641991615)
+	ps:setSpeed(105.16536712646, 208.12532043457)
+	ps:setSpin(0, 0)
+	ps:setSpinVariation(0)
+	ps:setSpread(3.1415927410126)
+	ps:setTangentialAcceleration(0, 0)
+	ps:stop()
+
+	return ps
+end
+

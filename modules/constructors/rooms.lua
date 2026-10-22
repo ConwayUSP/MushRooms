@@ -24,7 +24,7 @@ function newSmallPuzzleRoom(rng)
 	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:addPuzzle(GridPuzzle.new, {
+	local settings = {
 		size = gridSize,
 		centerSize = vec(2, 2),
 		pins = GridPuzzle.fullPerimeterPins(gridSize),
@@ -34,7 +34,9 @@ function newSmallPuzzleRoom(rng)
 			{ id = "stone-down-left", cell = vec(1, 4), direction = vec(1, -1) },
 			{ id = "stone-down-right", cell = vec(4, 4), direction = vec(-1, -1) },
 		},
-	})
+	}
+	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
 end
@@ -49,7 +51,7 @@ function newMediumPuzzleRoom(rng)
 	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:addPuzzle(GridPuzzle.new, {
+	local settings = {
 		size = gridSize,
 		centerSize = vec(2, 2),
 		pins = GridPuzzle.fullPerimeterPins(gridSize),
@@ -59,7 +61,9 @@ function newMediumPuzzleRoom(rng)
 			{ id = "stone-down-left", cell = vec(2, 6), direction = vec(1, -1) },
 			{ id = "stone-down-right", cell = vec(5, 5), direction = vec(-1, -1) },
 		},
-	})
+	}
+	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
 end
@@ -74,7 +78,7 @@ function newBigPuzzleRoom(rng)
 	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
 	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
 
-	bp:addPuzzle(GridPuzzle.new, {
+	local settings = {
 		size = gridSize,
 		centerSize = vec(2, 2),
 		pins = GridPuzzle.fullPerimeterPins(gridSize),
@@ -84,7 +88,9 @@ function newBigPuzzleRoom(rng)
 			{ id = "stone-down-left", cell = vec(1, 7), direction = vec(1, -1) },
 			{ id = "stone-down-right", cell = vec(8, 8), direction = vec(-1, -1) },
 		},
-	})
+	}
+	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
 end
@@ -662,14 +668,16 @@ function new5DemonBallsBattleRoom(rng)
 	local sp2 = SpawnPoint.new(vec(-200, 200))
 	local sp3 = SpawnPoint.new(vec(200, 200))
 	local sp4 = SpawnPoint.new(vec(-200, -200))
-	local sp5 = SpawnPoint.new(vec(0, 0))
-	local enemyData1 = SpawnData.new(DEMON_BALL, 1.0)
-	sp1:insert(enemyData1)
-	sp2:insert(enemyData1)
-	sp3:insert(enemyData1)
-	sp4:insert(enemyData1)
-	sp5:insert(enemyData1)
-	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4):insert(sp5)
+	local sp5 = SpawnPoint.new(vec(0, -250))
+	local sp6 = SpawnPoint.new(vec(0, 250))
+	local demonData = SpawnData.new(DEMON_BALL, 1.0)
+	sp1:insert(demonData)
+	sp2:insert(demonData)
+	sp3:insert(demonData)
+	sp4:insert(demonData)
+	sp5:insert(demonData)
+	sp6:insert(demonData)
+	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4):insert(sp5):insert(sp6)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
 end
@@ -714,5 +722,17 @@ end
 -- sala de tesouro: a dupla de recompensas é criada ao popular a sala
 function newTreasureRoom1(rng)
 	local bp = Blueprint.new(TREASURE_ROOM, "Treasure Room", rgba8(255, 210, 74, 255))
+	local excludedAreas = { { min = vec(-200, -100), max = vec(-100, 100) }, { min = vec(100, -100), max = vec(200, 100) } }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+	return bp
+end
+
+---@return Blueprint
+-- sala inicial do primeiro andar
+function newInitialRoom1(rng)
+	local bp = Blueprint.new(INITIAL_ROOM, "Initial Room", rgba8(255, 255, 255, 255))
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	-- TODO: botar decoração bonitinha aqui
+
 	return bp
 end

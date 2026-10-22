@@ -52,6 +52,11 @@ PARTICLES_SETTINGS = {
 		end,
 		emitAtStart = 12,
 	},
+	[PARTICLE_MOAI_BOSS_STARTING] = {
+		constructor = function()
+			return newMoaisBossStartingParticles()
+		end
+	},
 	[PARTICLE_PUZZLE_STONE_MOVING] = {
 		constructor = function()
 			return newPuzzleStoneMovingParticles()

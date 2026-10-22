@@ -1,7 +1,6 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
-require("modules.constructors.dialogues")
 require("modules.constructors.uimanagers")
 require("modules.constructors.vfxs")
 require("modules.engine.animation")
@@ -43,6 +42,7 @@ window = { scale = 1, initialW = 1280, initialH = 720 }
 gameCtx = MENU_CTX
 local updateProfile
 local drawProfile
+local worldWasPaused = false -- se o mundo estava pausado no frame anterior
 
 lightLevels = 7
 
@@ -51,6 +51,7 @@ lightLevels = 7
 ----------------------------------------
 
 function love.keypressed(key, scancode, isrepeat)
+	globalUIManager:registerAnyInput()
 	globalUIManager:handleInput(key)
 	for _, p in pairs(players) do
 		p.uiManager:handleInput(key)
@@ -103,6 +104,26 @@ function love.keypressed(key, scancode, isrepeat)
 	-------- FIM DEBUG --------
 end
 
+function love.gamepadpressed(joystick, button)
+	globalUIManager:registerAnyInput()
+end
+
+function love.joystickpressed(joystick, button)
+	globalUIManager:registerAnyInput()
+end
+
+function love.gamepadaxis(joystick, axis, value)
+	if math.abs(value) >= 0.2 then
+		globalUIManager:registerAnyInput()
+	end
+end
+
+function love.joystickaxis(joystick, axis, value)
+	if math.abs(value) >= 0.2 then
+		globalUIManager:registerAnyInput()
+	end
+end
+
 function love.joystickadded(joystick)
 	if gameCtx == GAMEPLAY_CTX and joystick:isGamepad() then
 		newPlayer(joystick)
@@ -129,6 +150,7 @@ function love.keyreleased(key, scancode)
 end
 
 function love.textinput(t)
+	globalUIManager:registerAnyInput()
 	globalUIManager:handleTextInput(t)
 	for _, p in pairs(players) do
 		p.uiManager:handleTextInput(t)
@@ -147,6 +169,7 @@ local function getKeyboardPlayer()
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
+	globalUIManager:registerAnyInput()
 	if button ~= 1 then
 		return
 	end
@@ -179,6 +202,7 @@ function love.mousepressed(x, y, button, istouch, presses)
 end
 
 function love.wheelmoved(dx, dy)
+	globalUIManager:registerAnyInput()
 	if gameCtx ~= GAMEPLAY_CTX or dy == 0 then
 		return
 	end
@@ -241,6 +265,7 @@ function love.load()
 
 	-- definindo a fonte padrão do jogo
 	mushFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 16)
+	mushMidFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 24)
 	mushBigFont = love.graphics.newFont("assets/fonts/Tiny5-Regular.ttf", 32)
 	love.graphics.setFont(mushFont)
 
@@ -269,6 +294,16 @@ function love.update(dt)
 	-- viewport) e a posição do cursor de cada jogador de teclado/mouse
 	mouseManager:update(dt)
 
+	-- sincroniza os loops de som (passos, defesa...) com a pausa do mundo.
+	-- ao pausar, para os loops; ao despausar, retoma exatamente os mesmos
+	local worldPaused = isWorldPaused()
+	if worldPaused and not worldWasPaused then
+		globalAudioManager:stopLoopingSounds()
+	elseif worldWasPaused and not worldPaused then
+		globalAudioManager:resumeLoopingSounds()
+	end
+	worldWasPaused = worldPaused
+
 	-- pulando o update de gameplay enquanto está no menu
 	if gameCtx == MENU_CTX then
 		goto skipgameplay
@@ -276,7 +311,7 @@ function love.update(dt)
 
 	-- mundo pausado congela salas/colisões/câmeras/partículas, mas
 	-- mantém controles e UI dos players atualizados para o menu de pausa
-	if isWorldPaused() then
+	if worldPaused then
 		for _, p in pairs(players) do
 			p.controls:update(dt)
 			p.uiManager:update(dt)
@@ -336,7 +371,7 @@ function love.draw()
 
 	globalUIManager:draw()
 
-	if debugMode then
+	if debugMode or showFPSCounter then
 		drawFPSVisor()
 	end
 

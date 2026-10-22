@@ -280,9 +280,14 @@ end
 ---@param restDuration number
 ---@param jumpForce number
 ---@param easingFunc function
----@param sync number
+---@param sync? number
+---@param angleVariance? number
+---@param restVariance? number
 ---@return MovementFunc
-function jumpToTargetMovement(jumpDuration, restDuration, jumpForce, easingFunc, sync)
+function jumpToTargetMovement(jumpDuration, restDuration, jumpForce, easingFunc, sync, angleVariance, restVariance)
+	local angleVar = angleVariance or 0
+	local restVar = restVariance or 0
+	local currentRest = restDuration + (math.random() * 2 - 1) * restVar
 	local timer = sync or 0.0
 	local isJumping = false
 	local jumpDir = nil
@@ -313,18 +318,23 @@ function jumpToTargetMovement(jumpDuration, restDuration, jumpForce, easingFunc,
 				isJumping = false
 				timer = 0
 				jumpDir = nil
+				currentRest = restDuration + (math.random() * 2 - 1) * restVar
 			end
 		else
 			-- fase de preparo para o próximo pulo
-			if timer >= restDuration then
+			if timer >= currentRest then
 				isJumping = true
 				timer = 0
 				-- trava a direção do pulo no exato momento em que ele sai do chão
 				jumpDir = normalize(subVec(entity.moveTargeting.targetPos, entity.pos))
+				if angleVar > 0 then
+					jumpDir = rotateVec(jumpDir, (math.random() * 2 - 1) * angleVar)
+				end
 			end
 		end
 	end
 end
+
 
 ---@param duration number
 ---@param baseCooldown number

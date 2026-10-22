@@ -1,7 +1,7 @@
 require("modules.systems.recipe")
 require("modules.utils.entities")
 
-FIRECAMP_RECIPE = Recipe.new({ craftInput(CASKIN, 10), craftInput(PEDACITO, 3) }, FIRECAMP)
+FIRECAMP_RECIPE = Recipe.new({ craftInput(CASKIN, 10), craftInput(FAFOGO, 3) }, FIRECAMP)
 
 CHEST_RECIPE = Recipe.new({ craftInput(CASKIN, 15), craftInput(PORRO, 3) }, CHEST)
 

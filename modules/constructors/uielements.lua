@@ -43,11 +43,9 @@ function newResourceItemElement(resource, pos, onClick, quantityBounds)
 		local previousFont = love.graphics.getFont()
 		local r, g, b, a = love.graphics.getColor()
 
-		love.graphics.setFont(mushBigFont)
-		love.graphics.setColor(0, 0, 0, 0.85)
-		love.graphics.printf(quantity, textX + 3, textY - 3, textWidth, "right") -- texto sombreado
-		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.printf(quantity, textX, textY, textWidth, "right")   -- texto normal
+		love.graphics.setFont(mushMidFont)
+		love.graphics.setColor(110 / 255, 175 / 255, 112 / 255, 1)
+		love.graphics.printf(quantity, textX, textY, textWidth, "right") -- texto normal
 
 		love.graphics.setFont(previousFont)
 		love.graphics.setColor(r, g, b, a)
@@ -61,7 +59,10 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	local vec = vec(x * vecOffset.x, y * vecOffset.y)
 	local finalPos = addVec(coordStart, vec)
 	local onClick = function(self)
-		self.ctx.player:startBuildingMode(CONSTRUCTORS[PRODUCT][recipe.output.name]())
+		local p = self.ctx.player
+		if recipe:canCraftWith(p.inventory) then
+			p:startBuildingMode(CONSTRUCTORS[PRODUCT][itemName](), recipe)
+		end
 	end
 	local itemEl = UIButtonElem.new(itemName, finalPos, size(96, 96), nil, onClick)
 	local animSettings = {}

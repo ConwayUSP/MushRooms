@@ -10,11 +10,71 @@ require("modules.UI.elements.link")
 require("modules.UI.elements.map")
 require("modules.UI.elements.text")
 require("modules.UI.elements.textbox")
+require("modules.UI.elements.switch")
 require("modules.constructors.uielements")
 
 ----------------------------------------
 -- Cenas Globais
 ----------------------------------------
+
+---@param sceneType Type
+---@param logoPath string
+---@param nextScene Type
+---@return UIScene
+local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur, fadeOutDur)
+	local scene = UIScene.new(sceneType)
+	scene.logo = assetManager:getImage(logoPath)
+	scene.elapsed = 0
+
+	function scene:onActive()
+		self.elapsed = 0
+	end
+
+	function scene:advance()
+		self.manager:deactivateScene(self.subtype)
+		self.manager:activateScene(nextScene)
+	end
+
+	function scene:update(dt)
+		self.elapsed = self.elapsed + dt
+		if self.manager.controls:consumeAnyInput() or self.elapsed >= introDur then
+			self:advance()
+		end
+	end
+
+	function scene:draw()
+		local alpha = 1
+		if self.elapsed < fadeInDur then
+			alpha = self.elapsed / fadeInDur
+		elseif self.elapsed > introDur - fadeOutDur then
+			alpha = (introDur - self.elapsed) / fadeOutDur
+		end
+
+		local maxSize = 512
+		local scale = math.min(maxSize / self.logo:getWidth(), maxSize / self.logo:getHeight())
+		love.graphics.clear(0, 0, 0, 1)
+		love.graphics.setColor(1, 1, 1, math.max(0, alpha))
+		love.graphics.draw(self.logo, 640, 360, 0, scale, scale, self.logo:getWidth() / 2, self.logo:getHeight() / 2)
+		love.graphics.setColor(1, 1, 1, 1)
+	end
+
+	return scene
+end
+
+function initAmanitaIntroScene()
+	return newIntroScene(
+		UI_INTRO_AMANITA_SCENE,
+		"assets/sprites/logos/logo_amanita.png",
+		UI_INTRO_CONWAY_SCENE,
+		4,
+		1.5,
+		0.5
+	)
+end
+
+function initConwayIntroScene()
+	return newIntroScene(UI_INTRO_CONWAY_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 0.5, 1.5)
+end
 
 function initMenuScene()
 	local menuScene = UIScene.new(UI_MENU_SCENE)
@@ -65,7 +125,7 @@ function initSettingsScene()
 		globalUIManager:activateScene(UI_CONTROLS_SCENE)
 	end)
 	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
-		print("OPÇÕES DE GRÁFICOS")
+		globalUIManager:activateScene(UI_GRAPHICS_SCENE)
 	end)
 	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
 		print("CRÉDITOS")
@@ -136,6 +196,74 @@ function initControlsScene()
 	controlsScene:addElement(joystickBinds, BG_LAYER_2, vec(3, 1))
 
 	return controlsScene
+end
+
+function initGraphicsSettingsScene()
+	local graphicsScene = UIScene.new(UI_GRAPHICS_SCENE)
+	-- ELEMENTOS
+	local graphicsBg = UIImageElem.new("graphics settings bg", vec(640, 360), size(1280, 720))
+	local fullscreenLabel = UITextElem.new(
+		"fullscreen label",
+		vec(430, 216),
+		size(260, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"Fullscreen",
+		true
+	)
+	local fullscreenSwitch = UISwitchElem.new("switch", vec(770, 240), size(96, 48), nil, love.window.getFullscreen(), function(isOn)
+		love.window.setFullscreen(isOn)
+	end)
+	local vsyncLabel = UITextElem.new(
+		"vsync label",
+		vec(430, 336),
+		size(260, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"VSync",
+		true
+	)
+	local vsyncSwitch = UISwitchElem.new("switch", vec(770, 360), size(96, 48), nil, love.window.getVSync() ~= 0, function(isOn)
+		love.window.setVSync(isOn and 1 or 0)
+	end)
+	local fpsLabel = UITextElem.new(
+		"fps label",
+		vec(430, 456),
+		size(260, 48),
+		3,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"FPS Counter",
+		true
+	)
+	local fpsSwitch = UISwitchElem.new("switch", vec(770, 480), size(96, 48), nil, showFPSCounter, function(isOn)
+		showFPSCounter = isOn
+	end)
+
+	-- ANIMAÇÕES
+	local bgAnimSettings = {}
+	bgAnimSettings[IDLE] = newAnimSetting(1, size(320, 180), 1000, true, 1)
+	graphicsBg:addAnimations(bgAnimSettings)
+
+	-- SETUP DA CENA
+	graphicsScene:addElement(graphicsBg, BG_LAYER_1, vec(1, 1))
+	graphicsScene:addElement(fullscreenLabel, BG_LAYER_2, vec(1, 1))
+	graphicsScene:addElement(fullscreenSwitch, ELEM_LAYER_1, vec(1, 1))
+	graphicsScene:addElement(vsyncLabel, BG_LAYER_2, vec(2, 1))
+	graphicsScene:addElement(vsyncSwitch, ELEM_LAYER_1, vec(1, 2))
+	graphicsScene:addElement(fpsLabel, BG_LAYER_2, vec(3, 1))
+	graphicsScene:addElement(fpsSwitch, ELEM_LAYER_1, vec(1, 3))
+
+	-- reflete os valores atuais toda vez que a cena é aberta
+	graphicsScene.onActive = function()
+		fullscreenSwitch:setOn(love.window.getFullscreen())
+		vsyncSwitch:setOn(love.window.getVSync() ~= 0)
+		fpsSwitch:setOn(showFPSCounter)
+	end
+
+	return graphicsScene
 end
 
 ----------------------------------------
@@ -245,7 +373,7 @@ function newPauseSettingsScene(player)
 		globalUIManager:activateScene(UI_CONTROLS_SCENE)
 	end)
 	local displayBtn = UIButtonElem.new("settings display btn", vec(656, 380), size(832, 96), nil, function()
-		print("OPÇÕES DE GRÁFICOS")
+		globalUIManager:activateScene(UI_GRAPHICS_SCENE)
 	end)
 	local creditsBtn = UIButtonElem.new("settings credits btn", vec(656, 500), size(832, 96), nil, function()
 		print("CRÉDITOS")
@@ -745,9 +873,42 @@ function newCraftingScene(player)
 				local spritePath = pngPathFormat({ "assets", "sprites", "resources", resName })
 				local ingredientEl =
 					newCraftingItemPreviewElement(resName, vec(slotX, ingredientsY), size(96, 96), spritePath, 32)
+
+				-- "tenho/preciso" no canto do slot, igual aos slots do inventário
+				local owned = self.player.inventory:countItem(input[1])
+				ingredientEl.count = owned .. "/" .. qty
+				ingredientEl.draw = function(el, camera)
+					UIElement.draw(el, camera)
+
+					local viewX, viewY = el.pos.x, el.pos.y
+					if camera then
+						viewX, viewY = camera:viewPos(el.pos)
+					end
+
+					local padding = 10
+					local textX = viewX - sizeMiniSlot.width / 2 + 6
+					local textY = viewY + sizeMiniSlot.height / 2 - mushFont:getHeight() - padding
+					local textWidth = sizeMiniSlot.width - padding * 2
+					local previousFont = love.graphics.getFont()
+					local r, g, b, a = love.graphics.getColor()
+
+					love.graphics.setFont(mushMidFont)
+					love.graphics.setColor(105 / 255, 163 / 255, 179 / 255, 1) -- cor da borda do slot
+					love.graphics.printf(el.count, textX, textY, textWidth, "right")
+
+					love.graphics.setFont(previousFont)
+					love.graphics.setColor(r, g, b, a)
+				end
+
 				self:addElement(ingredientEl, VISUAL_LAYER_2, vec(i, 4))
 			end
 		end
+	end
+
+	-- refaz os detalhes ao abrir a cena: os recursos do jogador podem ter
+	-- mudado desde a última vez que ela foi vista
+	function invScene:onActive()
+		self:onSelectionChange()
 	end
 
 	invScene:onSelectionChange()
@@ -945,6 +1106,7 @@ function newBossLifeBarScene(room)
 	end
 
 	local lifeBarEl = UILifeBarElem.new("boss lifebar", vec(640, 50), size(640, 64), lifeCalc)
+	-- TODO: acrescentar elemento com NOME do(s) boss(s) logo acima da LifeBar
 
 	-- SETUP DA CENA
 	lifeBarScene:addElement(lifeBarEl, ELEM_LAYER_1, vec(1, 1))
@@ -1244,4 +1406,3 @@ function newPlayerDefenseCooldownBarScene(player)
 	scene:hide()
 	return scene
 end
-

@@ -22,6 +22,7 @@ BATTLE_ROOM = "battle room"
 BOSS_ROOM = "boss room"
 EVENT_ROOM = "event room"
 TREASURE_ROOM = "treasure room"
+INITIAL_ROOM = "initial room"
 
 ---@alias RoomType
 ---| `PUZZLE_ROOM`
@@ -31,6 +32,7 @@ TREASURE_ROOM = "treasure room"
 ---| `BOSS_ROOM`
 ---| `EVENT_ROOM`
 ---| `TREASURE_ROOM`
+---| `INITIAL_ROOM`
 
 ---------- ATAQUES ----------
 ATTACK = "attack"
@@ -83,9 +85,12 @@ UI_IMAGE_ELEM = "UI image element"
 UI_BUTTON_ELEM = "UI button element"
 UI_TEXTBOX_ELEM = "UI textbox element"
 UI_TEXT_ELEM = "UI text element"
+UI_INTRO_AMANITA_SCENE = "UI intro Amanita scene"
+UI_INTRO_CONWAY_SCENE = "UI intro Conway scene"
 UI_MENU_SCENE = "UI menu scene"
 UI_SETTINGS_SCENE = "UI settings scene"
 UI_CONTROLS_SCENE = "UI controls scene"
+UI_GRAPHICS_SCENE = "UI graphics settings scene"
 UI_EQUIPMENT_SCENE = "UI player equipment scene"
 UI_INVENTORY_SCENE = "UI player inventory scene"
 UI_MAP_SCENE = "UI player map scene"
@@ -125,6 +130,7 @@ AUDIO_CLOSE = "close audio"
 ---------- PARTICLES ----------
 PARTICLE_WALKING = "walking particle"
 PARTICLE_TREASURE_DISAPPEAR = "treasure disappear particle"
+PARTICLE_MOAI_BOSS_STARTING = "moai boss starting particle"
 PARTICLE_DEFENSE = "defense particle"
 PARTICLE_HIT = "hit particle"
 PARTICLE_BREAKING = "breaking particle"

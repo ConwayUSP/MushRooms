@@ -17,6 +17,8 @@ BLUEPRINTS[BATTLE_ROOM] = { new3SpotsBattleRoom, new4SpotsBattleRoom, new5SpotsB
 BLUEPRINTS[BOSS_ROOM] = { newAncientMoaiBossRoom } --newBossRoom1
 BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
 BLUEPRINTS[TREASURE_ROOM] = { newTreasureRoom1 }
+-- TODO: fazer ser escalável para que cada andar tenha sua própria sala inicial
+BLUEPRINTS[INITIAL_ROOM] = { newInitialRoom1 }
 
 ----------------------------------------
 -- Classe SpawnData
@@ -88,11 +90,12 @@ end
 ---@field spawnpoints SpawnPoint[]
 ---@field puzzles PuzzleBlueprintEntry[]
 ---@field insert fun(self: Blueprint, spawnpoint: SpawnPoint): Blueprint
----@field addPuzzle fun(self: Blueprint, constructor: fun(room: Room, settings: table): Puzzle, settings: table): Blueprint
+---@field addPuzzle fun(self: Blueprint, constructor: fun(room: Room, settings: table): Puzzle, settings: table, rewards: table): Blueprint
 
 ---@class PuzzleBlueprintEntry
 ---@field constructor fun(room: Room, settings: table): Puzzle
 ---@field settings table
+---@field rewards table
 
 Blueprint = {}
 Blueprint.__index = Blueprint
@@ -127,10 +130,11 @@ end
 
 ---@param constructor fun(room: Room, settings: table): Puzzle
 ---@param settings table
+---@param rewards? table
 ---@return Blueprint
 -- registra um puzzle a ser construído quando a sala for criada
-function Blueprint:addPuzzle(constructor, settings)
-	table.insert(self.puzzles, { constructor = constructor, settings = settings })
+function Blueprint:addPuzzle(constructor, settings, rewards)
+	table.insert(self.puzzles, { constructor = constructor, settings = settings, rewards = rewards })
 	return self
 end
 
