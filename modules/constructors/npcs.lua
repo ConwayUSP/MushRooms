@@ -25,7 +25,8 @@ function initTenkar(spawnPos, room)
 	animSettings[SPEAKING] = newAnimSetting(7, { width = 50, height = 50 }, 0.3, true)
 	npc:addAnimations(animSettings)
 	npc.dialogue = tenkarDialogue()
-	npc.shadowWidth = 30
+	npc.shadowWidth = 55
+	npc.shadowDist = 22
 	return npc
 end
 

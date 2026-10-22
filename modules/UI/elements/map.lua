@@ -48,6 +48,7 @@ function UIMapElem:addSprites()
 		Shroom_icon = assetManager:getImage("assets/animations/ui/map_player_icons/map_shroom_icon.png"),
 		Tenkar_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_tenkar.png"),
 		ShoumShoum_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_shoumshoum.png"),
+		Biguiri_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_biguiri.png"),
 		start_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_start.png"),
 		puzzle_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_puzzle.png"),
 		treasure_icon = assetManager:getImage("assets/animations/ui/map_misc_icons/icon_treasure.png"),
@@ -178,6 +179,9 @@ function UIMapElem:draw(camera)
 						elseif npc.name == SHOUM_SHOUM.name then
 							self:drawIcon("ShoumShoum_icon", viewX, viewY, roomX, roomY)
 
+						elseif npc.name == BIGUIRI.name then
+							self:drawIcon("Biguiri_icon", viewX, viewY, roomX, roomY)
+						
 						end
 					end
 				end
