@@ -72,7 +72,8 @@ BLUEPRINTS = {
 		newBiguiriRoom,
 	},
 	[PUZZLE_ROOM] = {
-		newSmallPuzzleRoom,
+		newSmallPuzzleRoomDash,
+		newSmallPuzzleRoomRing
 	},
 	[TREASURE_ROOM] = {
 		newTreasureRoom1,
@@ -126,10 +127,14 @@ ROOM_RULES = {
 			return math.abs(pos.x) + math.abs(pos.y) >= ROOM_POSITION_RADIUS
 		end,
 	},
-	[newSmallPuzzleRoom] = {
+	[newSmallPuzzleRoomDash] = {
 		count = 0,
 		maxCount = 1,
 	},
+	[newSmallPuzzleRoomRing] = {
+		count = 0,
+		maxCount = 1,
+	},	
 	[newAncientMoaiBossRoom] = {
 		count = 0,
 		maxCount = 1,

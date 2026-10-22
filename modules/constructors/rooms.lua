@@ -17,7 +17,7 @@ require("modules.utils.roomgeneration")
 
 ---@return Blueprint
 -- sala de puzzle pequena 4x4
-function newSmallPuzzleRoom(rng)
+function newSmallPuzzleRoomDash(rng)
 	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 4x4", rgba8(12, 253, 255, 255))
 	local gridSize = vec(4, 4)
 	local decorationMargin = 100
@@ -36,6 +36,32 @@ function newSmallPuzzleRoom(rng)
 		},
 	}
 	local rewards = { newRainbowDash }
+	bp:addPuzzle(GridPuzzle.new, settings, rewards)
+
+	return bp
+end
+
+---@return Blueprint
+-- sala de puzzle pequena 4x4
+function newSmallPuzzleRoomRing(rng)
+	local bp = Blueprint.new(PUZZLE_ROOM, "Puzzle Room 4x4", rgba8(12, 253, 255, 255))
+	local gridSize = vec(4, 4)
+	local decorationMargin = 100
+	local excludedAreas = { GridPuzzle.exclusionArea(gridSize, decorationMargin) }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedAreas)
+
+	local settings = {
+		size = gridSize,
+		centerSize = vec(2, 2),
+		pins = GridPuzzle.fullPerimeterPins(gridSize),
+		stones = {
+			{ id = "stone-up-left", cell = vec(4, 1), direction = vec(1, 1) },
+			{ id = "stone-up-right", cell = vec(4, 4), direction = vec(-1, 1) },
+			{ id = "stone-down-left", cell = vec(1, 1), direction = vec(1, -1) },
+			{ id = "stone-down-right", cell = vec(1, 4), direction = vec(-1, -1) },
+		},
+	}
+	local rewards = { newInvisibilityRing }
 	bp:addPuzzle(GridPuzzle.new, settings, rewards)
 
 	return bp
