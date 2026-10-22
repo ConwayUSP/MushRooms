@@ -233,7 +233,7 @@ function newBlackholeAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder)
 		hb = hbs,
 		cooldown = cooldown,
 		initialSpeed = speed,
-		initialMass = 0, -- massa 0 = corpo estático no motor de colisão
+		initialMass = 0, -- massa 0 = corpo estático (não é empurrado pelo)
 		restitution = 0,
 		friction = 0.8,
 		bounces = 0,

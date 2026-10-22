@@ -10,6 +10,7 @@ require("modules.engine.collisionmanager")
 require("modules.engine.renderization")
 require("modules.engine.assetmanager")
 require("modules.engine.audiomanager")
+require("modules.engine.screentransition")
 require("modules.entities.destructible")
 require("modules.entities.enemy")
 require("modules.entities.drop")
@@ -251,6 +252,9 @@ function love.load()
 	globalAudioManager = AudioManager.init()
 	globalAudioManager:play(MUSIC_MENU)
 
+	-- carregando a transição de tela (menu <-> gameplay)
+	globalScreenTransition = ScreenTransition.init()
+
 	-- carregando a biblioteca de UI
 	globalUIManager = initGlobalUIManager()
 
@@ -309,6 +313,16 @@ function love.update(dt)
 		goto skipgameplay
 	end
 
+	-- transição de tela congela o mundo (nada morre nem se move no meio
+	-- da troca), mas segue drenando o input para não deixar justPressed
+	-- órfão vazar para depois do efeito
+	if globalScreenTransition:isActive() then
+		for _, p in pairs(players) do
+			p.controls:update(dt)
+		end
+		goto skipgameplay
+	end
+
 	-- mundo pausado congela salas/colisões/câmeras/partículas, mas
 	-- mantém controles e UI dos players atualizados para o menu de pausa
 	if worldPaused then
@@ -339,13 +353,22 @@ function love.update(dt)
 	---------- Partículas ---------
 	globalVFXManager:update(dt)
 
+	----------- Música -----------
+	updateGameplayMusic()
+
 	::skipgameplay::
-	-- processa trocas de mundo adiadas (retry/home) após todos os updates
+	-- avança a transição de tela: é ela que agenda a troca de mundo no
+	-- ponto médio (quando o shader cobriu toda a tela)
+	globalScreenTransition:update(dt)
+	-- processa trocas de mundo adiadas (start/retry/home) após todos os updates
 	processPendingWorldAction()
 
 	-------------- UI -------------
-	globalUIManager:update(dt)
-	updateFPSVisor(dt)
+	-- com a tela coberta a UI fica congelada: nenhum clique ou tecla passa
+	if not globalScreenTransition:isActive() then
+		globalUIManager:update(dt)
+		updateFPSVisor(dt)
+	end
 
 	------------ Áudio ------------
 	globalAudioManager:update(dt)
@@ -374,6 +397,9 @@ function love.draw()
 	if debugMode or showFPSCounter then
 		drawFPSVisor()
 	end
+
+	-- overlay da transição por cima de tudo (cobre também o FPS visor)
+	globalScreenTransition:draw()
 
 	-- encerrando o profiling
 	-- drawProfile:stop()

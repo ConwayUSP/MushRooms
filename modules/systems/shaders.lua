@@ -11,6 +11,7 @@ particleShader = love.graphics.newShader("shaders/particle.glsl")
 seeThroughShader = love.graphics.newShader("shaders/seethrough.glsl")
 glowShader = love.graphics.newShader("shaders/glow.glsl")
 darkVignetteShader = love.graphics.newShader("shaders/darkvignette.glsl")
+transitionShader = love.graphics.newShader("shaders/transition.glsl")
 
 rescaleShader:send("new_res", { 20, 20 })
 

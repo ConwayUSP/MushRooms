@@ -54,7 +54,7 @@ function startGame()
 	----------------------------------------------------------
 	gameCtx = GAMEPLAY_CTX
 	globalUIManager:deactivateAllScenes()
-	globalAudioManager:changeMusic(MUSIC_LAYER1, 0.8)
+	globalAudioManager:changeMusic(MUSIC_STD, MUSIC_FADE_DURATION)
 end
 
 function quitGame()
@@ -70,6 +70,42 @@ function isWorldPaused()
 		end
 	end
 	return false
+end
+
+---@param room Room?
+---@return string
+-- devolve a música de gameplay que a sala atual deveria estar tocando
+function musicForRoom(room)
+	if not room then
+		return MUSIC_STD
+	end
+
+	if room.roomType == BATTLE_ROOM or room.roomType == BOSS_ROOM then
+		if room:isInCombat() then
+			return MUSIC_BATTLE
+		end
+	elseif room.roomType == PUZZLE_ROOM then
+		if room:isPuzzlePending() then
+			return MUSIC_PUZZLE
+		end
+	end
+
+	return MUSIC_STD
+end
+
+--- sincroniza a música de gameplay com a sala do primeiro player.
+-- o crossfade é gradual e não reinicia a faixa se ela já é o alvo
+function updateGameplayMusic()
+	if gameCtx ~= GAMEPLAY_CTX then
+		return
+	end
+
+	local player = players[1]
+	if not player or not player.room then
+		return
+	end
+
+	globalAudioManager:changeMusic(musicForRoom(player.room), MUSIC_FADE_DURATION)
 end
 
 -- ação de mundo adiada para o fim do frame (evita mutar `players` durante iteração)
@@ -95,14 +131,34 @@ local function cleanupWorld()
 	globalAudioManager:stopLoopingSounds()
 end
 
---- agenda a troca para o menu no fim do frame atual
-function returnToMenu()
-	pendingWorldAction = "menu"
+---@param action string
+-- inicia uma transição de tela e agenda `action` para o ponto médio (a tela
+-- está totalmente coberta). se já há uma transição, o pedido é ignorado
+local function requestWorldAction(action)
+	if not globalScreenTransition or globalScreenTransition:isActive() then
+		return
+	end
+
+	globalScreenTransition:start({
+		onMidpoint = function()
+			pendingWorldAction = action
+		end,
+	})
 end
 
---- agenda o restart do mundo com a mesma seed no fim do frame atual
+--- inicia o jogo a partir do menu, com transição de tela
+function startFromMenu()
+	requestWorldAction("start")
+end
+
+--- agenda a troca para o menu no meio da transição de tela
+function returnToMenu()
+	requestWorldAction("menu")
+end
+
+--- agenda o restart do mundo com a mesma seed no meio da transição de tela
 function retryGame()
-	pendingWorldAction = "retry"
+	requestWorldAction("retry")
 end
 
 --- processa a ação de mundo adiada, se houver (chamar após os updates de player)
@@ -117,9 +173,11 @@ function processPendingWorldAction()
 		gameCtx = MENU_CTX
 		globalUIManager:deactivateAllScenes()
 		globalUIManager:activateScene(UI_MENU_SCENE)
-		globalAudioManager:changeMusic(MUSIC_MENU, 0.8)
+		globalAudioManager:changeMusic(MUSIC_MENU, MUSIC_FADE_DURATION)
 	elseif action == "retry" then
 		cleanupWorld()
+		startGame()
+	elseif action == "start" then
 		startGame()
 	end
 end

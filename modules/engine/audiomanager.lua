@@ -10,9 +10,9 @@ require("modules.utils.types")
 
 local AUDIO_LOOP_TABLE = {
 	[MUSIC_MENU] = true,
-	[MUSIC_LAYER1] = true,
-	[MUSIC_LAYER2] = true,
-	[MUSIC_LAYER3] = true,
+	[MUSIC_STD] = true,
+	[MUSIC_BATTLE] = true,
+	[MUSIC_PUZZLE] = true,
 	[AUDIO_MOVEMENT] = true,
 	[AUDIO_GET_HIT] = false,
 	[AUDIO_DEFENSE] = true,
@@ -22,8 +22,20 @@ local AUDIO_LOOP_TABLE = {
 -- se o áudio não estiver na tabela, o padrão é 1
 local AUDIO_VOLUME_TABLE = {
 	[MUSIC_MENU] = 0.75,
-	[MUSIC_LAYER1] = 0.25,
+	[MUSIC_STD] = 0.75,
+	[MUSIC_BATTLE] = 0.75,
+	[MUSIC_PUZZLE] = 0.75,
 }
+
+-- duração padrão (em segundos) do crossfade entre músicas
+MUSIC_FADE_DURATION = 1.5
+
+-- o tipo de áudio é uma música se o nome do arquivo começa com "music "
+---@param audioType string
+---@return boolean
+local function isMusicType(audioType)
+	return audioType:sub(1, 6) == "music "
+end
 
 -- variância no pitch/velocidade de cada áudio (de 0 a 1).
 -- se o áudio não estiver na tabela, o padrão é 0
@@ -173,7 +185,7 @@ function AudioManager:play(audioType, owner, path)
 	end
 
 	local pathParts = { "assets", "audios" }
-	local isMusic = audioType:sub(#audioType - 4, #audioType) == "music"
+	local isMusic = isMusicType(audioType)
 	if path then
 		table.insert(pathParts, "shared")
 		table.insert(pathParts, path)
@@ -298,9 +310,15 @@ function AudioManager:resumeLoopingSounds()
 end
 
 ---@param audioType string
----@param fadeDuration number
+---@param fadeDuration number?
+-- faz o crossfade gradual até `audioType`. se já é a música alvo, não
+-- reinicia nada (entrar em outra sala do mesmo tipo não corta a faixa)
 function AudioManager:changeMusic(audioType, fadeDuration)
-	fadeDuration = fadeDuration or 2.0
+	if self.targetMusic == audioType then
+		return
+	end
+
+	fadeDuration = fadeDuration or MUSIC_FADE_DURATION
 	self.fadeRate = 1.0 / fadeDuration
 	self.targetMusic = audioType
 

@@ -4,6 +4,7 @@
 require("modules.constructors.craftings")
 require("modules.engine.animation")
 require("modules.engine.audiomanager")
+require("modules.engine.screentransition")
 require("modules.engine.vfxmanager")
 require("modules.entities.mortal")
 require("modules.entities.artifact")
@@ -120,6 +121,8 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.building = nil -- construção que o player está posicionando para construir
 	player.recipe = nil -- construção que o player está posicionando para construir
 	player.buildingModeTimer = 0
+	-- dissolve da morte/respawn: cobre só a tela (canvas) deste player
+	player.screenTransition = ScreenTransition.new()
 	player.defaultInvulnerableTime = 0.25
 	player.hasShadow = true -- indica se a entidade tem sombra (pode ser usada para efeitos visuais)
 	player.shadowWidth = 25
@@ -182,6 +185,11 @@ end
 -- move o `Player`, atualiza seu estado e o de suas animações e efeitos de partícula
 function Player:update(dt)
 	self.controls:update(dt)
+	-- dissolve da morte/respawn deste player: o mundo segue rodando, só a
+	-- tela dele escurece e o respawn acontece no ponto médio (tela coberta)
+	if self.screenTransition then
+		self.screenTransition:update(dt)
+	end
 	if self.state == DYING then
 		self.candidateInteractives = {}
 		self.interactiveObj = nil
@@ -741,15 +749,37 @@ function Player:takeDamage(damage)
 	getCameraByPlayer(self):shake(damage / 5, 0.5)
 end
 
--- tenta reespawnar quando está morto
+-- tenta reespawnar quando está morto: espera a animação de morte e então
+-- dissolve só a tela deste player (o mundo segue rodando). o respawn
+-- acontece no ponto médio, quando a tela está totalmente coberta
 function Player:tryRespawn()
 	if self.deathTimer < 2 then
 		return
 	end
+
+	local transition = self.screenTransition
+	if not transition then
+		self:respawn()
+		return
+	end
+	if transition:isActive() then
+		-- já cobrindo; o respawn roda no ponto médio
+		return
+	end
+
+	transition:start({
+		onMidpoint = function()
+			self:respawn()
+		end,
+	})
+end
+
+-- volta o player para o ponto de respawn com a vida cheia
+function Player:respawn()
 	-- movendo player de uma sala para a outra
 	self.pos = respawnPos
 	collisionManager:onPlayerRoom(self, rooms[respawnRoom.y][respawnRoom.x])
-	-- resetando os estados e
+	-- resetando os estados e a vida
 	collisionManager:register(self)
 	if #self.weapons > 0 then
 		self:equipWeapon(self.weapons[1].name)

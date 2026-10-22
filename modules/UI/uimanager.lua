@@ -329,6 +329,11 @@ end
 ---@param py number
 -- ativa o elemento sob o cursor do mouse ao clicar
 function UIManager:handleMouseClick(px, py)
+	-- transição de tela ativa: nenhuma entrada de UI passa
+	if globalScreenTransition and globalScreenTransition:isActive() then
+		return
+	end
+
 	local activeScene = self.activeScenes[#self.activeScenes]
 	if not activeScene then
 		return
@@ -345,6 +350,11 @@ end
 
 ---@param key? string
 function UIManager:handleInput(key)
+	-- transição de tela ativa: nenhuma entrada de UI passa
+	if globalScreenTransition and globalScreenTransition:isActive() then
+		return
+	end
+
 	-- abre a pausa quando nada está ativo, fecha quando a pausa é a cena do topo.
 	-- tratado antes de ACT_EXT porque no teclado ambos são "escape".
 	-- se outra cena estiver aberta, cai no ACT_EXT para fechá-la normalmente.
@@ -373,6 +383,10 @@ function UIManager:handleInput(key)
 end
 
 function UIManager:handleTextInput(t)
+	-- transição de tela ativa: nenhuma entrada de UI passa
+	if globalScreenTransition and globalScreenTransition:isActive() then
+		return
+	end
 	local activeScene = self.activeScenes[#self.activeScenes]
 	if activeScene then
 		self.scenes[activeScene]:handleTextInput(t)
@@ -381,6 +395,10 @@ end
 
 -- encaminha uma entrada física sem mapeamento para o módulo de controles.
 function UIManager:registerAnyInput()
+	-- transição de tela ativa: nenhuma entrada de UI passa
+	if globalScreenTransition and globalScreenTransition:isActive() then
+		return
+	end
 	self.controls:registerAnyInput()
 end
 

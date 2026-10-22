@@ -269,6 +269,13 @@ function Camera:draw()
 	-- renderiza o cursor de mira por cima de tudo
 	renderAimCursor(self)
 
+	-- dissolve da morte/respawn: cobre só a tela (canvas) deste player,
+	-- por cima da UI dele, sem afetar as telas dos outros players
+	local transition = self.playerAttached and self.playerAttached.screenTransition
+	if transition then
+		transition:draw(self.viewport.width, self.viewport.height)
+	end
+
 	love.graphics.setCanvas()
 
 	love.graphics.push()

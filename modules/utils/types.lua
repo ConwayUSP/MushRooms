@@ -108,10 +108,12 @@ UI_PAUSE_SETTINGS_SCENE = "UI pause settings scene"
 UI_LINK_ELEM = "UI link element"
 
 ---------- ÁUDIOS ----------
-MUSIC_MENU = "menu music"
-MUSIC_LAYER1 = "layer 1 music"
-MUSIC_LAYER2 = "layer 2 music"
-MUSIC_LAYER3 = "layer 3 music"
+-- o tipo da música é o próprio nome do arquivo em assets/audios/global
+-- (o caminho é montado com pathlizeName, então "music std" -> music_std.ogg)
+MUSIC_MENU = "music menu"
+MUSIC_STD = "music std"
+MUSIC_BATTLE = "music battle rooms"
+MUSIC_PUZZLE = "music puzzle rooms"
 AUDIO_MOVEMENT = "movement audio"
 AUDIO_GET_HIT = "get hit audio"
 AUDIO_ATTACK = "atk audio"

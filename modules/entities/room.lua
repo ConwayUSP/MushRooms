@@ -574,6 +574,19 @@ function Room:isInCombat()
 	return false
 end
 
+---@return boolean
+-- devolve se a sala ainda tem algum puzzle não concluído
+function Room:isPuzzlePending()
+	for _, puzzle in ipairs(self.puzzles) do
+		-- só conta como pendente quem declara `completed` (puzzles sem
+		-- conclusão explícita não podem prender a música da sala)
+		if puzzle.completed == false then
+			return true
+		end
+	end
+	return false
+end
+
 function Room:clearDeadBodies()
 	for i = #self.enemies, 1, -1 do
 		if self.enemies[i].hp <= 0 then

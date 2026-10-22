@@ -81,7 +81,7 @@ function initMenuScene()
 	-- ELEMENTOS
 	local menuBg = UIImageElem.new("menu bg", vec(640, 360), size(1280, 720))
 	local startBtn = UIButtonElem.new("menu play btn", vec(300, 400), size(120, 120), nil, function()
-		startGame()
+		startFromMenu()
 	end)
 	local settingsBtn = UIButtonElem.new("menu opt btn", vec(640, 400), size(120, 120), nil, function()
 		globalUIManager:activateScene(UI_SETTINGS_SCENE)
