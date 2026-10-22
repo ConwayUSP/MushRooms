@@ -698,10 +698,11 @@ end
 function newAncientMoaiBossRoom(rng)
 	local bp = Blueprint.new(BOSS_ROOM, "Ancient Moai Boss Room", rgba8(180, 120, 60, 255))
 	local sp1 = SpawnPoint.new(vec(0, 0))
-	local enemyData1 = SpawnData.new(ANCIENT_MOAI, 1.0)
+	local enemyData1 = SpawnData.new(ANCIENT_MOAI, 1.0, true)
 	sp1:insert(enemyData1)
 	bp:insert(sp1)
-	RoomGeneration.insertGeneralDecorations(bp, rng)
+	local excludedArea = { { min = vec(-150, -150), max = vec(150, 150) } }
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedArea)
 	return bp
 end
 

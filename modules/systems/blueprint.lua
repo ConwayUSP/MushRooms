@@ -34,13 +34,15 @@ SpawnData.type = SPAWN_DATA
 
 ---@param entity any
 ---@param chance number
+---@param isBoss? boolean
 ---@return SpawnData
 -- um dado de spawn nos dá uma forma de descobrir o que será
 -- instanciado e com qual chance em cada spawnpoint
-function SpawnData.new(entity, chance)
+function SpawnData.new(entity, chance, isBoss)
 	local data = setmetatable({}, SpawnData)
 	data.entity = entity
 	data.chance = chance
+	data.isBoss = isBoss
 	return data
 end
 

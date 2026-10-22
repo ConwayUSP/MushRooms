@@ -243,7 +243,9 @@ function Room:onPlayerEnter(player)
 	self:createAdjacentRooms()
 
 	if self.roomType == BOSS_ROOM then
-		-- TODO: remover ou abaixar a música ambiente pra um clima de tesão
+		if self:isAnyEnemyAliveAndReady() then
+			self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+		end
 	end
 
 	if not self.explored then
@@ -272,7 +274,9 @@ function Room:onPlayerExit(player)
 
 	if self.playersInRoom:size() == 0 then
 		if self.roomType == BOSS_ROOM then
-			self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+			self:removeBosses()
+			self:respawnBosses()
+			self.uiManager:deactivateScene(UI_BOSS_LIFE_BAR_SCENE)
 		end
 		if not self.explored and (self.roomType == BOSS_ROOM or self.roomType == BATTLE_ROOM) then
 			self.doorsTimer:stop()
@@ -371,6 +375,10 @@ function Room:updateDoorsLogic(dt)
 	--debugTable("DOOR TIMER", self.doorsTimer)
 	self.doorsTimer:update(dt)
 	if not self.explored and self.roomType ~= TREASURE_ROOM and not self:isInCombat() then
+		if self.roomType == BOSS_ROOM and not self.bossFinished then
+			return
+		end
+
 		if self.playersInRoom:size() > 0 then
 			self:setExplored()
 		end
@@ -561,17 +569,40 @@ function Room:addBuilding(buildingProduct)
 end
 
 ---@return boolean
+-- verifica se há algum inimigo pronto e vivo
+function Room:isAnyEnemyAliveAndReady()
+	for _, e in pairs(self.enemies) do
+		local isAlive = e.hp > 0
+		local isAwakened = not e.isBoss or e.awakened
+		local isReady = not e.isBoss or e.ready
+		
+		if isAlive and isAwakened and isReady then
+			return true
+		end
+	end
+
+	return false
+end
+
+---@return boolean
 -- devolve se a sala está ou não em combate
 function Room:isInCombat()
 	if self.roomType ~= BATTLE_ROOM and self.roomType ~= BOSS_ROOM or self.playersInRoom:size() == 0 then
 		return false
 	end
+	
+	return self:isAnyEnemyAliveAndReady()
+end
+
+function Room:hasBossAlive()
 	for _, e in pairs(self.enemies) do
-		if not (e.hp <= 0) then
+		if e.issBoss and e.hp > 0 then
 			return true
 		end
-	end
+	end 
+
 	return false
+
 end
 
 ---@return boolean
@@ -589,9 +620,41 @@ end
 
 function Room:clearDeadBodies()
 	for i = #self.enemies, 1, -1 do
-		if self.enemies[i].hp <= 0 then
+		if self.enemies[i].hp <= 0 and not self.enemies[i].isBoss then
 			self.enemies[i]:destroyAttacks()
 			table.remove(self.enemies, i)
+		end
+	end
+end
+
+function Room:removeBosses()
+	if self.bossFinished then
+		return
+	end
+
+	for i = #self.enemies, 1, -1 do
+		local enemy = self.enemies[i]
+
+		enemy:destroyAttacks()
+		collisionManager:unregister(enemy)
+		table.remove(self.enemies, i)
+	end
+end
+
+function Room:respawnBosses()
+	if self.bossFinished then
+		return
+	end
+
+	local rng = self.seedRNG
+
+	for _, sp in ipairs(self.spawnPoints) do
+		local n = rng:random()
+		for _, sd in ipairs(sp.spawns) do
+			if sd.isBoss and n < sd.chance then
+				self:spawn(sd.entity, sp.pos, rng)
+				break
+			end
 		end
 	end
 end
@@ -660,6 +723,9 @@ function newRoom(pos, dimensions, roomType)
 	local room = Room.new(pos, dimensions, hbs, limits, blueprint, sprites)
 	room:populate(blueprint.spawnpoints, roomRNG)
 	rooms[pos.y]:insert(pos.x, room)
+	-- TODO: melhorar isso no futuro, serve somente para a sala do boss
+	room.seedRNG = roomRNG
+	room.spawnPoints = blueprint.spawnpoints
 end
 
 -- cria a sala inicial do jogo e suas 4 vizinhas

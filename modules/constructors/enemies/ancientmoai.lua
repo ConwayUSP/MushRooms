@@ -72,6 +72,7 @@ local NEUTRAL_OFFSET = vec(0, 0)
 ---@field emitStarted boolean
 ---@field spiralAngle number
 ---@field awakened boolean         -- se já foi atingido
+---@field ready boolean            -- se tá pronto pra batalha
 
 ---@alias MoaiPhases
 ---| `MOAI_STATIC`
@@ -200,6 +201,7 @@ local function addMoaiAnimations(enemy)
 	)
 	enemy.animations[DYING].onFinish = function()
 		enemy.isReallyDead = true
+		enemy.room.bossFinished = true
 		if not enemy.leavesBody then
 			table.remove(enemy.room.enemies, tableIndexOf(enemy.room.enemies, enemy))
 		end
@@ -454,20 +456,23 @@ local function wakeUpMoai(enemy)
 	enemy.awakened = true
 	enemy.room:closeDoors()
 	enemy.phase = MOAI_STARTING
-	globalVFXManager:playParticle(PARTICLE_MOAI_BOSS_STARTING, enemy, vec(0, 150))
+
 	shakeRoomCameras(enemy, 15, STARTING_DURATION)
+	globalVFXManager:playParticle(PARTICLE_MOAI_BOSS_STARTING, enemy, vec(0, 140))
 	-- TODO: tocar algum som de pedra sem mexendo muito forte
 	globalAudioManager:play(AUDIO_COLLIDE, enemy, "wurr")
 end
 
 ---@param enemy Moai
 local function startCombatMoai(enemy)
-	enemy.room.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+	enemy.ready = true
 	enemy.phase = MOAI_IDLE
 	enemy.facing = DIRECTIONS[math.random(#DIRECTIONS)]
 	enemy.state = IDLE .. " " .. enemy.facing
+
+	enemy.room.uiManager:activateScene(UI_BOSS_LIFE_BAR_SCENE)
+	enemy.room.bossStarted = true
 	globalVFXManager:stopParticle(PARTICLE_MOAI_BOSS_STARTING, enemy)
-	-- TODO: iniciar música de combate do BOSS
 end
 
 ---@param spawnPos Vec
@@ -511,6 +516,7 @@ function newAncientMoai(spawnPos, room)
 	enemy.emitStarted = false
 	enemy.spiralAngle = 0
 	enemy.awakened = false
+	enemy.ready = false
 
 	-- o construtor do embalo usa constCooldown(0); damos a ele um cooldown
 	-- variável para não encadear embalos direto (slam/tornado já têm os seus)
@@ -567,7 +573,7 @@ function newAncientMoai(spawnPos, room)
 
 	enemy.updateState = function(self, dt) ---@diagnostic disable-line
 		if self.state == DYING or self.phase == MOAI_STATIC then
-			self.animations[DYING]:update(dt)
+			self.animations[self.state]:update(dt)
 			return
 		end
 
@@ -665,11 +671,16 @@ function newAncientMoai(spawnPos, room)
 	end
 
 	enemy.takeDamage = function (self, dmg)
-		Enemy.takeDamage(self, dmg)
-
 		if not self.awakened then
 			wakeUpMoai(self)
+			return
 		end
+
+		if not self.ready then
+			return
+		end
+
+		Enemy.takeDamage(self, dmg)
 	end
 
 	return enemy
