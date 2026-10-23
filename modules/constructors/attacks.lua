@@ -361,7 +361,7 @@ end
 ---@return Attack
 -- um ataque que fica estácionário no chão com uma marca de brasa quente
 function newEmberMarkAttack(ally)
-	local hb = hitbox(Circle.new(20), vec(0, -40))
+	local hb = hitbox(Circle.new(25), vec(0, -15))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,

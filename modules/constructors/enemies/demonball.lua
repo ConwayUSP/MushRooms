@@ -90,6 +90,7 @@ function newDemonBall(spawnPos, room)
 		[jumpAtk.name] = function()
 			local attackJumpDir = nil
 			local previousAttackJumping = false
+			local lockedPos = nil
 
 			return function(entity, dt)
 				if not entity:isAttackState() then
@@ -100,7 +101,9 @@ function newDemonBall(spawnPos, room)
 				local animation = entity.animations[entity.state]
 				local isAttackJumping = animation.currFrame >= ATTACK_JUMP_START_FRAME
 					and animation.currFrame <= ATTACK_JUMP_END_FRAME
-				local isPreJumping = animation.currFrame < ATTACK_JUMP_START_FRAME
+
+				local isPreJumping = animation.currFrame < ATTACK_JUMP_START_FRAME - 3
+
 				local targetPos = entity.atkTargeting.validTarget and entity.atkTargeting.targetPos or nil
 
 				-- rastro de brasas durante o pulo kamikaze
@@ -112,20 +115,30 @@ function newDemonBall(spawnPos, room)
 
 				-- se target se distanciou demais, cancela o ataque e volta a se movimentar
 				if isPreJumping and not targetPos then
+					lockedPos = nil
 					jumpAtk.timer = 0
 					jumpAtk.canAttack = true
 					entity:interruptAttack()
 					return
 				end
 
+				if not isPreJumping and animation.currFrame <= ATTACK_JUMP_START_FRAME and lockedPos == nil then
+					lockedPos = targetPos
+				end
+
 				-- se acabou de iniciar o pulo kamikaze, aplica impulso na direção do player
-				if isAttackJumping and not previousAttackJumping and targetPos then
-					attackJumpDir = normalize(subVec(targetPos, entity.pos))
+				if isAttackJumping and not previousAttackJumping and lockedPos then
+					local dir = subVec(lockedPos, entity.pos)
+					local distance = lenVec(dir)
+
+					attackJumpDir = normalize(dir)
 					attackJumpDir = rotateVec(attackJumpDir, (math.random() * 2 - 1) * JUMP_ANGLE_VARIANCE)
 					entity.friction = 0
 
-					-- TODO: talvez seja melhor trocar applyImpulse por outra função, para que o pulo kamikaze seja mais "assertivo"
 					local jumpSpeed = math.random(MIN_ATK_SPEED, MAX_ATK_SPEED)
+					local distanceFactor = math.min(distance / entity.attackRange, 1)
+					jumpSpeed = jumpSpeed * distanceFactor * 1.2
+
 					applyImpulse(entity, scaleVec(attackJumpDir, entity.mass * jumpSpeed))
 				end
 
@@ -155,7 +168,7 @@ function newDemonBall(spawnPos, room)
 	local physics = physicsSettings(0.6, 50, LANDING_FRICTION)
 
 	local enemy = Enemy.new(DEMON_BALL.name, 30, spawnPos, physics, movementFunc, atks, hbs, room, atkFrames, movements)
-	enemy.attackRange = math.random(150, 200)
+	enemy.attackRange = math.random(250, 350)
 	enemy.hasShadow = true
 	enemy.leavesBody = false
 
