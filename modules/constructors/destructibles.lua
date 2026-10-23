@@ -17,6 +17,7 @@ function newBonePile(pos, room)
 	animSettings[BROKEN] = newAnimSetting(1, { width = 48, height = 32 }, 1000, true, 1)
 	bones:addAnimations(animSettings)
 	bones.hasShadow = false
+	bones.breakParticle = PARTICLE_BREAK_BONE
 	return bones
 end
 
@@ -36,6 +37,7 @@ function newDestructibleRock(pos, room)
 	animSettings[BROKEN] = newAnimSetting(1, { width = 60, height = 40 }, 1000, true, 1)
 	rock:addAnimations(animSettings)
 	rock.hasShadow = false
+	rock.breakParticle = PARTICLE_BREAK_ROCK
 	return rock
 end
 
@@ -55,6 +57,7 @@ function newCoalAltar(pos, room)
 	animSettings[BROKEN] = newAnimSetting(1, { width = 48, height = 28 }, 1000, true, 1)
 	coal:addAnimations(animSettings)
 	coal.hasShadow = false
+	coal.breakParticle = PARTICLE_BREAK_COAL
 	return coal
 end
 
@@ -75,5 +78,6 @@ function newTallGrass(pos, room)
 	tallGrass:addAnimations(animSettings)
 	tallGrass.hasShadow = true
 	tallGrass.shadowWidth = 12
+	tallGrass.breakParticle = PARTICLE_BREAK_GRASS
 	return tallGrass
 end

@@ -56,6 +56,8 @@ function newRainbowDash()
 			local dashMove = dashToDirection(aim, dur, 2000)
 			self.owner.specialMovement = dashMove
 			self.owner:setInvulnerable(dur)
+			-- risco arco-íris marcando o trajeto do dash
+			globalVFXManager:playParticle(PARTICLE_RAINBOW_DASH, self.owner, nil, true)
 		end
 	end
 	local dash = Artifact.new(RAINBOW_DASH.name, RAINBOW_DASH.description, 1.5, onUse)

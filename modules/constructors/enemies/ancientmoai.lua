@@ -12,6 +12,9 @@ local MOAI_COLLISION = "moai collision"
 local MOAI_SLAM = "moai slam"
 local MOAI_TORNADO = "moai tornado"
 
+local STATIC_STATE = "static"
+local PREPARING_STATE = "preparing"
+
 -- estado de animação da batida na parede (sheets collision_<dir>)
 local COLLISION = "collision"
 
@@ -22,7 +25,7 @@ local TORNADO_ATK = 3
 
 -- constantes de comportamento
 local IDLE_DURATION = 0.5        -- espera antes de escolher um ataque
-local STARTING_DURATION = 4      -- espera antes de iniciar combate após acordado
+local STARTING_DURATION = 3      -- espera antes de iniciar combate após acordado
 local RETRY_DELAY = 0.4          -- espera quando nenhum ataque está pronto
 local STOP_MARGIN = 200          -- margem de segurança entre o ponto de parada e a parede
 local RUSH_OVERSHOOT_MIN = 200   -- quantos px no mínimo o boss vai mirar além do player no rush
@@ -73,6 +76,7 @@ local NEUTRAL_OFFSET = vec(0, 0)
 ---@field spiralAngle number
 ---@field awakened boolean         -- se já foi atingido
 ---@field ready boolean            -- se tá pronto pra batalha
+---@field deathCutscene Cutscene?
 
 ---@alias MoaiPhases
 ---| `MOAI_STATIC`
@@ -197,15 +201,32 @@ local function addMoaiAnimations(enemy)
 		enemy,
 		moaiSheetPath(enemy, DYING),
 		DYING,
-		newAnimSetting(14, { width = 200, height = 200 }, 0.08, false, 1, 4, NEUTRAL_OFFSET)
+		newAnimSetting(14, { width = 200, height = 200 }, 0.15, false, 1, 4, NEUTRAL_OFFSET)
 	)
 	enemy.animations[DYING].onFinish = function()
 		enemy.isReallyDead = true
 		enemy.room.bossFinished = true
-		if not enemy.leavesBody then
-			table.remove(enemy.room.enemies, tableIndexOf(enemy.room.enemies, enemy))
+		if enemy.deathCutscene then
+			CutsceneManager:finish(enemy.deathCutscene)
 		end
 	end
+
+	----------------- DESPERTAR -----------------
+	local preparingPath = moaiSheetPath(enemy, PREPARING_STATE)
+
+	addAnimation(
+		enemy,
+		preparingPath,
+		STATIC_STATE,
+		newAnimSetting(1, { width = 200, height = 200 }, 1000, true, 1, 4, CENTERED_OFFSET)
+	)
+
+	addAnimation(
+		enemy,
+		preparingPath,
+		PREPARING_STATE,
+		newAnimSetting(16, { width = 200, height = 200 }, STARTING_DURATION / 16, false, 1, 4, CENTERED_OFFSET)
+	)
 end
 
 ---@param enemy Moai
@@ -241,6 +262,15 @@ local function shakeRoomCameras(enemy, intensity, duration)
 		if cam then
 			cam:shake(intensity, duration)
 		end
+	end
+end
+
+---@param enemy Moai
+--- começa a cutscene para todos players na sala
+local function startMoaiCutscene(enemy)
+	local cutscene = Cutscene.new(enemy, enemy.room.playersInRoom, 0.4, finishToCredits)
+	if CutsceneManager:start(cutscene) then
+		enemy.deathCutscene = cutscene
 	end
 end
 
@@ -471,7 +501,6 @@ local function startCombatMoai(enemy)
 	enemy.state = IDLE .. " " .. enemy.facing
 
 	enemy.room.uiManager:activateScene(UI_BOSS_LIFE_BAR_SCENE)
-	enemy.room.bossStarted = true
 	globalVFXManager:stopParticle(PARTICLE_MOAI_BOSS_STARTING, enemy)
 end
 
@@ -499,8 +528,9 @@ function newAncientMoai(spawnPos, room)
 	)
 	
 	---@cast enemy Moai
+	enemy.classification = STONE
 	enemy.facing = DOWN
-	enemy.state = IDLE .. " " .. enemy.facing
+	enemy.state = STATIC_STATE
 	enemy.phase = MOAI_STATIC
 	enemy.idleTimer = 0
 	enemy.nextDecisionDelay = IDLE_DURATION
@@ -517,6 +547,7 @@ function newAncientMoai(spawnPos, room)
 	enemy.spiralAngle = 0
 	enemy.awakened = false
 	enemy.ready = false
+	enemy.deathCutscene = nil
 
 	-- o construtor do embalo usa constCooldown(0); damos a ele um cooldown
 	-- variável para não encadear embalos direto (slam/tornado já têm os seus)
@@ -565,8 +596,6 @@ function newAncientMoai(spawnPos, room)
 			updateTornado(self, dt)
 		elseif self.phase == MOAI_COLLISION or self.phase == MOAI_SLAM then
 			-- parado
-		elseif self.fearTimer.active then
-			followTarget(self, dt)
 		end
 		-- se está em MOAI_IDLE fica parado
 	end
@@ -577,16 +606,8 @@ function newAncientMoai(spawnPos, room)
 			return
 		end
 
-		if self.phase == MOAI_STARTING then
-			self.startingTimer = self.startingTimer - dt
-
-			if self.startingTimer <= 0 then
-				startCombatMoai(self)
-			end
-		end
-
 		-- depois de ficar parado, escolhe o próximo ataque
-		if self.phase == MOAI_IDLE and not self.fearTimer.active then
+		if self.phase == MOAI_IDLE then
 			self.idleTimer = self.idleTimer + dt
 			if self.idleTimer >= self.nextDecisionDelay then
 				if not chooseNextAttack(self) then
@@ -599,7 +620,9 @@ function newAncientMoai(spawnPos, room)
 		local prevState = self.state
 
 		-- mapeia a fase atual para o estado de animação
-		if self.phase == MOAI_RUSH or self.phase == MOAI_BRAKE then
+		if self.phase == MOAI_STARTING then
+			self.state = PREPARING_STATE
+		elseif self.phase == MOAI_RUSH or self.phase == MOAI_BRAKE then
 			self.state = rushState(self.attackDir)
 		elseif self.phase == MOAI_COLLISION then
 			self.state = collisionState(self.attackDir)
@@ -616,6 +639,11 @@ function newAncientMoai(spawnPos, room)
 		end
 
 		self.animations[self.state]:update(dt)
+
+		-- inicia o combate somente quando a animação de despertar terminar
+		if self.phase == MOAI_STARTING and self.animations[PREPARING_STATE].isFinished then
+			startCombatMoai(self)
+		end
 
 		-- lógica do head slam
 		if self.phase == MOAI_SLAM then
@@ -668,6 +696,8 @@ function newAncientMoai(spawnPos, room)
 		self.nextDecisionDelay = WALL_STUN_DURATION
 		self:takeDamage(WALL_CRASH_DMG)
 		shakeRoomCameras(self, SHAKE_WALL_I, SHAKE_WALL_DUR)
+		-- entulho e poeira da batida, lançados na direção da parede
+		globalVFXManager:playParticle(PARTICLE_WALL_HIT, self, scaleVec(DIR_VEC[self.attackDir], 70), false)
 	end
 
 	enemy.takeDamage = function (self, dmg)
@@ -681,6 +711,11 @@ function newAncientMoai(spawnPos, room)
 		end
 
 		Enemy.takeDamage(self, dmg)
+
+		if self.hp <= 0 and not self.triggeredCutscene then
+			self.triggeredCutscene = true
+			startMoaiCutscene(self)
+		end
 	end
 
 	return enemy

@@ -13,12 +13,14 @@ function initGlobalUIManager()
 	local menuScene = initMenuScene()
 	local amanitaIntroScene = initAmanitaIntroScene()
 	local conwayIntroScene = initConwayIntroScene()
+	local creditsScene = initCreditsScene()
 	local settingsScene = initSettingsScene()
 	local controlsScene = initControlsScene()
 	local graphicsScene = initGraphicsSettingsScene()
 	globalManager:addScene(menuScene)
 	globalManager:addScene(amanitaIntroScene)
 	globalManager:addScene(conwayIntroScene)
+	globalManager:addScene(creditsScene)
 	globalManager:addScene(settingsScene)
 	globalManager:addScene(controlsScene)
 	globalManager:addScene(graphicsScene)
@@ -43,6 +45,7 @@ function newPlayerUIManager(player)
 	playerManager:addScene(mapScene)
 	playerManager:addScene(pauseScene)
 	playerManager:addScene(pauseSettingsScene)
+	playerManager:addOverlayScene(newItemCollectedScene(player))
 
 	-- cenas de mundo
 	local damageBarScene = newPlayerDamageBarScene(player)
@@ -61,6 +64,8 @@ end
 
 function newRoomUIManager(room)
 	local roomManager = UIManager.new()
+	roomManager.verticalAlignment = "top"
+	
 	local lifeBar = newBossLifeBarScene(room)
 	roomManager:addScene(lifeBar)
 

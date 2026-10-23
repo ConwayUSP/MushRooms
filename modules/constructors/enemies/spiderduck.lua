@@ -27,10 +27,16 @@ function newSpiderDuck(spawnPos, room)
 
 				if elapsed <= startDur then
 					applySteering(entity, vec(0, 0), 12)
+					-- limpa penas de voos anteriores interrompidos
+					globalVFXManager:stopParticle(PARTICLE_FEATHER, entity)
 				elseif elapsed <= startDur + atkDur then
 					flightMove(entity, dt)
+					-- penas caindo durante o voo (idempotente por frame)
+					globalVFXManager:playParticle(PARTICLE_FEATHER, entity, nil, true)
 				elseif elapsed <= startDur + atkDur + brakeDur then
 					applySteering(entity, vec(0, 0), 20)
+					-- penas param assim que o voo termina
+					globalVFXManager:stopParticle(PARTICLE_FEATHER, entity)
 				end
 			end
 		end,

@@ -28,6 +28,7 @@ local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur
 
 	function scene:onActive()
 		self.elapsed = 0
+		self.manager.controls:consumeAnyInput()
 	end
 
 	function scene:advance()
@@ -62,18 +63,16 @@ local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur
 end
 
 function initAmanitaIntroScene()
-	return newIntroScene(
-		UI_INTRO_AMANITA_SCENE,
-		"assets/sprites/logos/logo_amanita.png",
-		UI_INTRO_CONWAY_SCENE,
-		4,
-		1.5,
-		0.5
-	)
+	return newIntroScene(UI_INTRO_AMANITA_SCENE,"assets/sprites/logos/logo_amanita.png", UI_INTRO_CONWAY_SCENE, 4, 1.5, 0.5)
 end
 
 function initConwayIntroScene()
 	return newIntroScene(UI_INTRO_CONWAY_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 0.5, 1.5)
+end
+
+-- TODO: adicionar cena de créditos
+function initCreditsScene()
+	return newIntroScene(UI_CREDITS_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 1.5, 1.5)
 end
 
 function initMenuScene()
@@ -1130,6 +1129,54 @@ function newBossLifeBarScene(room)
 	return lifeBarScene
 end
 
+---@param player Player
+---@return UIScene
+-- cena de tela não interativa que organiza as notificações de equipamentos recebidos
+function newItemCollectedScene(player)
+	local scene = UIScene.new(UI_ITEM_COLLECTED_SCENE, player)
+	local MAX_NOTIFICATIONS = 3
+	local DISPLAY_DURATION = 3
+	local BOTTOM_MARGIN = 36
+	local STACK_SPACING = 108
+	scene.notifications = {}
+
+	---@param item Weapon|Artifact|Blessing
+	function scene:push(item)
+		local notification = UIItemCollectedElem.new(item, BOTTOM_MARGIN)
+		table.insert(self.notifications, { element = notification, timer = DISPLAY_DURATION })
+		if #self.notifications > MAX_NOTIFICATIONS then
+			table.remove(self.notifications)
+		end
+		self:layoutNotifications()
+	end
+
+	function scene:layoutNotifications()
+		for index, notification in ipairs(self.notifications) do
+			notification.element.pos.y = 720 - BOTTOM_MARGIN - notification.element.size.height / 2 - (index - 1) * STACK_SPACING
+		end
+	end
+
+	function scene:update(dt)
+		for index = #self.notifications, 1, -1 do
+			local notification = self.notifications[index]
+			notification.timer = notification.timer - dt
+			notification.element:update(dt)
+			if notification.timer <= 0 then
+				table.remove(self.notifications, index)
+			end
+		end
+		self:layoutNotifications()
+	end
+
+	function scene:draw()
+		for index = #self.notifications, 1, -1 do
+			self.notifications[index].element:draw()
+		end
+	end
+
+	return scene
+end
+
 ----------------------------------------
 -- Cenas de Mundo
 ----------------------------------------
@@ -1275,7 +1322,7 @@ function newPlayerInteractionPromptScene(player)
 		self.followEntity = target
 		self.anchorOffset.y = -110 + math.sin(love.timer.getTime() * 2) * 4
 
-		if target and not player.activeInteraction and not player.inDialogue then
+		if target and not player.activeInteraction and not player.inDialogue and not player.inCutscene then
 			local key = player.controls and player.controls.keybinds and player.controls.keybinds[ACT_INT] or nil
 			prompt.text = keybindLabel(key)
 			self.anchorOffset.x = - #prompt.text * 18

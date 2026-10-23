@@ -13,6 +13,7 @@ require("modules.utils.seeds")
 --- contexto atual do jogo
 MENU_CTX = "Menu Context"
 GAMEPLAY_CTX = "In-game Context"
+CREDITS_CTX = "Credits Context"
 QUITTING_CTX = "Quitting Context"
 
 respawnRoom = vec(0, 0)
@@ -124,6 +125,7 @@ local function cleanupWorld()
 	doors = BiList.new()
 	walls = BiList.new()
 	cameras = {}
+	resetRoomGenerator(1)
 	-- reseta VFX (partículas presas a entidades mortas)
 	globalVFXManager.particlesInst = {}
 	globalVFXManager.animInstances = {}
@@ -161,6 +163,11 @@ function retryGame()
 	requestWorldAction("retry")
 end
 
+--- agenda a ida aos créditos no meio da transição de tela.
+function finishToCredits()
+	requestWorldAction("credits")
+end
+
 --- processa a ação de mundo adiada, se houver (chamar após os updates de player)
 function processPendingWorldAction()
 	if not pendingWorldAction then
@@ -179,5 +186,11 @@ function processPendingWorldAction()
 		startGame()
 	elseif action == "start" then
 		startGame()
+	elseif action == "credits" then
+		cleanupWorld()
+		gameCtx = CREDITS_CTX
+		globalUIManager:deactivateAllScenes()
+		globalUIManager:activateScene(UI_CREDITS_SCENE)
+		globalAudioManager:changeMusic(MUSIC_MENU, MUSIC_FADE_DURATION)
 	end
 end

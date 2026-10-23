@@ -30,6 +30,7 @@ STABLE = "stable" -- não se move e nem quebra
 ---@field animations table<string, Animation>
 ---@field loot Loot
 ---@field fragility string
+---@field breakParticle? string -- partículas exclusivas do tipo ao quebrar
 ---@field addAnimations fun(self: Destructible, animSettings: table<string, AnimSettings>)
 
 Destructible = setmetatable({}, { __index = Entity })
@@ -105,6 +106,10 @@ function Destructible:breakApart()
 	self:spawnLoot()
 	collisionManager:unregister(self)
 	globalAudioManager:play(AUDIO_BREAK, self, "pfffft")
+	-- estilhaços exclusivos do tipo de destrutível (se definido)
+	if self.breakParticle then
+		globalVFXManager:playParticle(self.breakParticle, self, nil, false)
+	end
 	local anim = self.animations[BREAKING]
 	anim.onFinish = function()
 		self.state = BROKEN

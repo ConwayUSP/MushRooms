@@ -59,8 +59,11 @@ function newPebbleShotAttack(ally, dur, cooldown, speed, trajectoryFuncBuilder, 
 		-- print("Pebble Shot acertou um alvo")
 	end
 
+	-- cacos voando quando o seixo quebra
+	local particles = atkParticles(nil, nil, PARTICLE_PEBBLE_BREAK)
+
 	local attack =
-		Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+		Attack.new(PEBBLE_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -102,8 +105,11 @@ function newNuclearShotAttack(ally, duration, cooldown, speed, trajectoryFuncBui
 		-- print("Nuclear Shot acertou um alvo")
 	end
 
+	-- radiação verde seguindo o projétil
+	local particles = atkParticles(nil, PARTICLE_RADIATION, nil)
+
 	local attack =
-		Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc)
+		Attack.new(NUCLEAR_SHOT.name, settings, updateFunc, onHitFunc, nil, trajectoryFuncBuilder, rotationFunc, particles)
 	attack:addAnimations(animIntact, animBreaking)
 	attack.hasShadow = true
 	attack.shadowWidth = 10
@@ -355,7 +361,7 @@ end
 ---@return Attack
 -- um ataque que fica estácionário no chão com uma marca de brasa quente
 function newEmberMarkAttack(ally)
-	local hb = hitbox(Circle.new(20), vec(0, -40))
+	local hb = hitbox(Circle.new(25), vec(0, -15))
 	local hbs = hitboxes({ hb })
 	local settings = newAtkSetting({
 		subtype = MELEE_ATTACK,

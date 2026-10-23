@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.entities.doorglow")
 require("modules.systems.blueprint")
+require("modules.systems.roomgenerator")
 require("modules.systems.treasure")
 require("modules.utils.constructors")
 require("modules.utils.seeds")
@@ -53,6 +54,7 @@ walls = BiList.new()
 ---@field doorGlows DoorGlow[]
 ---@field treasurePillars Interactive[]
 ---@field treasureResolved boolean
+---@field bossFinished boolean
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
 ---@field createAdjacentRooms fun()
@@ -118,7 +120,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.playersInRoom = Set.new()                   -- lista de jogadores na sala
 	room.linkManager = LinkManager.new()             -- gerenciador de links da sala
 	room.uiManager = newRoomUIManager(room)          -- gerenciador de UI da sala
-	room.doorsTimer = Timer.new(3)                   -- timer para fechar a sala
+	room.doorsTimer = Timer.new(2.0)                 -- atraso para fechar a sala
 	room.doorGlows = {}                              -- luzes das portas laterais, vistas de dentro da sala
 	room.treasurePillars = {}
 	room.deactivationTimer = Timer.new(1)
@@ -244,7 +246,7 @@ function Room:onPlayerEnter(player)
 
 	if self.roomType == BOSS_ROOM then
 		if self:isAnyEnemyAliveAndReady() then
-			self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+			self.uiManager:activateScene(UI_BOSS_LIFE_BAR_SCENE)
 		end
 	end
 
@@ -699,9 +701,7 @@ function newRoom(pos, dimensions, roomType)
 
 	-- criando um gerador de números pseudo-aleatórios para a sala
 	local roomRNG = love.math.newRandomGenerator(getRoomSeed(worldSeed, pos.x, pos.y))
-	-- escolhendo uma blueprint para a sala
-	roomType = roomType or randRoomType(roomRNG)
-	local blueprint = randRoomBlueprint(roomType, roomRNG)
+	local blueprint = randRoomBlueprint(roomType, roomRNG, pos)
 
 	-- posicionando a sala
 	local leftLimit = pos.x * (dimensions.width + Room.spacingH) - Room.spacingH

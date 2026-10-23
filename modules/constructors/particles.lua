@@ -52,7 +52,20 @@ function newTreasureDisappearParticles()
 	local particleImg = assetManager:getImage(pngPathFormat({ "assets", "sprites", "circle" }))
 	local ps = love.graphics.newParticleSystem(particleImg, 250)
 
-	ps:setColors(0.55078125, 0.48573231697083, 0.45396423339844, 1, 0.38671875, 0.35933876037598, 0.34291076660156, 0.41666665673256, 0.51953125, 0.40632772445679, 0.39776611328125, 0.026515152305365)
+	ps:setColors(
+		0.55078125,
+		0.48573231697083,
+		0.45396423339844,
+		1,
+		0.38671875,
+		0.35933876037598,
+		0.34291076660156,
+		0.41666665673256,
+		0.51953125,
+		0.40632772445679,
+		0.39776611328125,
+		0.026515152305365
+	)
 	ps:setDirection(-1.5707963705063)
 	ps:setEmissionArea("ellipse", 2.0412668228149, 2.0412668228149, 0, false)
 	ps:setEmissionRate(246.255451202393)
@@ -76,7 +89,6 @@ function newTreasureDisappearParticles()
 
 	return ps
 end
-
 
 ---@return ParticleSystem
 -- variante independente da poeira de caminhada para o movimento das pedras do puzzle
@@ -332,10 +344,23 @@ function newMoaisBossStartingParticles()
 	local particleImg = assetManager:getImage("assets/sprites/circle.png")
 	local ps = love.graphics.newParticleSystem(particleImg, 282)
 
-	ps:setColors(0.55078125, 0.48573231697083, 0.45396423339844, 1, 0.38671875, 0.35933876037598, 0.34291076660156, 0.41666665673256, 0.51953125, 0.40632772445679, 0.39776611328125, 0.026515152305365)
+	ps:setColors(
+		0.55078125,
+		0.48573231697083,
+		0.65396423339844,
+		1,
+		0.38671875,
+		0.35933876037598,
+		0.44291076660156,
+		0.41666665673256,
+		0.51953125,
+		0.40632772445679,
+		0.59776611328125,
+		0.026515152305365
+	)
 	ps:setDirection(-1.5707963705063)
 	ps:setEmissionArea("uniform", 145.474609375, 1.9432859420776, 0, false)
-	ps:setEmissionRate(209.04571533203)
+	ps:setEmissionRate(180)
 	ps:setEmitterLifetime(3.8)
 	ps:setInsertMode("top")
 	ps:setLinearAcceleration(0, 0, 0, 0)
@@ -357,3 +382,381 @@ function newMoaisBossStartingParticles()
 	return ps
 end
 
+---@return ParticleSystem
+-- explosão de brasas usada quando a Bolota Demoníaca morre
+function newDemonDieParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 90)
+
+	ps:setColors(
+		1,
+		0.95,
+		0.6,
+		1, -- amarelo quente
+		1,
+		0.55,
+		0.3,
+		1, -- laranja
+		0.75,
+		0.15,
+		0.15,
+		0.9, -- vermelho
+		0.2,
+		0.05,
+		0.05,
+		0 -- fumaça escura
+	)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 8, 8, 0, true)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setInsertMode("top")
+	ps:setLinearAcceleration(0, 120, 0, 260) -- puxa pra baixo
+	ps:setLinearDamping(1.5, 2.5)
+	ps:setParticleLifetime(0.35, 0.7)
+	ps:setSizes(0.16, 0.08, 0.02)
+	ps:setSizeVariation(0.4)
+	ps:setSpeed(180, 420)
+	ps:setSpread(4.2831854820251)
+	ps:setSpin(math.pi, math.pi * 2)
+	ps:setSpinVariation(0.5)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- rastro de brasas deixado pela Bolota Demoníaca enquanto pula
+function newDemonTrailParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 64)
+
+	ps:setColors(1, 0.75, 0.35, 0.9, 1, 0.3, 0.15, 0.6, 0.4, 0.05, 0.05, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("normal", 6, 6, 0, false)
+	ps:setEmissionRate(20)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, -60, 0, -20) -- as brasas sobem
+	ps:setParticleLifetime(0.25, 0.5)
+	ps:setSizes(0.06, 0.03)
+	ps:setSizeVariation(0.3)
+	ps:setSpeed(10, 45)
+	ps:setSpread(1.2)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- penas caindo ao redor do Pato Aranha durante o ataque voador
+function newFeatherParticles()
+	local particleImg = assetManager:getImage("assets/sprites/feather.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 120)
+
+	ps:setColors(1, 1, 0.35, 0.7, 1, 0.85, 0.3, 0.6, 1, 0.7, 0.5, 0.2)
+	ps:setDirection(-1.5707963705063) -- para baixo
+	ps:setEmissionArea("borderellipse", 60, 45, 0, false)
+	ps:setInsertMode("top")
+	ps:setEmissionRate(12)
+	ps:setEmitterLifetime(3) -- limitado de propósito: não vaza se o ataque for interrompido
+	ps:setLinearAcceleration(0, 85, 0, 140)
+	ps:setLinearDamping(1.2, 2)
+	ps:setParticleLifetime(0.9, 1.6)
+	ps:setSizes(0.13, 0.08, 0.03)
+	ps:setSizeVariation(0.35)
+	ps:setSpeed(100, 130)
+	ps:setSpread(6)
+	ps:setSpin(-3, -1, 0, -1, -3)
+	ps:setSpinVariation(2)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- poeira arrancada pelo Rolling Stone durante o embalo
+function newRushDustParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 160)
+
+	ps:setColors(0.71, 0.67, 0.88, 0.7, 0.46, 0.42, 0.63, 0.4, 0.3, 0.28, 0.46, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("normal", 14, 10, 0, false)
+	ps:setEmissionRate(60)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, -30, 0, 30)
+	ps:setLinearDamping(2, 4)
+	ps:setParticleLifetime(0.2, 0.45)
+	ps:setSizes(0.13, 0.06, 0.01)
+	ps:setSizeVariation(0.4)
+	ps:setSpeed(60, 160)
+	ps:setSpread(0.9)
+	ps:setSpin(math.pi, math.pi * 2)
+	ps:setSpinVariation(0.5)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- radiação verde que segue os projéteis do Gato Nuclear
+function newRadiationParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 72)
+
+	ps:setColors(0.5, 1, 0.3, 0.85, 0.25, 0.9, 0.2, 0.5, 0.1, 0.5, 0.1, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 10, 10, 0, false)
+	ps:setEmissionRate(24)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearDamping(0.5, 1.5)
+	ps:setParticleLifetime(0.35, 0.55)
+	ps:setSizes(0.08, 0.04, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(15, 70)
+	ps:setSpread(6.2831854820251)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- radiação que emana do próprio Gato Nuclear enquanto ele está vivo
+function newRadiationGlowParticles()
+	local particleImg = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 110)
+
+	ps:setColors(0.55, 1, 0.35, 0.7, 0.2, 0.85, 0.15, 0.35, 0.05, 0.4, 0.05, 0)
+	ps:setDirection(-1.5707963705063) -- sobe
+	ps:setEmissionArea("ellipse", 30, 45, 0, false)
+	ps:setEmissionRate(6)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, -40, 0, -70)
+	ps:setParticleLifetime(1.0, 1.5)
+	ps:setSizes(0.07, 0.03, 0)
+	ps:setSizeVariation(0.1)
+	ps:setSpeed(8, 55)
+	ps:setSpread(0.8)
+	ps:setSpin(-1, 1)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- cacos voando quando um seixo do Estilingue quebra
+function newPebbleBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 18)
+
+	ps:setColors(0.62, 0.58, 0.52, 1, 0.42, 0.39, 0.35, 1, 0.3, 0.28, 0.25, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 6, 6, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 500, 0, 900) -- cai rápido
+	ps:setLinearDamping(1.5, 2.5)
+	ps:setParticleLifetime(0.3, 0.55)
+	ps:setSizes(0.05, 0.03, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(120, 300)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-6, 6)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- fragmentos de osso voando quando uma pilha de ossos é quebrada
+function newBoneBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 24)
+
+	ps:setColors(0.92, 0.89, 0.78, 1, 0.78, 0.74, 0.6, 1, 0.6, 0.56, 0.45, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 24, 16, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 350, 0, 700)
+	ps:setLinearDamping(1.5, 3)
+	ps:setParticleLifetime(0.3, 0.6)
+	ps:setSizes(0.04, 0.02, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(80, 240)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-5, 5)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- escombros voando quando uma rocha destrutível é quebrada
+function newRockBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 32)
+
+	ps:setColors(0.6, 0.58, 0.55, 1, 0.45, 0.43, 0.4, 1, 0.3, 0.29, 0.27, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 26, 20, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 500, 0, 900)
+	ps:setLinearDamping(1.5, 3)
+	ps:setParticleLifetime(0.35, 0.7)
+	ps:setSizes(0.06, 0.03, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(110, 300)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-6, 6)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- fatos de carvão e faíscas quando um altar de carvão é destruído
+function newCoalBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 30)
+
+	ps:setColors(
+		0.2,
+		0.18,
+		0.17,
+		1, -- carvão escuro
+		0.35,
+		0.3,
+		0.28,
+		1, -- pó
+		1,
+		0.6,
+		0.2,
+		0.9, -- brasa
+		0.7,
+		0.3,
+		0.1,
+		0 -- brasa apagando
+	)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 22, 18, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 450, 0, 850)
+	ps:setLinearDamping(1.5, 3)
+	ps:setParticleLifetime(0.3, 0.65)
+	ps:setSizes(0.05, 0.03, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(100, 280)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-6, 6)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- folhas soltando quando a grama alta é cortada
+function newGrassBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/feather.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 20)
+
+	ps:setColors(0.55, 0.8, 0.35, 0.95, 0.75, 0.85, 0.3, 0.7, 0.6, 0.5, 0.25, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 20, 22, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 120, 0, 260) -- quase flutuam
+	ps:setLinearDamping(1, 2)
+	ps:setParticleLifetime(0.4, 0.8)
+	ps:setSizes(0.05, 0.03, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(40, 150)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-5, 5)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- poeira e entulho levantados quando um inimigo bate na parede
+function newWallHitParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 60)
+
+	ps:setColors(0.5, 0.48, 0.64, 0.85, 0.40, 0.40, 0.58, 0.5, 0.20, 0.18, 0.3, 0)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 14, 14, 0, true)
+	ps:setEmissionRate(160)
+	ps:setEmitterLifetime(0.1) -- burst curto e repetível
+	ps:setLinearAcceleration(0, 350, 0, 700)
+	ps:setLinearDamping(2, 3.5)
+	ps:setParticleLifetime(0.4, 0.8)
+	ps:setSizes(0.14, 0.07, 0.01)
+	ps:setSizeVariation(0.45)
+	ps:setSpeed(90, 260)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(math.pi, math.pi * 2)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- risco arco-íris deixado pelo dash do Rainbow Dash
+function newRainbowDashParticles()
+	local particleImg = assetManager:getImage("assets/sprites/feather.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 160)
+
+	ps:setColors(
+		1,
+		0.2,
+		0.2,
+		1.0, -- vermelho
+		1,
+		0.6,
+		0.15,
+		0.9, -- laranja
+		1,
+		0.95,
+		0.2,
+		0.8, -- amarelo
+		0.2,
+		0.9,
+		0.3,
+		0.7, -- verde
+		0.2,
+		0.5,
+		1,
+		0.6, -- azul
+		0.6,
+		0.2,
+		0.95,
+		0.4                        -- roxo
+	)
+	ps:setDirection(-1.5707963705063) -- para baixo
+	ps:setLinearAcceleration(0, 85, 0, 240)
+	ps:setEmissionArea("normal", 10, 10, 0, false)
+	ps:setEmissionRate(70)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearDamping(4, 6)
+	ps:setParticleLifetime(0.55, 1.05)
+	ps:setSizes(0.16, 0.12, 0)
+	ps:setSizeVariation(0.4)
+	ps:setSpeed(0, 40)
+	ps:setSpread(3.2831854820251)
+	ps:setSpin(-3, -1, 0, -1, -3)
+	ps:setSpinVariation(2)
+	ps:stop()
+
+	return ps
+end

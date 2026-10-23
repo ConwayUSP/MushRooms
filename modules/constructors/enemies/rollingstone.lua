@@ -173,6 +173,7 @@ function newRollingStone(spawnPos, room)
 
 	-- Máquina de estados do Rolling Stone
 	---@cast enemy RollingStone
+	enemy.classification = STONE
 	enemy.phase = RS_IDLE
 	enemy.lastPhase = RS_IDLE
 	enemy.idleTimer = 0
@@ -313,8 +314,11 @@ function newRollingStone(spawnPos, room)
 			if self.phase == RS_ROLLING then
 				local dir = DIR_VEC[self.attackDir]
 				self.atk[1]:attack(self, vec(self.pos.x, self.pos.y), math.atan2(dir.y, dir.x))
+				-- poeira arrancada pelo pedregulho enquanto rola
+				globalVFXManager:playParticle(PARTICLE_RUSH_DUST, self, nil, true)
 			elseif self.lastPhase == RS_ROLLING then
 				stopRushAttack(self)
+				globalVFXManager:stopParticle(PARTICLE_RUSH_DUST, self)
 			end
 			self.lastPhase = self.phase
 		end
@@ -352,6 +356,8 @@ function newRollingStone(spawnPos, room)
 		end
 		stopRushAttack(self)
 		self.phase = RS_STOPING
+		-- poeira e entulho da batida, lançados na direção da parede
+		globalVFXManager:playParticle(PARTICLE_WALL_HIT, self, scaleVec(DIR_VEC[self.attackDir], 36), false)
 	end
 
 	return enemy

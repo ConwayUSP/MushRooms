@@ -35,6 +35,7 @@ require("table")
 ---@field isReallyDead boolean
 ---@field leavesBody boolean
 ---@field isBoss boolean
+---@field classification? EnemyClassification
 ---@field attackMoveFunc? MovementFunc
 ---@field movementsBuilder? table<string, fun(): MovementFunc>
 
@@ -82,6 +83,7 @@ function Enemy.new(name, hp, spawnPos, physics, move, attacks, hitboxes, room, a
 	{}                                           -- tabela de construtores de funções de movimento específicas para cada ataque, indexada pelo nome do ataque
 	enemy.scale = 3                              -- escala padrão do inimigo
 	enemy.isBoss = false                         -- indica se o inimigo é um chefe
+	enemy.classification = nil                    -- classificação usada por efeitos e imunidades
 	enemy.attackMoveFunc = nil                   -- função de movimento específica para o ataque atual, se houver
 
 	enemy.moveTargeting:applyStrats(TC_ON_INIT)

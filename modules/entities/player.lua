@@ -56,10 +56,12 @@ local DEFAULT_COOLDOWN_DUR = 2 -- limite de tempo que o player deve esperar ante
 ---@field weapon Weapon
 ---@field artifacts Artifact[]
 ---@field artifact Artifact
+---@field collectedItems table<Type, table<string, boolean>>
 ---@field invulnerableTimer number
 ---@field blinkTimer number
 ---@field addAnimations function
 ---@field inDialogue boolean
+---@field inCutscene boolean
 ---@field interactiveObj? Entity
 ---@field activeInteraction? Interactive|Npc[]
 ---@field inventory Inventory
@@ -110,7 +112,9 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.weapon = nil -- arma equipada
 	player.artifacts = {} -- lista de artefatos (itens ativos) que o jogador possui
 	player.artifact = nil -- artefato equipado
+	player.collectedItems = {} -- itens distintos já recebidos, separados por tipo
 	player.inDialogue = false -- se o player está em diálogo
+	player.inCutscene = false -- se o player está em uma cutscene
 	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
 	player.activeInteraction = nil -- objeto com o qual o player está interagindo agora (pode ser nenhum)
 	player.inventory = Inventory.new(player) -- inventário do jogador
@@ -238,7 +242,7 @@ function Player:move(dt)
 	end
 
 	local movementDir = vec(0, 0)
-	if self.state == DEFENDING or self.inDialogue then
+	if self.state == DEFENDING or self.inDialogue or self.inCutscene then
 		return
 	end
 
@@ -248,6 +252,8 @@ function Player:move(dt)
 		local endSpecialMove = self:specialMovement(dt)
 		if endSpecialMove then
 			self.specialMovement = nil
+			-- para o risco arco-íris quando o dash termina
+			globalVFXManager:stopParticle(PARTICLE_RAINBOW_DASH, self)
 		end
 	--	goto applyphysics
 	end
@@ -500,7 +506,7 @@ function Player:processInput()
 	end
 
 	-- input de ataque
-	if self.controls:checkAction(ACT_ATK) and self.weapon then
+	if self.controls:checkAction(ACT_ATK) and self.weapon and not self.inDialogue and not self.inCutscene then
 		self.weapon:attack()
 		self:wakeUp()
 	end
@@ -530,6 +536,7 @@ function Player:wheelmoved(dy)
 		or self.state == DYING
 		or self.uiManager:hasActiveScene()
 		or self.inDialogue
+		or self.inCutscene
 		or self.state == SLEEPING
 	then
 		return
@@ -655,6 +662,33 @@ function Player:collectResource(resource)
 	return self.inventory:addItem(resource)
 end
 
+---@param item Weapon|Artifact|Blessing
+---@return boolean
+-- registra um item distinto e retorna se ele ainda não havia sido coletado
+function Player:registerCollectedItem(item)
+	local itemsOfType = self.collectedItems[item.type]
+	if not itemsOfType then
+		itemsOfType = {}
+		self.collectedItems[item.type] = itemsOfType
+	end
+
+	if itemsOfType[item.name] then
+		return false
+	end
+
+	itemsOfType[item.name] = true
+	return true
+end
+
+---@param item Weapon|Artifact|Blessing
+-- mostra uma notificação apenas no primeiro recebimento de cada item distinto
+function Player:notifyItemCollected(item)
+	if not self:registerCollectedItem(item) then
+		return
+	end
+	self.uiManager:getOverlayScene(UI_ITEM_COLLECTED_SCENE):push(item)
+end
+
 ---@param drop Drop
 -- coleta um drop e o marca como coletado
 function Player:collectDrop(drop)
@@ -675,6 +709,9 @@ function Player:collectDrop(drop)
 	if result then
 		drop:setCollected()
 		globalAudioManager:play(AUDIO_COLLECT, self, "pop")
+		if drop.object.type == WEAPON or drop.object.type == ARTIFACT or drop.object.type == BLESSING then
+			self:notifyItemCollected(drop.object)
+		end
 	end
 end
 
@@ -1097,6 +1134,7 @@ end
 function Player:updateSleep(dt)
 	if self.uiManager:hasActiveScene()
 		or self.inDialogue
+		or self.inCutscene
 		or self.activeInteraction
 		or self.building then
 		self:wakeUp()
