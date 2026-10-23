@@ -76,6 +76,13 @@ function newCraftingItemElement(recipe, coordStart, vecOffset, x, y)
 	-- propriedade extra para termos uma referência à receita
 	itemEl.recipe = recipe
 
+	itemEl.draw = function(self, camera)
+		if self.unavailable then
+			love.graphics.setShader(cannotBuildShader)
+		end
+		UIElement.draw(self, camera)
+	end
+
 	return itemEl
 end
 

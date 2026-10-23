@@ -876,6 +876,7 @@ function newCraftingScene(player)
 
 				-- "tenho/preciso" no canto do slot, igual aos slots do inventário
 				local owned = self.player.inventory:countItem(input[1])
+				local sufficient = owned >= qty
 				ingredientEl.count = owned .. "/" .. qty
 				ingredientEl.draw = function(el, camera)
 					UIElement.draw(el, camera)
@@ -893,7 +894,12 @@ function newCraftingScene(player)
 					local r, g, b, a = love.graphics.getColor()
 
 					love.graphics.setFont(mushMidFont)
-					love.graphics.setColor(105 / 255, 163 / 255, 179 / 255, 1) -- cor da borda do slot
+					-- cor da letra de quantidades do recurso
+					if sufficient then
+						love.graphics.setColor(105 / 255, 163 / 255, 179 / 255, 1)
+					else
+						love.graphics.setColor(255 / 255, 163 / 255, 179 / 255, 1)
+					end
 					love.graphics.printf(el.count, textX, textY, textWidth, "right")
 
 					love.graphics.setFont(previousFont)
@@ -901,6 +907,16 @@ function newCraftingScene(player)
 				end
 
 				self:addElement(ingredientEl, VISUAL_LAYER_2, vec(i, 4))
+			end
+		end
+
+		-- confere se a construção está disponível
+		local unavailiable
+		for _, row in pairs(self.layers[ELEM_LAYER_2]) do
+			for _, el in pairs(row) do
+				if el.recipe then
+					el.unavailable = not el.recipe:canCraftWith(self.player.inventory)
+				end
 			end
 		end
 	end
