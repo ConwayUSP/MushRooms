@@ -45,6 +45,7 @@ function newPlayerUIManager(player)
 	playerManager:addScene(mapScene)
 	playerManager:addScene(pauseScene)
 	playerManager:addScene(pauseSettingsScene)
+	playerManager:addOverlayScene(newItemCollectedScene(player))
 
 	-- cenas de mundo
 	local damageBarScene = newPlayerDamageBarScene(player)

@@ -8,6 +8,7 @@
 ---@field canvas table
 ---@field canvasSize Size
 ---@field scenes table<string, UIScene>
+---@field overlayScenes UIScene[]
 ---@field worldScenes UIWorldScene[]
 ---@field lastPlayerScene string
 ---@field activeScenes Type[]
@@ -31,6 +32,7 @@ function UIManager.new(player)
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)
 	uimanager.canvasPos = vec(0, 0)
 	uimanager.scenes = {}
+	uimanager.overlayScenes = {}
 	uimanager.worldScenes = {}
 	uimanager.activeScenes = {}
 	uimanager.lastPlayerScene = UI_EQUIPMENT_SCENE
@@ -64,6 +66,26 @@ function UIManager:addScene(scene)
 	self.scenes[scene.subtype] = scene
 	scene.manager = self
 	return self
+end
+
+---@param scene UIScene
+-- adiciona uma cena de tela não interativa, renderizada acima das cenas modais
+function UIManager:addOverlayScene(scene)
+	table.insert(self.overlayScenes, scene)
+	scene.manager = self
+	scene.active = true
+	return self
+end
+
+---@param sceneType Type
+---@return UIScene?
+function UIManager:getOverlayScene(sceneType)
+	for _, scene in ipairs(self.overlayScenes) do
+		if scene.subtype == sceneType then
+			return scene
+		end
+	end
+	return nil
 end
 
 ---@param scene UIWorldScene
@@ -220,6 +242,10 @@ function UIManager:update(dt)
 		end
 	end
 
+	for _, scene in ipairs(self.overlayScenes) do
+		scene:update(dt)
+	end
+
 	-- cenas de mundo: atualiza e remove as que expiraram
 	for idx = #self.worldScenes, 1, -1 do
 		local scene = self.worldScenes[idx]
@@ -261,6 +287,9 @@ function UIManager:draw(camera)
 
 	love.graphics.setCanvas(self.canvas)
 	love.graphics.clear(0.0, 0.0, 0.0, 0.0)
+	for _, scene in ipairs(self.overlayScenes) do
+		scene:draw()
+	end
 	for _, sceneType in ipairs(self.activeScenes) do
 		self.scenes[sceneType]:draw()
 	end

@@ -57,5 +57,6 @@ function grantTreasureReward(player, reward)
 	end
 
 	globalAudioManager:play(AUDIO_COLLECT, player, "pop")
+	player:notifyItemCollected(reward)
 	return true
 end

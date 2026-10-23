@@ -23,19 +23,33 @@ UIElement.type = UI_ELEMENT
 ---@param pos Vec
 ---@param size Size
 ---@param hitboxes? Hitboxes
+---@param align? string
 -- inicializa um elemento de UI com estado `IDLE` e selected = `false`
-function UIElement:init(name, elementType, pos, size, hitboxes)
+function UIElement:init(name, elementType, pos, size, hitboxes, align)
 	self.name = name
 	self.subtype = elementType
-	self.pos = pos
-	self.size = size
 	self.hb = hitboxes
+	self.size = size
+	self.pos = realPosWithAlign(pos, size, align or "center")
 	self.state = IDLE
 	self.selected = false
 	self.inUse = false
 	self.spriteSheets = {}
 	self.animations = {}
 	return self
+end
+
+---@param pos Vec
+---@param size Size
+---@param align "left"|"center"
+function realPosWithAlign(pos, size, align)
+	if align == "center" then
+		return pos
+	end
+
+	if align == "left" then
+		return addVec(pos, vec(size.width/2, 0))
+	end
 end
 
 ---@param animSettings table<string, AnimSettings>
