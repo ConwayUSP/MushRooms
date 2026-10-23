@@ -55,6 +55,13 @@ function setPos(entity, pos)
 		nextPos = collisionManager:resolveSolidCollisions(entity, nextPos)
 	end
 
+	-- faz um clamp dos inimigos para evitar de saírem para fora da sala e ficarem presos
+	if entity.type == ENEMY and entity.room then
+		local limits = entity.room.limits
+		nextPos.x = math.max(limits.p1.x, math.min(nextPos.x, limits.p2.x))
+		nextPos.y = math.max(limits.p1.y, math.min(nextPos.y, limits.p2.y))
+	end
+
 	entity.pos = nextPos
 end
 

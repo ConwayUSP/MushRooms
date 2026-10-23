@@ -119,7 +119,7 @@ function Room.new(pos, dimensions, hitboxes, limits, blueprint, sprites)
 	room.playersInRoom = Set.new()                   -- lista de jogadores na sala
 	room.linkManager = LinkManager.new()             -- gerenciador de links da sala
 	room.uiManager = newRoomUIManager(room)          -- gerenciador de UI da sala
-	room.doorsTimer = Timer.new(3)                   -- timer para fechar a sala
+	room.doorsTimer = Timer.new(2.0)                 -- atraso para fechar a sala
 	room.doorGlows = {}                              -- luzes das portas laterais, vistas de dentro da sala
 	room.treasurePillars = {}
 	room.deactivationTimer = Timer.new(1)
