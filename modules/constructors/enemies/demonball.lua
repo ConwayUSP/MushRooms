@@ -51,6 +51,14 @@ function newDemonBall(spawnPos, room)
 		local animation = entity.animations[movementState]
 		isJumping = animation.currFrame >= JUMP_START_FRAME and animation.currFrame <= JUMP_END_FRAME
 
+		-- rastro de brasas no ar (o play é idempotente e o stop se repete no chão,
+		-- assim o efeito se cura caso a bolota seja interrompida no meio do pulo)
+		if isJumping then
+			globalVFXManager:playParticle(PARTICLE_DEMON_TRAIL, entity, nil, true)
+		else
+			globalVFXManager:stopParticle(PARTICLE_DEMON_TRAIL, entity)
+		end
+
 		-- se acabou de iniciar o pulo, aplica impulso na direção do player
 		if isJumping and not previousJumping and entity.moveTargeting.validTarget then
 			jumpDir = normalize(subVec(entity.moveTargeting.targetPos, entity.pos))
@@ -94,6 +102,13 @@ function newDemonBall(spawnPos, room)
 					and animation.currFrame <= ATTACK_JUMP_END_FRAME
 				local isPreJumping = animation.currFrame < ATTACK_JUMP_START_FRAME
 				local targetPos = entity.atkTargeting.validTarget and entity.atkTargeting.targetPos or nil
+
+				-- rastro de brasas durante o pulo kamikaze
+				if isAttackJumping then
+					globalVFXManager:playParticle(PARTICLE_DEMON_TRAIL, entity, nil, true)
+				else
+					globalVFXManager:stopParticle(PARTICLE_DEMON_TRAIL, entity)
+				end
 
 				-- se target se distanciou demais, cancela o ataque e volta a se movimentar
 				if isPreJumping and not targetPos then
@@ -143,6 +158,14 @@ function newDemonBall(spawnPos, room)
 	enemy.attackRange = math.random(150, 200)
 	enemy.hasShadow = true
 	enemy.leavesBody = false
+
+	-- explode em brasas ao morrer, seja por dano ou pelo fim do pulo kamikaze.
+	-- o baseDie para as partículas presas ao corpo antes do estouro
+	local baseDie = enemy.die
+	enemy.die = function(self)
+		baseDie(self)
+		globalVFXManager:playParticle(PARTICLE_DEMON_DIE, self, nil, false)
+	end
 
 	-- animações
 	local idleAnimSettings = newAnimSetting(2, { width = 18, height = 36 }, 0.45, true, 1)

@@ -250,6 +250,8 @@ function Player:move(dt)
 		local endSpecialMove = self:specialMovement(dt)
 		if endSpecialMove then
 			self.specialMovement = nil
+			-- para o risco arco-íris quando o dash termina
+			globalVFXManager:stopParticle(PARTICLE_RAINBOW_DASH, self)
 		end
 	--	goto applyphysics
 	end

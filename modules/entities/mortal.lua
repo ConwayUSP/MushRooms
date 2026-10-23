@@ -175,6 +175,8 @@ function Mortal:die()
 	self.deathTimer = 0
 	stopMovement(self)
 	globalAudioManager:stopAllFrom(self)
+	-- as partículas presas ao corpo param junto com ele (trilhas, brilhos etc.)
+	globalVFXManager:stopEntityParticles(self)
 	collisionManager:unregister(self)
 
 	if self.weapon then

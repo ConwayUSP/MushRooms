@@ -64,6 +64,12 @@ function VFXManager:playParticle(particleType, entity, offset, follow, ...)
   local instance = self.particlesInst[entity][particleType]
 
   if instance then
+    -- um offset novo na chamada substitui o antigo (ex.: batida na parede
+    -- vinda de uma direção diferente)
+    if offset then
+      instance.offset = offset
+    end
+
     if instance.particle:isStopped() then
       self:startParticle(instance, particleType, entity)
     end
@@ -97,25 +103,27 @@ function VFXManager:startParticle(instance, particleType, entity, newInstance)
   instance.particle:start()
   local partDir = self:updateParticleDirection(instance, particleType, entity)
 
-  if newInstance then
-    -- a posição do sistema de partículas deve começar na entidade (com possível offset)
-    local x, y = entity.pos.x + instance.offset.x, entity.pos.y + instance.offset.y
-    instance.particle:setPosition(x, y)
+  -- a posição do sistema de partículas deve acompanhar a entidade, também
+  -- ao reiniciar (senão o efeito reapareceria na posição antiga)
+  local x, y = entity.pos.x + instance.offset.x, entity.pos.y + instance.offset.y
+  instance.particle:setPosition(x, y)
 
+  if newInstance then
     if self.particlesSettings[particleType].ownerInertia then
       -- usando a inércia da entidade para afetar a velocidade das partículas
+      -- (só na criação: setSpeed acumula a cada chamada)
       local speedMin, speedMax = instance.particle:getSpeed()
       local ownerDir = math.atan2(entity.attacker.vel.y, entity.attacker.vel.x)
       local f = 0.5 - math.atan2(math.sin(ownerDir - partDir), math.cos(ownerDir - partDir)) / (2 * math.pi) -- diferença normalizada entre as direções
       local speedChange = f * (math.abs(entity.attacker.vel.x) + math.abs(entity.attacker.vel.y))
       instance.particle:setSpeed(speedMin + speedChange, speedMax + speedChange)
     end
+  end
 
-    -- burst de emissão inicial
-    local emitAtStart = self.particlesSettings[particleType].emitAtStart
-    if emitAtStart then
-      instance.particle:emit(emitAtStart)
-    end
+  -- burst de emissão inicial, válido no primeiro start e em reinícios
+  local emitAtStart = self.particlesSettings[particleType].emitAtStart
+  if emitAtStart then
+    instance.particle:emit(emitAtStart)
   end
 end
 

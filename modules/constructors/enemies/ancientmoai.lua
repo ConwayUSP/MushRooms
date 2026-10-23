@@ -679,6 +679,8 @@ function newAncientMoai(spawnPos, room)
 		self.nextDecisionDelay = WALL_STUN_DURATION
 		self:takeDamage(WALL_CRASH_DMG)
 		shakeRoomCameras(self, SHAKE_WALL_I, SHAKE_WALL_DUR)
+		-- entulho e poeira da batida, lançados na direção da parede
+		globalVFXManager:playParticle(PARTICLE_WALL_HIT, self, scaleVec(DIR_VEC[self.attackDir], 70), false)
 	end
 
 	enemy.takeDamage = function (self, dmg)

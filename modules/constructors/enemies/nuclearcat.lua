@@ -26,6 +26,8 @@ function newNuclearCat(spawnPos, room)
 	local dyingAnimSettings = newAnimSetting(33, { width = 32, height = 32 }, 0.08, false, 1)
 	enemy:addAnimations(idleAnimSettings, walkingAnimSettings, dyingAnimSettings, attackAnimSettings)
 	enemy.shadowWidth = 30
+	-- radiação que emana do gato enquanto ele estiver vivo (para ao morrer)
+	globalVFXManager:playParticle(PARTICLE_RADIATION_GLOW, enemy, nil, true)
 	enemy.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
 	enemy.atkTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
 	return enemy
