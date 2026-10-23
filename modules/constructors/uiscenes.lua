@@ -960,12 +960,12 @@ function newItemCollectedScene(player)
 	local MAX_NOTIFICATIONS = 3
 	local DISPLAY_DURATION = 3
 	local BOTTOM_MARGIN = 36
-	local STACK_SPACING = 116
+	local STACK_SPACING = 108
 	scene.notifications = {}
 
 	---@param item Weapon|Artifact|Blessing
 	function scene:push(item)
-		local notification = UIItemCollectedElem.new(item)
+		local notification = UIItemCollectedElem.new(item, BOTTOM_MARGIN)
 		table.insert(self.notifications, { element = notification, timer = DISPLAY_DURATION })
 		if #self.notifications > MAX_NOTIFICATIONS then
 			table.remove(self.notifications)

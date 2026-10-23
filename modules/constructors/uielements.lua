@@ -96,11 +96,12 @@ UIItemCollectedElem = setmetatable({}, { __index = UIElement })
 UIItemCollectedElem.__index = UIItemCollectedElem
 
 ---@param item any
+---@param margin? number
 ---@return UIItemCollectedElem
 -- cartão escalável para comunicar que um equipamento foi adquirido
-function UIItemCollectedElem.new(item)
+function UIItemCollectedElem.new(item, margin)
 	local element = setmetatable({}, UIItemCollectedElem)
-	element:init("item collected", UI_IMAGE_ELEM, vec(640, 0), size(520, 104))
+	element:init("item collected", UI_IMAGE_ELEM, vec(margin or 72, 0), size(320, 94), nil, "left")
 	element.item = item
 	element.itemType = item.type
 	element.title = item.name
@@ -118,6 +119,22 @@ function UIItemCollectedElem.new(item)
 	return element
 end
 
+function UIItemCollectedElem:getColorByType()
+	if self.itemType == ARTIFACT then
+		return 153/255, 255/255, 230/255, 1
+	end
+
+	if self.itemType == BLESSING then
+		return 237/255, 33/255, 88/255, 1
+	end
+
+	if self.itemType == WEAPON then
+		return 253/255, 255/255, 153/255, 1
+	end
+
+	return 1, 1, 1, 1
+end
+
 function UIItemCollectedElem:draw()
 	local left = self.pos.x - self.size.width / 2
 	local top = self.pos.y - self.size.height / 2
@@ -126,7 +143,7 @@ function UIItemCollectedElem:draw()
 	-- TODO: criar arte bonitinha para o background ao invés de retângulo simples
 	love.graphics.setColor(0.06, 0.07, 0.1, 0.92)
 	love.graphics.rectangle("fill", left, top, self.size.width, self.size.height)
-	love.graphics.setColor(0.8, 0.76, 0.45, 1)
+	love.graphics.setColor(self:getColorByType())
 	love.graphics.setLineWidth(3)
 	love.graphics.rectangle("line", left + 1.5, top + 1.5, self.size.width - 3, self.size.height - 3)
 
@@ -140,10 +157,10 @@ function UIItemCollectedElem:draw()
 	local textX = iconX + self.iconSize + 18
 	local textWidth = self.size.width - (textX - left) - 22
 	love.graphics.setFont(mushFont)
-	love.graphics.setColor(1, 0.93, 0.65, 1)
+	love.graphics.setColor(self:getColorByType())
 	love.graphics.printf(self.title, textX, top + 15, textWidth / 1.15, "left", 0, 1.15, 1.15)
 	love.graphics.setColor(0.92, 0.92, 0.96, 1)
-	love.graphics.printf(self.description, textX, top + 46, textWidth, "left")
+	love.graphics.printf("New " .. self.itemType .. " collected", textX, top + 46, textWidth, "left")
 
 	love.graphics.setLineWidth(1)
 	love.graphics.setFont(previousFont)

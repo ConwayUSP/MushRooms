@@ -148,7 +148,7 @@ TURTLE = registerEntity(INTERACTIVE, "turtle")
 TREASURE_PILLAR = registerEntity(INTERACTIVE, "treasure pillar")
 
 --------------- BÊNÇÃOS ----------------
-ARCHER_BLESSING = registerEntity(BLESSING, "archer blessing")
-FIRE_BLESSING = registerEntity(BLESSING, "fire blessing")
-PIGMEU_BLESSING = registerEntity(BLESSING, "pigmeu blessing")
-GOMUGOMU_BLESSING = registerEntity(BLESSING, "gomu gomu blessing")
+ARCHER_BLESSING = registerEntity(BLESSING, "Archer Blessing")
+FIRE_BLESSING = registerEntity(BLESSING, "Fire Blessing")
+PIGMEU_BLESSING = registerEntity(BLESSING, "Pigmeu Blessing")
+GOMUGOMU_BLESSING = registerEntity(BLESSING, "Gomu Gomu Blessing")
