@@ -8,11 +8,15 @@ require("modules.utils.types")
 
 local rewardFactories = {
 	[WEAPON] = { newKatana, newSlingShot, newBoomerangue, newSkullShooter, newBlackholer, newFlowergun },
-	[ARTIFACT] = { newInvisibilityRing, newRainbowDash },
+	-- [ARTIFACT] = { newInvisibilityRing, newRainbowDash },
 	[BLESSING] = { newArcherBlessing, newFireBlessing, newPigmeuBlessing, newGomuGomuBlessing },
 }
 
-local rewardTypes = { WEAPON, ARTIFACT, BLESSING }
+local rewardTypes = { 
+	WEAPON, 
+	-- ARTIFACT, 
+	BLESSING
+}
 
 ---@param rng RNG
 ---@return any[]
@@ -23,6 +27,7 @@ function createTreasureRewards(rng)
 	local factories = rewardFactories[rewardType]
 	local firstIndex = rng:random(#factories)
 	local secondIndex = rng:random(#factories - 1)
+	
 	if secondIndex >= firstIndex then
 		secondIndex = secondIndex + 1
 	end
@@ -52,5 +57,6 @@ function grantTreasureReward(player, reward)
 	end
 
 	globalAudioManager:play(AUDIO_COLLECT, player, "pop")
+	player:notifyItemCollected(reward)
 	return true
 end
