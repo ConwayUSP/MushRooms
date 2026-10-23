@@ -139,12 +139,15 @@ function Weapon:fire()
 	end
 end
 
-function Weapon:atkOriginPoint()
-	local flip = invertSecondAndThirdQuadrants(self.rotation)
+---@param rotation? number
+---@return Vec
+function Weapon:atkOriginPoint(rotation)
+	rotation = rotation or self.rotation
+	local flip = invertSecondAndThirdQuadrants(rotation)
 	local gunCenter = addVec(self.owner.pos, vec(self.gunOffset.x * flip, self.gunOffset.y))
 	local rotateOffset = rotateVec(
 		vec(-self.rotateOffset.x + self.shotOffset.x, -self.rotateOffset.y + self.shotOffset.y * flip),
-		self.rotation
+		rotation
 	)
 	local origin = addVec(gunCenter, rotateOffset)
 

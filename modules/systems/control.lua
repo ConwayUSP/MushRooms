@@ -289,7 +289,23 @@ function Controls:getAimDir()
         return nil
     end
 
+    -- calcula em relação ao player
     local dir = { x = worldPoint.x - self.owner.pos.x, y = worldPoint.y - self.owner.pos.y }
+
+    local weapon = self.owner.weapon
+    if not weapon then
+        return dir
+    end
+
+    -- calcula em relação a arma, porém:
+    -- dir depende de atkOriginPoint e este depende daquele
+    -- para resolver, usamos um pequeno laço que irá fazer os devidos ajustes
+    for _ = 1, 3 do
+        local rotation = math.atan2(dir.x, -dir.y) - math.pi * 0.5
+        local origin = weapon:atkOriginPoint(rotation)
+        dir = { x = worldPoint.x - origin.x, y = worldPoint.y - origin.y }
+    end
+
     if math.abs(dir.x) < 0.0001 and math.abs(dir.y) < 0.0001 then
         return nil
     end
