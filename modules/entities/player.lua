@@ -60,6 +60,7 @@ local DEFAULT_COOLDOWN_DUR = 2 -- limite de tempo que o player deve esperar ante
 ---@field blinkTimer number
 ---@field addAnimations function
 ---@field inDialogue boolean
+---@field inCutscene boolean
 ---@field interactiveObj? Entity
 ---@field activeInteraction? Interactive|Npc[]
 ---@field inventory Inventory
@@ -111,6 +112,7 @@ function Player.new(name, spawnPos, control, colors, room)
 	player.artifacts = {} -- lista de artefatos (itens ativos) que o jogador possui
 	player.artifact = nil -- artefato equipado
 	player.inDialogue = false -- se o player está em diálogo
+	player.inCutscene = false -- se o player está em uma cutscene
 	player.interactiveObj = nil -- objeto próximo ao player com o qual ele pode interagir (ex: NPC)
 	player.activeInteraction = nil -- objeto com o qual o player está interagindo agora (pode ser nenhum)
 	player.inventory = Inventory.new(player) -- inventário do jogador
@@ -238,7 +240,7 @@ function Player:move(dt)
 	end
 
 	local movementDir = vec(0, 0)
-	if self.state == DEFENDING or self.inDialogue then
+	if self.state == DEFENDING or self.inDialogue or self.inCutscene then
 		return
 	end
 
@@ -500,7 +502,7 @@ function Player:processInput()
 	end
 
 	-- input de ataque
-	if self.controls:checkAction(ACT_ATK) and self.weapon then
+	if self.controls:checkAction(ACT_ATK) and self.weapon and not self.inDialogue and not self.inCutscene then
 		self.weapon:attack()
 		self:wakeUp()
 	end
@@ -530,6 +532,7 @@ function Player:wheelmoved(dy)
 		or self.state == DYING
 		or self.uiManager:hasActiveScene()
 		or self.inDialogue
+		or self.inCutscene
 		or self.state == SLEEPING
 	then
 		return
@@ -1097,6 +1100,7 @@ end
 function Player:updateSleep(dt)
 	if self.uiManager:hasActiveScene()
 		or self.inDialogue
+		or self.inCutscene
 		or self.activeInteraction
 		or self.building then
 		self:wakeUp()

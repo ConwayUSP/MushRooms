@@ -53,6 +53,7 @@ walls = BiList.new()
 ---@field doorGlows DoorGlow[]
 ---@field treasurePillars Interactive[]
 ---@field treasureResolved boolean
+---@field bossFinished boolean
 ---@field update fun(dt: number) : nil
 ---@field setExplored fun()
 ---@field createAdjacentRooms fun()

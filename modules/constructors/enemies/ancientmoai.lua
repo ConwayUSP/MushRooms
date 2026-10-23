@@ -73,6 +73,7 @@ local NEUTRAL_OFFSET = vec(0, 0)
 ---@field spiralAngle number
 ---@field awakened boolean         -- se já foi atingido
 ---@field ready boolean            -- se tá pronto pra batalha
+---@field deathCutscene Cutscene?
 
 ---@alias MoaiPhases
 ---| `MOAI_STATIC`
@@ -197,13 +198,13 @@ local function addMoaiAnimations(enemy)
 		enemy,
 		moaiSheetPath(enemy, DYING),
 		DYING,
-		newAnimSetting(14, { width = 200, height = 200 }, 0.08, false, 1, 4, NEUTRAL_OFFSET)
+		newAnimSetting(14, { width = 200, height = 200 }, 0.15, false, 1, 4, NEUTRAL_OFFSET)
 	)
 	enemy.animations[DYING].onFinish = function()
 		enemy.isReallyDead = true
 		enemy.room.bossFinished = true
-		if not enemy.leavesBody then
-			table.remove(enemy.room.enemies, tableIndexOf(enemy.room.enemies, enemy))
+		if enemy.deathCutscene then
+			CutsceneManager:finish(enemy.deathCutscene)
 		end
 	end
 end
@@ -241,6 +242,15 @@ local function shakeRoomCameras(enemy, intensity, duration)
 		if cam then
 			cam:shake(intensity, duration)
 		end
+	end
+end
+
+---@param enemy Moai
+--- começa a cutscene para todos players na sala
+local function startMoaiCutscene(enemy)
+	local cutscene = Cutscene.new(enemy, enemy.room.playersInRoom, 0.4, finishToCredits)
+	if CutsceneManager:start(cutscene) then
+		enemy.deathCutscene = cutscene
 	end
 end
 
@@ -471,7 +481,6 @@ local function startCombatMoai(enemy)
 	enemy.state = IDLE .. " " .. enemy.facing
 
 	enemy.room.uiManager:activateScene(UI_BOSS_LIFE_BAR_SCENE)
-	enemy.room.bossStarted = true
 	globalVFXManager:stopParticle(PARTICLE_MOAI_BOSS_STARTING, enemy)
 end
 
@@ -517,6 +526,7 @@ function newAncientMoai(spawnPos, room)
 	enemy.spiralAngle = 0
 	enemy.awakened = false
 	enemy.ready = false
+	enemy.deathCutscene = nil
 
 	-- o construtor do embalo usa constCooldown(0); damos a ele um cooldown
 	-- variável para não encadear embalos direto (slam/tornado já têm os seus)
@@ -681,6 +691,11 @@ function newAncientMoai(spawnPos, room)
 		end
 
 		Enemy.takeDamage(self, dmg)
+
+		if self.hp <= 0 and not self.triggeredCutscene then
+			self.triggeredCutscene = true
+			startMoaiCutscene(self)
+		end
 	end
 
 	return enemy

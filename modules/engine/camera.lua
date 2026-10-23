@@ -159,7 +159,7 @@ end
 -- atualiza o timer de uma cena - que por proxy define o tamanho
 -- das barras horizontais na câmera
 function Camera:updateCinematic(dt)
-	if self.playerAttached and self.playerAttached.inDialogue then
+	if self.playerAttached and (self.playerAttached.inDialogue or self.playerAttached.inCutscene) then
 		self.cinematicTimer = self.cinematicTimer + dt
 	else
 		self.cinematicTimer = 0

@@ -28,6 +28,7 @@ local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur
 
 	function scene:onActive()
 		self.elapsed = 0
+		self.manager.controls:consumeAnyInput()
 	end
 
 	function scene:advance()
@@ -62,18 +63,16 @@ local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur
 end
 
 function initAmanitaIntroScene()
-	return newIntroScene(
-		UI_INTRO_AMANITA_SCENE,
-		"assets/sprites/logos/logo_amanita.png",
-		UI_INTRO_CONWAY_SCENE,
-		4,
-		1.5,
-		0.5
-	)
+	return newIntroScene(UI_INTRO_AMANITA_SCENE,"assets/sprites/logos/logo_amanita.png", UI_INTRO_CONWAY_SCENE, 4, 1.5, 0.5)
 end
 
 function initConwayIntroScene()
 	return newIntroScene(UI_INTRO_CONWAY_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 0.5, 1.5)
+end
+
+-- TODO: adicionar cena de créditos
+function initCreditsScene()
+	return newIntroScene(UI_CREDITS_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 1.5, 1.5)
 end
 
 function initMenuScene()
@@ -1259,7 +1258,7 @@ function newPlayerInteractionPromptScene(player)
 		self.followEntity = target
 		self.anchorOffset.y = -110 + math.sin(love.timer.getTime() * 2) * 4
 
-		if target and not player.activeInteraction and not player.inDialogue then
+		if target and not player.activeInteraction and not player.inDialogue and not player.inCutscene then
 			local key = player.controls and player.controls.keybinds and player.controls.keybinds[ACT_INT] or nil
 			prompt.text = keybindLabel(key)
 			self.anchorOffset.x = - #prompt.text * 18

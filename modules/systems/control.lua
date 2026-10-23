@@ -128,6 +128,7 @@ function Controls:checkAction(action, isBuffered)
         not inputState.isDown
         or self.blockAttackUntilRelease
         or self.inDialogue
+        or self.inCutscene
         or not self.owner.weapon
         then
         return false
@@ -264,7 +265,7 @@ function Controls:getAimDir()
     if not self.owner or not mouseManager then
         return nil
     end
-    if self.owner.inDialogue then
+    if self.owner.inDialogue or self.owner.inCutscene then
         return nil
     end
     if self.owner.uiManager and self.owner.uiManager:hasActiveScene() then
