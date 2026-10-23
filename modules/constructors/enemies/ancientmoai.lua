@@ -12,6 +12,9 @@ local MOAI_COLLISION = "moai collision"
 local MOAI_SLAM = "moai slam"
 local MOAI_TORNADO = "moai tornado"
 
+local STATIC_STATE = "static"
+local PREPARING_STATE = "preparing"
+
 -- estado de animação da batida na parede (sheets collision_<dir>)
 local COLLISION = "collision"
 
@@ -22,7 +25,7 @@ local TORNADO_ATK = 3
 
 -- constantes de comportamento
 local IDLE_DURATION = 0.5        -- espera antes de escolher um ataque
-local STARTING_DURATION = 4      -- espera antes de iniciar combate após acordado
+local STARTING_DURATION = 3      -- espera antes de iniciar combate após acordado
 local RETRY_DELAY = 0.4          -- espera quando nenhum ataque está pronto
 local STOP_MARGIN = 200          -- margem de segurança entre o ponto de parada e a parede
 local RUSH_OVERSHOOT_MIN = 200   -- quantos px no mínimo o boss vai mirar além do player no rush
@@ -207,6 +210,23 @@ local function addMoaiAnimations(enemy)
 			CutsceneManager:finish(enemy.deathCutscene)
 		end
 	end
+
+	----------------- DESPERTAR -----------------
+	local preparingPath = moaiSheetPath(enemy, PREPARING_STATE)
+
+	addAnimation(
+		enemy,
+		preparingPath,
+		STATIC_STATE,
+		newAnimSetting(1, { width = 200, height = 200 }, 1000, true, 1, 4, CENTERED_OFFSET)
+	)
+
+	addAnimation(
+		enemy,
+		preparingPath,
+		PREPARING_STATE,
+		newAnimSetting(16, { width = 200, height = 200 }, STARTING_DURATION / 16, false, 1, 4, CENTERED_OFFSET)
+	)
 end
 
 ---@param enemy Moai
@@ -510,7 +530,7 @@ function newAncientMoai(spawnPos, room)
 	---@cast enemy Moai
 	enemy.classification = STONE
 	enemy.facing = DOWN
-	enemy.state = IDLE .. " " .. enemy.facing
+	enemy.state = STATIC_STATE
 	enemy.phase = MOAI_STATIC
 	enemy.idleTimer = 0
 	enemy.nextDecisionDelay = IDLE_DURATION
@@ -576,8 +596,6 @@ function newAncientMoai(spawnPos, room)
 			updateTornado(self, dt)
 		elseif self.phase == MOAI_COLLISION or self.phase == MOAI_SLAM then
 			-- parado
-		elseif self.fearTimer.active then
-			followTarget(self, dt)
 		end
 		-- se está em MOAI_IDLE fica parado
 	end
@@ -588,16 +606,8 @@ function newAncientMoai(spawnPos, room)
 			return
 		end
 
-		if self.phase == MOAI_STARTING then
-			self.startingTimer = self.startingTimer - dt
-
-			if self.startingTimer <= 0 then
-				startCombatMoai(self)
-			end
-		end
-
 		-- depois de ficar parado, escolhe o próximo ataque
-		if self.phase == MOAI_IDLE and not self.fearTimer.active then
+		if self.phase == MOAI_IDLE then
 			self.idleTimer = self.idleTimer + dt
 			if self.idleTimer >= self.nextDecisionDelay then
 				if not chooseNextAttack(self) then
@@ -610,7 +620,9 @@ function newAncientMoai(spawnPos, room)
 		local prevState = self.state
 
 		-- mapeia a fase atual para o estado de animação
-		if self.phase == MOAI_RUSH or self.phase == MOAI_BRAKE then
+		if self.phase == MOAI_STARTING then
+			self.state = PREPARING_STATE
+		elseif self.phase == MOAI_RUSH or self.phase == MOAI_BRAKE then
 			self.state = rushState(self.attackDir)
 		elseif self.phase == MOAI_COLLISION then
 			self.state = collisionState(self.attackDir)
@@ -627,6 +639,11 @@ function newAncientMoai(spawnPos, room)
 		end
 
 		self.animations[self.state]:update(dt)
+
+		-- inicia o combate somente quando a animação de despertar terminar
+		if self.phase == MOAI_STARTING and self.animations[PREPARING_STATE].isFinished then
+			startCombatMoai(self)
+		end
 
 		-- lógica do head slam
 		if self.phase == MOAI_SLAM then
