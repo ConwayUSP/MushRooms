@@ -508,6 +508,7 @@ function newAncientMoai(spawnPos, room)
 	)
 	
 	---@cast enemy Moai
+	enemy.classification = STONE
 	enemy.facing = DOWN
 	enemy.state = IDLE .. " " .. enemy.facing
 	enemy.phase = MOAI_STATIC

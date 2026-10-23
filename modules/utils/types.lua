@@ -14,6 +14,9 @@ INTERACTIVE = "interactive"
 OBSTACLE = "obstacle"
 ARTIFACT = "artifact"
 
+---@alias EnemyClassification string
+STONE = "stone"
+
 ----------- SALAS -----------
 PUZZLE_ROOM = "puzzle room"
 NPC_ROOM = "npc room"

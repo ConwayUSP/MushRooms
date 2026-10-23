@@ -127,6 +127,10 @@ function Mortal:takeDamage(damage)
 end
 
 function Mortal:burn(ticks, dmg)
+	if selfself.classification == STONE then
+		return
+	end
+
 	self.burningTicks = ticks - 1
 	self.burningDamage = dmg
 	self.burningTimer:start()
@@ -141,7 +145,7 @@ function Mortal:stopHealing()
 end
 
 function Mortal:applyFear(attacker, duration)
-	if self.type == ENEMY then
+	if self.type == ENEMY and not self.isBoss then
 		local fearDuration = duration or FEAR_DEFAULT_DUR
 		self.moveTargeting:addTarget(Target.new(TG_AVOID, TC_EVERY_FRAME, fearDuration), avoidAllPlayersStrong)
 		self.fearTimer.duration = fearDuration

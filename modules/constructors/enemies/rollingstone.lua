@@ -173,6 +173,7 @@ function newRollingStone(spawnPos, room)
 
 	-- Máquina de estados do Rolling Stone
 	---@cast enemy RollingStone
+	enemy.classification = STONE
 	enemy.phase = RS_IDLE
 	enemy.lastPhase = RS_IDLE
 	enemy.idleTimer = 0
