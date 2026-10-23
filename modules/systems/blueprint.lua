@@ -5,22 +5,6 @@ require("modules.constructors.rooms")
 require("modules.utils.types")
 
 ----------------------------------------
--- Tabela de Salas
-----------------------------------------
-
-local BLUEPRINTS = {}
-
-BLUEPRINTS[PUZZLE_ROOM] = { newSmallPuzzleRoom, newMediumPuzzleRoom, newBigPuzzleRoom }
-BLUEPRINTS[RESOURCE_ROOM] = { new2SpotsResourceRoom, new3SpotsResourceRoom, new4SpotsResourceRoom, new2BonesSpotsResourceRoom, new3BonesSpotsResourceRoom, new4BonesSpotsResourceRoom, new2RocksSpotsResourceRoom, new3RocksSpotsResourceRoom, new4RocksSpotsResourceRoom, new2CoalSpotsResourceRoom, new3CoalSpotsResourceRoom, new4CoalSpotsResourceRoom }
-BLUEPRINTS[NPC_ROOM] = { newNPCRoomEast, newNPCRoomWest, newNPCRoomNorth, newNPCRoomSouth, newNPCRoomMiddle }
-BLUEPRINTS[BATTLE_ROOM] = { new3SpotsBattleRoom, new4SpotsBattleRoom, new5SpotsBattleRoom, new3SpiderDucksBattleRoom, new4SpiderDucksBattleRoom, new5SpiderDucksBattleRoom, new3NuclearCatsBattleRoom, new4NuclearCatsBattleRoom, new5NuclearCatsBattleRoom, new3RollingStonesBattleRoom, new4RollingStonesBattleRoom, new5RollingStonesBattleRoom, new3DemonBallsBattleRoom, new4DemonBallsBattleRoom, new5DemonBallsBattleRoom }
-BLUEPRINTS[BOSS_ROOM] = { newAncientMoaiBossRoom } --newBossRoom1
-BLUEPRINTS[EVENT_ROOM] = { newEventRoom1 }
-BLUEPRINTS[TREASURE_ROOM] = { newTreasureRoom1 }
--- TODO: fazer ser escalável para que cada andar tenha sua própria sala inicial
-BLUEPRINTS[INITIAL_ROOM] = { newInitialRoom1 }
-
-----------------------------------------
 -- Classe SpawnData
 ----------------------------------------
 
@@ -140,6 +124,7 @@ function Blueprint:addPuzzle(constructor, settings, rewards)
 	return self
 end
 
+
 ----------------------------------------
 -- Funções globais
 ----------------------------------------
@@ -154,7 +139,7 @@ end
 -- - Sala de puzzle: `2%`
 -- - Sala de tesouro: `2%`
 -- - Sala de boss: `2%`
-function randRoomType(rng)
+function _randRoomType(rng)
 	local r = rng:random()
 	if r < 0.66 then
 		return BATTLE_ROOM
@@ -177,7 +162,7 @@ end
 ---@param rng RNG
 ---@return Blueprint
 -- retorna um `Blueprint` de uma sala aleatória do tipo `roomType`
-function randRoomBlueprint(roomType, rng)
+function _randRoomBlueprint(roomType, rng)
 	local n = #BLUEPRINTS[roomType]
 	return BLUEPRINTS[roomType][rng:random(n)](rng)
 end
