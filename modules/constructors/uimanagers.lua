@@ -63,6 +63,8 @@ end
 
 function newRoomUIManager(room)
 	local roomManager = UIManager.new()
+	roomManager.verticalAlignment = "top"
+	
 	local lifeBar = newBossLifeBarScene(room)
 	roomManager:addScene(lifeBar)
 

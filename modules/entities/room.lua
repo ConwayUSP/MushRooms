@@ -245,7 +245,7 @@ function Room:onPlayerEnter(player)
 
 	if self.roomType == BOSS_ROOM then
 		if self:isAnyEnemyAliveAndReady() then
-			self.uiManager:toggleScene(UI_BOSS_LIFE_BAR_SCENE)
+			self.uiManager:activateScene(UI_BOSS_LIFE_BAR_SCENE)
 		end
 	end
 

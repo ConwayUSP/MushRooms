@@ -27,6 +27,7 @@ function UIManager.new(player)
 	uimanager.controls = player and player.controls or newDefaultControl()
 	uimanager.baseWidth = 1280
 	uimanager.baseHeight = 720
+	uimanager.verticalAlignment = "center"
 	uimanager.canvas = love.graphics.newCanvas(uimanager.baseWidth, uimanager.baseHeight)
 	uimanager.canvasPos = vec(0, 0)
 	uimanager.scenes = {}
@@ -52,7 +53,7 @@ function UIManager:setParentCanvas(canvas)
 	local renderedW = self.baseWidth * scale
 	local renderedH = self.baseHeight * scale
 	local offsetX = (parentW - renderedW) / 2
-	local offsetY = (parentH - renderedH) / 2
+	local offsetY = self.verticalAlignment == "top" and 0 or (parentH - renderedH) / 2
 	self.canvasPos.x = offsetX
 	self.canvasPos.y = offsetY
 end
@@ -253,6 +254,10 @@ end
 function UIManager:draw(camera)
 	-- guarda a câmera da última renderização para converter o mouse depois
 	self.camera = camera
+
+	if camera then
+		self:setParentCanvas(camera.canvas)
+	end
 
 	love.graphics.setCanvas(self.canvas)
 	love.graphics.clear(0.0, 0.0, 0.0, 0.0)

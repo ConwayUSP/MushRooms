@@ -127,7 +127,7 @@ function Mortal:takeDamage(damage)
 end
 
 function Mortal:burn(ticks, dmg)
-	if selfself.classification == STONE then
+	if self.classification == STONE then
 		return
 	end
 
