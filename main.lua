@@ -22,6 +22,7 @@ require("modules.tooling.spawnBlessing")
 require("modules.tooling.spawnDrop")
 require("modules.tooling.turtledebug")
 require("modules.tooling.fpsvisor")
+require("modules.tooling.speedruntimer")
 require("modules.systems.cutscene")
 require("modules.systems.dialogue")
 require("modules.systems.shaders")
@@ -334,6 +335,10 @@ function love.update(dt)
 		goto skipgameplay
 	end
 
+	if speedrunMode and gameCtx == GAMEPLAY_CTX then
+		speedrunTime = speedrunTime + dt
+	end
+
 	DialogueManager:update(dt)
 	------------ Salas ------------
 	for _, r in activeRooms:iter() do
@@ -397,6 +402,11 @@ function love.draw()
 
 	if debugMode or showFPSCounter then
 		drawFPSVisor()
+	end
+
+	-- cronômetro do speedrun no canto superior esquerdo (sempre durante o gameplay)
+	if speedrunMode and gameCtx == GAMEPLAY_CTX then
+		drawSpeedrunTimer()
 	end
 
 	-- overlay da transição por cima de tudo (cobre também o FPS visor)

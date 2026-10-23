@@ -31,6 +31,7 @@ function startGame()
 	if worldSeed == 0 then
 		setWorldSeed(DEFAULT_WORLD_SEED)
 	end
+	resetSpeedrunTimer()
 	collisionManager = CollisionManager.init()
 	createInitialRooms()
 	respawnPos = vec(rooms[0][0].pos.x, rooms[0][0].pos.y)
@@ -190,7 +191,11 @@ function processPendingWorldAction()
 		cleanupWorld()
 		gameCtx = CREDITS_CTX
 		globalUIManager:deactivateAllScenes()
-		globalUIManager:activateScene(UI_CREDITS_SCENE)
+		if speedrunMode then
+			globalUIManager:activateScene(UI_SPEEDRUN_TIME_SCENE)
+		else
+			globalUIManager:activateScene(UI_CREDITS_SCENE)
+		end
 		globalAudioManager:changeMusic(MUSIC_MENU, MUSIC_FADE_DURATION)
 	end
 end

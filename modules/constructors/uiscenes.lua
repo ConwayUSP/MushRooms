@@ -63,7 +63,14 @@ local function newIntroScene(sceneType, logoPath, nextScene, introDur, fadeInDur
 end
 
 function initAmanitaIntroScene()
-	return newIntroScene(UI_INTRO_AMANITA_SCENE,"assets/sprites/logos/logo_amanita.png", UI_INTRO_CONWAY_SCENE, 4, 1.5, 0.5)
+	return newIntroScene(
+		UI_INTRO_AMANITA_SCENE,
+		"assets/sprites/logos/logo_amanita.png",
+		UI_INTRO_CONWAY_SCENE,
+		4,
+		1.5,
+		0.5
+	)
 end
 
 function initConwayIntroScene()
@@ -73,6 +80,42 @@ end
 -- TODO: adicionar cena de créditos
 function initCreditsScene()
 	return newIntroScene(UI_CREDITS_SCENE, "assets/sprites/logos/logo_conway.png", UI_MENU_SCENE, 5, 1.5, 1.5)
+end
+
+--- tela preta com o tempo final da run no modo speedrun.
+--- confirma (ou qualquer input, como nas telas de intro) avança para os créditos
+function initSpeedrunTimeScene()
+	local scene = UIScene.new(UI_SPEEDRUN_TIME_SCENE)
+
+	function scene:onActive()
+		self.timeText = formatSpeedrunTime(speedrunTime)
+		self.manager.controls:consumeAnyInput()
+	end
+
+	function scene:advance()
+		self.manager:deactivateScene(UI_SPEEDRUN_TIME_SCENE)
+		self.manager:activateScene(UI_CREDITS_SCENE, UI_SPEEDRUN_TIME_SCENE)
+		globalAudioManager:play(AUDIO_SELECT, self, "kabum")
+	end
+
+	function scene:update(dt)
+		if self.manager.controls:checkAction(ACT_CON) or self.manager.controls:consumeAnyInput() then
+			self:advance()
+		end
+	end
+
+	function scene:draw()
+		love.graphics.clear(0, 0, 0, 1)
+		love.graphics.setColor(1, 1, 1, 1)
+		love.graphics.setFont(mushBigFont)
+		love.graphics.printf("Thanks for speedrunning our Demo", 0, 300, 1280, "center")
+		love.graphics.setColor(0.55, 0.8, 0.8, 1)
+		love.graphics.setFont(mushBigFont)
+		love.graphics.printf("Your time: " .. (self.timeText or "0:00.000"), 0, 400, 1280, "center")
+		love.graphics.setColor(1, 1, 1, 1)
+	end
+
+	return scene
 end
 
 function initMenuScene()
@@ -90,6 +133,19 @@ function initMenuScene()
 	end)
 	local seedTextbox =
 		UITextBox.new("menu seed textbox", vec(640, 600), size(320, 72), nil, Color.new(1, 1, 1, 1), 10, setWorldSeed)
+	local speedrunLabel = UITextElem.new(
+		"speedrun label",
+		vec(524, 645),
+		size(240, 48),
+		2,
+		nil,
+		rgba8(255, 254, 179, 255),
+		"speedrun",
+		true
+	)
+	local speedrunSwitch = UISwitchElem.new("switch", vec(704, 664), size(64, 32), nil, speedrunMode, function(isOn)
+		speedrunMode = isOn
+	end)
 
 	-- ANIMAÇÕES
 	local animSettings = {}
@@ -112,6 +168,8 @@ function initMenuScene()
 	menuScene:addElement(settingsBtn, ELEM_LAYER_1, vec(2, 1))
 	menuScene:addElement(quitBtn, ELEM_LAYER_1, vec(3, 1))
 	menuScene:addElement(seedTextbox, ELEM_LAYER_1, vec(2, 2))
+	menuScene:addElement(speedrunLabel, BG_LAYER_2, vec(2, 3))
+	menuScene:addElement(speedrunSwitch, ELEM_LAYER_1, vec(2, 3))
 
 	return menuScene
 end
@@ -211,22 +269,28 @@ function initGraphicsSettingsScene()
 		"Fullscreen",
 		true
 	)
-	local fullscreenSwitch = UISwitchElem.new("switch", vec(770, 240), size(96, 48), nil, love.window.getFullscreen(), function(isOn)
-		love.window.setFullscreen(isOn)
-	end)
-	local vsyncLabel = UITextElem.new(
-		"vsync label",
-		vec(430, 336),
-		size(260, 48),
-		3,
+	local fullscreenSwitch = UISwitchElem.new(
+		"switch",
+		vec(770, 240),
+		size(96, 48),
 		nil,
-		rgba8(255, 254, 179, 255),
-		"VSync",
-		true
+		love.window.getFullscreen(),
+		function(isOn)
+			love.window.setFullscreen(isOn)
+		end
 	)
-	local vsyncSwitch = UISwitchElem.new("switch", vec(770, 360), size(96, 48), nil, love.window.getVSync() ~= 0, function(isOn)
-		love.window.setVSync(isOn and 1 or 0)
-	end)
+	local vsyncLabel =
+		UITextElem.new("vsync label", vec(430, 336), size(260, 48), 3, nil, rgba8(255, 254, 179, 255), "VSync", true)
+	local vsyncSwitch = UISwitchElem.new(
+		"switch",
+		vec(770, 360),
+		size(96, 48),
+		nil,
+		love.window.getVSync() ~= 0,
+		function(isOn)
+			love.window.setVSync(isOn and 1 or 0)
+		end
+	)
 	local fpsLabel = UITextElem.new(
 		"fps label",
 		vec(430, 456),
@@ -1152,7 +1216,10 @@ function newItemCollectedScene(player)
 
 	function scene:layoutNotifications()
 		for index, notification in ipairs(self.notifications) do
-			notification.element.pos.y = 720 - BOTTOM_MARGIN - notification.element.size.height / 2 - (index - 1) * STACK_SPACING
+			notification.element.pos.y = 720
+				- BOTTOM_MARGIN
+				- notification.element.size.height / 2
+				- (index - 1) * STACK_SPACING
 		end
 	end
 
