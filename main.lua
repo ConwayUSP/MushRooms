@@ -40,6 +40,7 @@ require("table")
 ----------------------------------------
 
 debugMode = false
+IS_DEBUG = false
 inventoryOpen = false
 window = { scale = 1, initialW = 1280, initialH = 720 }
 gameCtx = MENU_CTX
@@ -71,6 +72,10 @@ function love.keypressed(key, scancode, isrepeat)
 	end
 
 	---------- DEBUG ----------
+
+	if not IS_DEBUG then
+		return
+	end
 
 	-- q faz a câmera 1 tremer (teste)
 	if key == "c" then
