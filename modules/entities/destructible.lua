@@ -165,7 +165,7 @@ function Destructible:spawnLoot()
 			for _ = 1, amount do
 				local dropPos = vec(self.pos.x, self.pos.y)
 				local impulseVec = vec(math.random(-100, 100), -math.random(300, 400))
-				spawnDrop(el.object, dropPos, self.room, el.autoPick, math.random(-10, 20), impulseVec)
+				spawnDrop(el.object, dropPos, self.room, el.autoPick, math.random(20, 30), impulseVec)
 			end
 		end
 	end

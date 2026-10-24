@@ -152,10 +152,7 @@ function renderEntities(camera)
 		-- adiciona drops
 		for _, i in pairs(r.drops) do
 			-- esse terceiro argumento é dropScale
-			addEntityToDrawList(
-				i,
-				i.pos.y + getAnchor(i, FLOOR, (i.object and i.object.type == RESOURCE) and 1.875 or 3)
-			)
+			addEntityToDrawList(i, i.floorY + getAnchor(i, FLOOR, (i.object and i.object.type == RESOURCE) and 1.875 or 3))
 		end
 		-- adiciona inimigos
 		for _, e in pairs(r.enemies) do
