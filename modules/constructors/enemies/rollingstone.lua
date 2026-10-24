@@ -168,7 +168,7 @@ function newRollingStone(spawnPos, room)
 	local hbs = hitboxes({ hitbox(Circle.new(32)) }, { hitbox(Circle.new(30)) })
 	local rollAtk = newRollingRushAttack(false, 4.0, 20, hitboxes({ hitbox(Circle.new(40)) }))
 
-	local enemy = Enemy.new(ROLLING_STONE.name, 65, spawnPos, physics, function() end, { rollAtk }, hbs, room)
+	local enemy = Enemy.new(ROLLING_STONE.name, 45, spawnPos, physics, function() end, { rollAtk }, hbs, room)
 	enemy.state = "idle down"
 
 	-- Máquina de estados do Rolling Stone
