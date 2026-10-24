@@ -114,15 +114,18 @@ function UIItemCollectedElem.new(item, margin)
 	element.itemType = item.type
 	element.title = item.name
 	element.description = item.description or "Descrição indisponível."
-	element.iconSize = 72
+	element.iconSize = item.type == BLESSING and 50 or 72
 
 	local iconPath
+	local sizeAnim
 	if item.type == BLESSING then
 		iconPath = pngPathFormat({ "assets", "sprites", "blessings", item.name })
+		sizeAnim = size(16, 16)
 	else
 		iconPath = pngPathFormat({ "assets", "sprites", "icons", item.type .. "s", item.name })
+		sizeAnim = size(32, 32)
 	end
-	addAnimation(element, iconPath, IDLE, newAnimSetting(1, size(32, 32), 1, true, 1))
+	addAnimation(element, iconPath, IDLE, newAnimSetting(1, sizeAnim, 1, true, 1))
 
 	return element
 end

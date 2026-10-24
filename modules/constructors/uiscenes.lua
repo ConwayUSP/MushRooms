@@ -618,6 +618,10 @@ function newEquipmentScene(player)
 	slotSettings[IDLE] = newAnimSetting(1, size(32, 32), 1, true, 1)
 	slotSettings[SELECTED] = newAnimSetting(1, size(32, 32), 1, true, 1)
 
+	local blessingsSettings = {}
+	blessingsSettings[IDLE] = newAnimSetting(1, size(16, 16), 1, true, 1)
+	blessingsSettings[SELECTED] = newAnimSetting(1, size(16, 16), 1, true, 1)
+
 	local decorationSettings = {}
 	decorationSettings[IDLE] = newAnimSetting(1, size(15, 39), 1, true, 1)
 
@@ -722,7 +726,7 @@ function newEquipmentScene(player)
 	function equipScene:newEquipmentElement(equipmentType, equipment, pos)
 		local element
 		if equipmentType == BLESSING then
-			element = UIImageElem.new("equip " .. equipment.name, pos, size(96, 96))
+			element = UIImageElem.new("equip " .. equipment.name, pos, size(64, 64))
 		else
 			element = UIButtonElem.new("equip " .. equipment.name, pos, size(96, 96), nil, function()
 				if equipmentType == WEAPON then
@@ -736,10 +740,17 @@ function newEquipmentScene(player)
 		end
 		element.equipment = equipment
 
-		local path = equipmentType == BLESSING and pngPathFormat({ "assets", "sprites", "blessings", equipment.name })
-			or pngPathFormat({ "assets", "sprites", "icons", equipmentType .. "s", equipment.name })
-		addAnimation(element, path, IDLE, slotSettings[IDLE])
-		addAnimation(element, path, SELECTED, slotSettings[SELECTED])
+		local path
+
+		if equipmentType == BLESSING then
+			path = pngPathFormat({ "assets", "sprites", "blessings", equipment.name })
+			addAnimation(element, path, IDLE, blessingsSettings[IDLE])
+			addAnimation(element, path, SELECTED, blessingsSettings[SELECTED])
+		else
+			path = pngPathFormat({ "assets", "sprites", "icons", equipmentType .. "s", equipment.name })
+			addAnimation(element, path, IDLE, slotSettings[IDLE])
+			addAnimation(element, path, SELECTED, slotSettings[SELECTED])
+		end
 
 		return element
 	end
