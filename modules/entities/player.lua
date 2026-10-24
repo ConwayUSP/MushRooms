@@ -551,11 +551,15 @@ end
 
 ---@param weapon Weapon
 ---@return boolean
--- adiciona uma arma ao arsenal do `Player` caso ele não a tenha
+-- adiciona uma arma ao arsenal do `Player`, mesmo que seja repetida.
+-- se o arsenal estiver cheio, dropa a arma equipada para fazer espaço
 function Player:collectWeapon(weapon)
-	-- previne de pegar uma arma repetida ou exceder os espaços da UI de equipamentos
-	if self:hasWeapon(weapon.name) or #self.weapons >= MAX_WEAPONS then
-		return false
+	-- sem espaço: troca pela arma equipada
+	if #self.weapons >= MAX_WEAPONS then
+		local idx = self.weapon and tableIndexOf(self.weapons, self.weapon)
+		if not idx or not self:dropWeaponAtIndex(idx) then
+			return false
+		end
 	end
 	table.insert(self.weapons, weapon)
 	weapon.owner = self
@@ -610,14 +614,23 @@ end
 
 ---@param artifact Artifact
 ---@return boolean
--- tenta coletar um artefato, retorna um booleano indicando o sucesso
+-- tenta coletar um artefato, retorna um booleano indicando o sucesso.
+-- se o inventário estiver cheio, dropa o artefato equipado para fazer
+-- espaço e equipa o novo no lugar do dropado
 function Player:collectArtifact(artifact)
 	if #self.artifacts >= 2 then
-		return false
-	else
+		-- sem espaço: troca pelo artefato equipado
+		local idx = self.artifact and tableIndexOf(self.artifacts, self.artifact)
+		if not idx or not self:dropArtifactAtIndex(idx) then
+			return false
+		end
 		self.artifacts[#self.artifacts + 1] = artifact
+		-- o novo artefato substitui o dropado como equipado
+		self:equipArtifact(artifact.name)
 		return true
 	end
+	self.artifacts[#self.artifacts + 1] = artifact
+	return true
 end
 
 ---@param artifactName string
@@ -696,7 +709,9 @@ function Player:collectDrop(drop)
 	if drop.object.type == WEAPON then
 		result = self:collectWeapon(drop.object)
 		if result then
-			self:equipWeapon(drop.object.name)
+			-- equipa a instância coletada (nomes repetidos não podem ser
+			-- desambiguados por equipWeapon)
+			self.weapon = drop.object
 		end
 	elseif drop.object.type == ARTIFACT then
 		drop.object:setOwner(self)

@@ -44,7 +44,9 @@ function grantTreasureReward(player, reward)
 		if not player:collectWeapon(reward) then
 			return false
 		end
-		player:equipWeapon(reward.name)
+		-- equipa a instância recebida (nomes repetidos não podem ser
+		-- desambiguados por equipWeapon)
+		player.weapon = reward
 	elseif reward.type == ARTIFACT then
 		reward:setOwner(player)
 		if not player:collectArtifact(reward) then
