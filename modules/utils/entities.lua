@@ -61,6 +61,7 @@ RAINBOW_DASH = registerEntity(ARTIFACT, "Rainbow Dash", "SooOoOo CoLoRfUlL!!")
 BONE_PILE = registerEntity(DESTRUCTIBLE, "bone pile")
 DESTRUCTIBLE_ROCK = registerEntity(DESTRUCTIBLE, "destructible rock")
 COAL_ALTAR = registerEntity(DESTRUCTIBLE, "coal altar")
+WOOD_BOX = registerEntity(DESTRUCTIBLE, "wood box")
 TALL_GRASS = registerEntity(DESTRUCTIBLE, "tall grass")
 
 -------------- RECURSOS ----------------
@@ -151,4 +152,4 @@ TREASURE_PILLAR = registerEntity(INTERACTIVE, "treasure pillar")
 ARCHER_BLESSING = registerEntity(BLESSING, "Archer Blessing")
 FIRE_BLESSING = registerEntity(BLESSING, "Fire Blessing")
 PIGMEU_BLESSING = registerEntity(BLESSING, "Pigmeu Blessing")
-GOMUGOMU_BLESSING = registerEntity(BLESSING, "Gomu Gomu Blessing")
+GOMUGOMU_BLESSING = registerEntity(BLESSING, "GomuGomu Blessing")

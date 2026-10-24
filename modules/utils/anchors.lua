@@ -86,6 +86,7 @@ ANCHORS = {
 	nuclear_shot = floorAnchor(4),
 	pebble_shot = floorAnchor(4),
 	ember_mark = floorAnchor(-1000),
+	head_slam = floorAnchor(-1000),
 
 	-- Puzzle
 	puzzle_stone = floorAnchor(18),

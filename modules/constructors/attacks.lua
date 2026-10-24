@@ -343,9 +343,11 @@ function newRotatoryAttack(ally, duration, cooldown, hb, name, dmg)
 		cooldown = cooldown,
 		tick = 0.5,
 	})
+	-- segue o atacante mantendo o deslocamento inicial do spawn, para que
+	-- o hitbox possa nascer à frente do atacante em vez do centro dele
 	local updateFunc = function(e, dt)
 		e:baseUpdate(dt)
-		e.pos = e.attacker.pos
+		e.pos = addVec(e.attacker.pos, e.followOffset)
 	end
 	local onHitFunc = function(e, t)
 		-- print("Rotatory Attack acertou um alvo")

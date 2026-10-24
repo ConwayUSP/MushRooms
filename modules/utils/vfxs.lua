@@ -120,6 +120,10 @@ PARTICLES_SETTINGS = {
 		constructor = newCoalBreakParticles,
 		emitAtStart = 24,
 	},
+	[PARTICLE_BREAK_WOOD] = {
+		constructor = newWoodBreakParticles,
+		emitAtStart = 22,
+	},
 	[PARTICLE_BREAK_GRASS] = {
 		constructor = newGrassBreakParticles,
 		emitAtStart = 16,

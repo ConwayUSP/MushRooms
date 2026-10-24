@@ -58,7 +58,7 @@ end
 ---@return Weapon
 -- cria uma arma do tipo Boomerangue
 function newBoomerangue()
-	local attack = newBoomerangueAttack(true, 1600, 0.35, 4)
+	local attack = newBoomerangueAttack(true, 1500, 0.35, 2)
 	local boomerangue = Weapon.new(BOOMERANGUE.name, attack, vec(20, 30))
 	local idleAnimSettings = newAnimSetting(1, { width = 32, height = 32 }, 0.5, true, 1)
 	boomerangue:addAnimations(idleAnimSettings)

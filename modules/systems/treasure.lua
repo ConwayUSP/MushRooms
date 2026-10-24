@@ -7,7 +7,7 @@ require("modules.constructors.weapons")
 require("modules.utils.types")
 
 local rewardFactories = {
-	[WEAPON] = { newKatana, newSlingShot, newBoomerangue, newSkullShooter, newBlackholer, newFlowergun },
+	[WEAPON] = { newSlingShot, newSkullShooter, newBlackholer, newFlowergun },
 	-- [ARTIFACT] = { newInvisibilityRing, newRainbowDash },
 	[BLESSING] = { newArcherBlessing, newFireBlessing, newPigmeuBlessing, newGomuGomuBlessing },
 }
@@ -44,7 +44,9 @@ function grantTreasureReward(player, reward)
 		if not player:collectWeapon(reward) then
 			return false
 		end
-		player:equipWeapon(reward.name)
+		-- equipa a instância recebida (nomes repetidos não podem ser
+		-- desambiguados por equipWeapon)
+		player.weapon = reward
 	elseif reward.type == ARTIFACT then
 		reward:setOwner(player)
 		if not player:collectArtifact(reward) then

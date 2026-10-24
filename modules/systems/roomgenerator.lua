@@ -41,14 +41,14 @@ BLUEPRINTS = {
 		new5SpotsBattleRoom,
 		new3SpiderDucksBattleRoom,
 		new4SpiderDucksBattleRoom,
-		new5SpiderDucksBattleRoom,
+		-- new5SpiderDucksBattleRoom,
 		new3NuclearCatsBattleRoom,
 		new4NuclearCatsBattleRoom,
-		new5NuclearCatsBattleRoom,
+		-- new5NuclearCatsBattleRoom,
 		new3RollingStonesBattleRoom,
-		new4RollingStonesBattleRoom,
-		new5RollingStonesBattleRoom,
-		new3DemonBallsBattleRoom,
+		-- new4RollingStonesBattleRoom,
+		-- new5RollingStonesBattleRoom,
+		-- new3DemonBallsBattleRoom,
 		new4DemonBallsBattleRoom,
 		new5DemonBallsBattleRoom,
 	},
@@ -65,6 +65,9 @@ BLUEPRINTS = {
 		new2CoalSpotsResourceRoom,
 		new3CoalSpotsResourceRoom,
 		new4CoalSpotsResourceRoom,
+		new2WoodSpotsResourceRoom,
+		new3WoodSpotsResourceRoom,
+		new4WoodSpotsResourceRoom,
 	},
 	[NPC_ROOM] = {
 		newTenkarRoom,
@@ -90,7 +93,7 @@ ROOM_WEIGHTS = {
 		distribution = "equal",
 	},
 	[RESOURCE_ROOM] = {
-		weight = 12,
+		weight = 20,
 		distribution = "equal",
 	},
 	-- esse é um exemplo de um caso onde uma sala dentre as demais é mais "rara"
@@ -104,7 +107,7 @@ ROOM_WEIGHTS = {
 	-- 	},
 	-- },
 	[TREASURE_ROOM] = {
-		weight = 3,
+		weight = 6,
 		distribution = "equal",
 	}
 }
@@ -129,11 +132,11 @@ ROOM_RULES = {
 	},
 	[newSmallPuzzleRoomDash] = {
 		count = 0,
-		maxCount = 1,
+		maxCount = 2,
 	},
 	[newSmallPuzzleRoomRing] = {
 		count = 0,
-		maxCount = 1,
+		maxCount = 2,
 	},	
 	[newAncientMoaiBossRoom] = {
 		count = 0,

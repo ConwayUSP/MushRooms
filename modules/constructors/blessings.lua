@@ -3,7 +3,7 @@
 ----------------------------------------
 
 function newArcherBlessing()
-  local k = 1.5
+  local k = 1.75
   local applyFuncs = {
     [TP_ON_EQUIP] = function(self, owner)
       print("Equipou " .. ARCHER_BLESSING.name)

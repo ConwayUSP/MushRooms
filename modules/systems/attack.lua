@@ -290,6 +290,7 @@ function AttackEvent.new(attackState, attacker, origin, direction)
 	atkEvent.ally = attackState.ally -- para definir quem é afetado pelo ataque
 	atkEvent.subtype = attackState.subtype -- subtipo do ataque, como melee, ranged, etc
 	atkEvent.attacker = attacker -- jogador ou inimigo que desferiu o ataque
+	atkEvent.followOffset = subVec(origin, attacker.pos) -- deslocamento do spawn em relação ao atacante
 	atkEvent.pos = origin -- posição atual do ataque
 	atkEvent.dmg = attackState.dmg -- dano atual do ataque (caso mude com o tempo)
 	atkEvent.timer = attackState.dur -- tempo até o ataque terminar
@@ -480,7 +481,7 @@ function AttackEvent:draw(camera)
 		rotation = self.direction
 	end
 
-	local scale = 3
+	local scale = self.atk.drawScale or 3
 	local flip = self.subtype == MELEE_ATTACK and invertSecondAndThirdQuadrants(rotation) or 1
 
 	love.graphics.draw(

@@ -44,13 +44,24 @@ SpawnPoint.__index = SpawnPoint
 SpawnPoint.type = SPAWNPOINT
 
 ---@param pos Vec
+---@param rng RNG?
 ---@return SpawnPoint
 -- um spawn point agrega uma lista de objetos que podem
 -- spawnar naquela posição e com qual chance
-function SpawnPoint.new(pos)
+function SpawnPoint.new(pos, rng)
 	local sp = setmetatable({}, SpawnPoint)
+
 	sp.pos = pos -- posição do spawnpoint na sala
 	sp.spawns = {} -- lista de SpawnDatas relacionados a este spawn point
+
+	if rng then
+		local variation = { min = 40, max = 40 }
+		local offsetX = rng:random(variation.min, variation.max)
+		local offsetY = rng:random(variation.min, variation.max)
+
+		sp.pos = addVec(sp.pos, vec(offsetX, offsetY))
+	end
+
 	return sp
 end
 

@@ -60,5 +60,23 @@ function newSpiderDuck(spawnPos, room)
 	enemy.shadowWidth = 27
 	enemy.moveTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
 	enemy.atkTargeting:addTarget(Target.new(TG_SEEK, TC_EVERY_FRAME), seekClosestPlayer)
+
+	enemy.attackStartDelay = math.random(0.2, 1.7)
+
+	-- atualiza o atraso antes de verificar se o ataque pode começar
+	enemy.updateAttack = function(self, dt)
+		self.attackStartDelay = math.max(0, self.attackStartDelay - dt)
+		Enemy.updateAttack(self, dt)
+	end
+
+	-- impede o início do ataque enquanto o atraso não terminar
+	enemy.tryStartAttack = function(self)
+		if self.attackStartDelay > 0 then
+			return
+		end
+
+		Enemy.tryStartAttack(self)
+	end
+
 	return enemy
 end

@@ -267,8 +267,8 @@ end
 
 ---@return ParticleSystem
 function newBlackHoleParticles()
-	local particleImg = assetManager:getImage("assets/sprites/square.png")
-	local ps = love.graphics.newParticleSystem(particleImg, 48)
+	local particleImg1 = assetManager:getImage("assets/sprites/circle.png")
+	local ps = love.graphics.newParticleSystem(particleImg1, 41)
 
 	ps:setColors(
 		0.99691772460938,
@@ -285,25 +285,24 @@ function newBlackHoleParticles()
 		1
 	)
 	ps:setDirection(-1.5707963705063)
-	ps:setEmissionArea("borderellipse", 32, 32, 0, true)
-	ps:setEmissionRate(18)
+	ps:setEmissionArea("normal", 11.814744949341, 11.814744949341, -1.5707963705063, false)
+	ps:setEmissionRate(12.041033744812)
 	ps:setEmitterLifetime(-1)
 	ps:setInsertMode("top")
-	ps:setLinearAcceleration(0, 8, 0, 8)
-	ps:setLinearDamping(0.2, 0.2)
+	ps:setLinearAcceleration(0, 8.6251773834229, 0, 8.6251773834229)
+	ps:setLinearDamping(0.1961845010519, 0.1961845010519)
 	ps:setOffset(50, 50)
-	ps:setParticleLifetime(1.8, 2.2)
-	ps:setRadialAcceleration(-350, -450)
+	ps:setParticleLifetime(2.2740254402161, 2.5111618041992)
+	ps:setRadialAcceleration(-122.9664478302, -331.63552856445)
 	ps:setRelativeRotation(false)
 	ps:setRotation(0, 0)
-	ps:setSizes(0.01, 0.015, 0)
-	ps:setSizeVariation(0.25)
-	ps:setSpeed(155, 225)
+	ps:setSizes(0, 0.06, 0)
+	ps:setSizeVariation(0.02)
+	ps:setSpeed(86.251770019531, 289.09146118164)
 	ps:setSpin(0, 0)
 	ps:setSpinVariation(0)
 	ps:setSpread(6.2831854820251)
-	-- ps:setTangentialAcceleration(60, 120)
-
+	ps:setTangentialAcceleration(0, 0)
 	ps:stop()
 
 	return ps
@@ -327,7 +326,7 @@ function newFlowerShotParticles()
 	ps:setRadialAcceleration(0, 0)
 	ps:setRelativeRotation(false)
 	ps:setRotation(0, 0)
-	ps:setSizes(0.03, 0.005)
+	ps:setSizes(0.07, 0.03)
 	ps:setSizeVariation(0.08)
 	ps:setSpeed(65, 596)
 	ps:setSpin(0, 0)
@@ -642,6 +641,48 @@ function newCoalBreakParticles()
 		0.3,
 		0.1,
 		0 -- brasa apagando
+	)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 22, 18, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 450, 0, 850)
+	ps:setLinearDamping(1.5, 3)
+	ps:setParticleLifetime(0.3, 0.65)
+	ps:setSizes(0.05, 0.03, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(100, 280)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-6, 6)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
+-- lascas de madeira voando quando uma caixa de madeira quebra
+function newWoodBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 30)
+
+	ps:setColors(
+		0.55,
+		0.36,
+		0.32,
+		1, -- madeira clara
+		0.4,
+		0.25,
+		0.19,
+		0.9, -- madeira escura
+		0.72,
+		0.5,
+		0.4,
+		0.8, -- lascas claras
+		0.45,
+		0.3,
+		0.18,
+		0 -- lascas sumindo
 	)
 	ps:setDirection(0)
 	ps:setEmissionArea("borderellipse", 22, 18, 0, false)
