@@ -493,7 +493,7 @@ function Player:processInput()
 		-- se não está ativo, não completou e não está em cooldown, então ativa a defesa
 		if not self.defenseDurationTimer.active and not self.defenseDurationTimer.completed and not self.defenseCooldownTimer.active then
 			globalVFXManager:playParticle(PARTICLE_DEFENSE, self, vec(0, 0), true, self.colors[1], self.colors[3])
-			globalAudioManager:play(AUDIO_DEFENSE, self, "pop")
+			globalAudioManager:play(AUDIO_DEFENSE, self, "defense")
 			self.defenseDurationTimer:start()
 			self.defenseCooldownTimer:stop()
 
@@ -784,6 +784,7 @@ function Player:takeDamage(damage)
 
 	Mortal.takeDamage(self, damage)
 	getCameraByPlayer(self):shake(damage / 5, 0.5)
+	globalAudioManager:play(AUDIO_GET_HIT, self, "char_hit")
 end
 
 -- tenta reespawnar quando está morto: espera a animação de morte e então

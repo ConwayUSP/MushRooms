@@ -192,7 +192,7 @@ function Attack:update(dt)
 				e.active = false
 				collisionManager:unregister(e)
 				-- tocando o som do projétil quebrando
-				globalAudioManager:play(AUDIO_BREAK, self, "kabum")
+				globalAudioManager:play(AUDIO_BREAK, self, "projectile_break")
 				-- trocando da partícula que segue o projétil para a do projétil quebrando
 				globalVFXManager:stopParticle(e.atk.particles.projTrail, e)
 				globalVFXManager:playParticle(e.atk.particles.onBreak, e, nil, false)

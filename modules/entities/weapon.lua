@@ -131,7 +131,7 @@ function Weapon:fire()
 	local origin = self:atkOriginPoint()
 	self.atk:attack(self.owner, origin, self.rotation)
 
-	globalAudioManager:play(AUDIO_ATTACK, self, "pow")
+	globalAudioManager:play(AUDIO_ATTACK, self, "shoot")
 
 	if self.animations[ATTACKING] then
 		self.state = ATTACKING

@@ -16,15 +16,21 @@ local AUDIO_LOOP_TABLE = {
 	[AUDIO_MOVEMENT] = true,
 	[AUDIO_GET_HIT] = false,
 	[AUDIO_DEFENSE] = true,
+	[AUDIO_BOSS_MOVEMENT] = true,
+	[AUDIO_BOSS_SPIN] = true,
 }
 
 -- volume específico de cada tipo de áudio (de 0 a 1).
 -- se o áudio não estiver na tabela, o padrão é 1
 local AUDIO_VOLUME_TABLE = {
 	[MUSIC_MENU] = 0.75,
-	[MUSIC_STD] = 0.75,
-	[MUSIC_BATTLE] = 0.75,
+	[MUSIC_STD] = 0.85,
+	[MUSIC_BATTLE] = 0.5,
 	[MUSIC_PUZZLE] = 0.75,
+	[AUDIO_MOVEMENT] = 0.35,
+	[AUDIO_ATTACK] = 0.5,
+	[AUDIO_DEAL_HIT] = 0.5,
+	[AUDIO_GET_HIT] = 0.45,
 }
 
 -- duração padrão (em segundos) do crossfade entre músicas
@@ -42,8 +48,10 @@ end
 local AUDIO_PITCH_VARIANCE_TABLE = {
 	[AUDIO_MOVEMENT] = 0.08,
 	[AUDIO_GET_HIT] = 0.15,
-	[AUDIO_DEFENSE] = 0.15,
+	[AUDIO_DEFENSE] = 0.08,
+	[AUDIO_DEAL_HIT] = 0.2,
 	[AUDIO_ATTACK] = 0.1,
+	[AUDIO_BOSS_MOVEMENT] = 0.05,
 }
 
 -- limite máximo de vezes que o mesmo tipo de áudio pode tocar simultaneamente (evita estouro de volume)

@@ -356,7 +356,7 @@ function Enemy:updateState(dt)
 		local isMoving = isMovementState(self.state)
 		local wasMoving = isMovementState(prevState)
 		if isMoving and not wasMoving then
-			globalAudioManager:play(AUDIO_MOVEMENT, self, "movement_audio")
+			globalAudioManager:play(AUDIO_MOVEMENT, self, "movement_enemy")
 		elseif not isMoving and wasMoving then
 			globalAudioManager:stop(AUDIO_MOVEMENT, self)
 		end

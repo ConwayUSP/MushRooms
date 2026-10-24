@@ -624,14 +624,24 @@ function newAncientMoai(spawnPos, room)
 			self.state = PREPARING_STATE
 		elseif self.phase == MOAI_RUSH or self.phase == MOAI_BRAKE then
 			self.state = rushState(self.attackDir)
+			globalAudioManager:play(AUDIO_BOSS_MOVEMENT, self, "boss_move")
 		elseif self.phase == MOAI_COLLISION then
 			self.state = collisionState(self.attackDir)
+			globalAudioManager:stop(AUDIO_BOSS_MOVEMENT, self, "boss_move")
+			globalAudioManager:play(AUDIO_BOSS_COLLIDE, self, "boss_collide")
 		elseif self.phase == MOAI_SLAM then
 			self.state = slamState(self.attackDir)
+			globalAudioManager:stop(AUDIO_BOSS_MOVEMENT, self, "boss_move")
+			globalAudioManager:stop(AUDIO_BOSS_SPIN, self, "boss_spin")
+			globalAudioManager:play(AUDIO_BOSS_ATTACK, self, "boss_hit")
 		elseif self.phase == MOAI_TORNADO then
 			self.state = TORNADO_STATE
+			globalAudioManager:stop(AUDIO_BOSS_MOVEMENT, self, "boss_move")
+			globalAudioManager:play(AUDIO_BOSS_SPIN, self, "boss_spin")
 		else
 			self.state = IDLE .. " " .. self.facing
+			globalAudioManager:stop(AUDIO_BOSS_MOVEMENT, self, "boss_move")
+			globalAudioManager:stop(AUDIO_BOSS_SPIN, self, "boss_spin")
 		end
 
 		if self.state ~= prevState then

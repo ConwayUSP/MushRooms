@@ -95,7 +95,7 @@ function initSpeedrunTimeScene()
 	function scene:advance()
 		self.manager:deactivateScene(UI_SPEEDRUN_TIME_SCENE)
 		self.manager:activateScene(UI_CREDITS_SCENE, UI_SPEEDRUN_TIME_SCENE)
-		globalAudioManager:play(AUDIO_SELECT, self, "kabum")
+		globalAudioManager:play(AUDIO_SELECT, self, "pop")
 	end
 
 	function scene:update(dt)

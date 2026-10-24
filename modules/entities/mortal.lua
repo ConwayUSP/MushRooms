@@ -114,7 +114,7 @@ function Mortal:takeDamage(damage)
 
 	self:setInvulnerable()
 	self.hp = math.max(self.hp - damage, 0)
-	globalAudioManager:play(AUDIO_GET_HIT, self, "au")
+	globalAudioManager:play(AUDIO_DEAL_HIT, self, "deal_hit")
 
 	if self.type == PLAYER then
 		self:wakeUp()
