@@ -7,7 +7,7 @@ require("modules.constructors.weapons")
 require("modules.utils.types")
 
 local rewardFactories = {
-	[WEAPON] = { newKatana, newSlingShot, newBoomerangue, newSkullShooter, newBlackholer, newFlowergun },
+	[WEAPON] = { newSlingShot, newSkullShooter, newBlackholer, newFlowergun },
 	-- [ARTIFACT] = { newInvisibilityRing, newRainbowDash },
 	[BLESSING] = { newArcherBlessing, newFireBlessing, newPigmeuBlessing, newGomuGomuBlessing },
 }
