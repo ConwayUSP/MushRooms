@@ -717,7 +717,9 @@ function newAncientMoaiBossRoom(rng)
 	sp1:insert(enemyData1)
 	bp:insert(sp1)
 	local excludedArea = { { min = vec(-150, -150), max = vec(150, 150) } }
-	RoomGeneration.insertGeneralDecorations(bp, rng, excludedArea)
+	-- o Ancient Moai precisa de mais espaço para se mover: em vez dos
+	-- 4 pilares padrão, a sala recebe 0 ou 2 pilares (prob 0.6 de ter 2)
+	RoomGeneration.insertGeneralDecorations(bp, rng, excludedArea, 2)
 	return bp
 end
 

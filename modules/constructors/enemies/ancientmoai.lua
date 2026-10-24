@@ -34,12 +34,13 @@ local WALL_CRASH_DMG = 30        -- dano ao bater na parede durante o embalo
 local WALL_STUN_DURATION = 1.8   -- espera prolongada após bater na parede
 local MIN_RUSH_DIST = 300        -- distância mínima de espaço livre para o embalo
 local MAX_CLEARANCE = 1800       -- alcance máximo da checagem de espaço livre (cobre a largura da sala)
-local RUSH_ACCEL = 3500          -- aceleração do embalo (vel. terminal ≈ 800 px/s)
+local RUSH_ACCEL = 4500          -- aceleração do embalo
 local BRAKE_FACTOR = 1.0         -- intensidade do freio (≤1 para nunca inverter a velocidade)
 local BRAKE_STOP_SPEED = 25      -- velocidade abaixo da qual o freio encerra o embalo
 local SLAM_IMPACT_FRAME = 8      -- frame da animação de slam em que o impacto acontece
 local SLAM_FRAME_DUR = 0.06      -- duração de cada frame do slam (18 frames ≈ 1.08s)
 local SLAM_BURST = 750           -- mudança de velocidade do impulso no impacto (≈50px de arrasto)
+local SLAM_SPAWN_OFFSET = 200    -- deslocamento do hitbox do slam na direção do ataque
 local TORNADO_DUR = 3.0          -- duração da animação de tornado
 local TORNADO_EMIT_DELAY = 1.0   -- espera antes do primeiro tiro do tornado
 local EMIT_RATE_START = 12       -- tiros/s no início da emissão
@@ -54,9 +55,6 @@ local SHAKE_WALL_DUR = 0.7       -- duração do tremor da câmera na batida na 
 local RUSH_WEIGHT = 15
 local TORNADO_WEIGHT = 3
 local SLAM_WEIGHT = 2
-
-local CENTERED_OFFSET = vec(0, -35)
-local NEUTRAL_OFFSET = vec(0, 0)
 
 ---@class Moai : Enemy
 ---@field phase MoaiPhases
@@ -142,18 +140,13 @@ local function addMoaiAnimations(enemy)
 	----------------- ANDANDO / PARADO -----------------
 	for _, dir in ipairs(DIRECTIONS) do
 		local walkPath = moaiSheetPath(enemy, rushState(dir))
-		addAnimation(
-			enemy,
-			walkPath,
-			rushState(dir),
-			newAnimSetting(9, { width = 200, height = 200 }, 0.12, true, 1, 4, CENTERED_OFFSET)
-		)
+		addAnimation(enemy, walkPath, rushState(dir), newAnimSetting(9, { width = 200, height = 200 }, 0.12, true, 1))
 		-- parado usa o primeiro frame da sheet de andar da mesma direção
 		addAnimation(
 			enemy,
 			walkPath,
 			IDLE .. " " .. dir,
-			newAnimSetting(1, { width = 200, height = 200 }, 1000, true, 1, 4, CENTERED_OFFSET)
+			newAnimSetting(1, { width = 200, height = 200 }, 1000, true, 1)
 		)
 	end
 
@@ -161,12 +154,7 @@ local function addMoaiAnimations(enemy)
 	for _, dir in ipairs(DIRECTIONS) do
 		local state = collisionState(dir)
 		local path = moaiSheetPath(enemy, state)
-		addAnimation(
-			enemy,
-			path,
-			state,
-			newAnimSetting(10, { width = 200, height = 200 }, 0.08, false, 1, 4, CENTERED_OFFSET)
-		)
+		addAnimation(enemy, path, state, newAnimSetting(10, { width = 200, height = 200 }, 0.08, false, 1))
 		enemy.animations[state].onFinish = function()
 			if enemy.phase == MOAI_COLLISION then
 				enemy.facing = enemy.attackDir
@@ -180,12 +168,7 @@ local function addMoaiAnimations(enemy)
 	for _, dir in ipairs(DIRECTIONS) do
 		local state = slamState(dir)
 		local path = moaiSheetPath(enemy, state)
-		addAnimation(
-			enemy,
-			path,
-			state,
-			newAnimSetting(18, { width = 200, height = 200 }, SLAM_FRAME_DUR, false, 1, 0, NEUTRAL_OFFSET)
-		)
+		addAnimation(enemy, path, state, newAnimSetting(18, { width = 320, height = 200 }, SLAM_FRAME_DUR, false, 1))
 	end
 
 	----------------- TORNADO SHOTS -----------------
@@ -193,7 +176,7 @@ local function addMoaiAnimations(enemy)
 		enemy,
 		moaiSheetPath(enemy, TORNADO_STATE),
 		TORNADO_STATE,
-		newAnimSetting(75, { width = 100, height = 150 }, TORNADO_DUR / 75, false, 1, 0, NEUTRAL_OFFSET)
+		newAnimSetting(62, { width = 200, height = 200 }, TORNADO_DUR / 62, false, 1)
 	)
 
 	----------------- MORRENDO -----------------
@@ -201,7 +184,7 @@ local function addMoaiAnimations(enemy)
 		enemy,
 		moaiSheetPath(enemy, DYING),
 		DYING,
-		newAnimSetting(14, { width = 200, height = 200 }, 0.15, false, 1, 4, NEUTRAL_OFFSET)
+		newAnimSetting(68, { width = 200, height = 200 }, 0.15, false, 1)
 	)
 	enemy.animations[DYING].onFinish = function()
 		enemy.isReallyDead = true
@@ -214,18 +197,13 @@ local function addMoaiAnimations(enemy)
 	----------------- DESPERTAR -----------------
 	local preparingPath = moaiSheetPath(enemy, PREPARING_STATE)
 
-	addAnimation(
-		enemy,
-		preparingPath,
-		STATIC_STATE,
-		newAnimSetting(1, { width = 200, height = 200 }, 1000, true, 1, 4, CENTERED_OFFSET)
-	)
+	addAnimation(enemy, preparingPath, STATIC_STATE, newAnimSetting(1, { width = 200, height = 200 }, 1000, true, 1))
 
 	addAnimation(
 		enemy,
 		preparingPath,
 		PREPARING_STATE,
-		newAnimSetting(16, { width = 200, height = 200 }, STARTING_DURATION / 16, false, 1, 4, CENTERED_OFFSET)
+		newAnimSetting(16, { width = 200, height = 200 }, STARTING_DURATION / 16, false, 1)
 	)
 end
 
@@ -510,9 +488,17 @@ end
 -- cria um inimigo do tipo Ancient Moai
 function newAncientMoai(spawnPos, room)
 	local physics = physicsSettings(40, 160, 3, nil, nil, nil, 0.5)
-	local hbs = hitboxes({ hitbox(Rectangle.new(200, 260)) })
-	local rushAtk = newRollingRushAttack(false, 4.0, 20, hitboxes({ hitbox(Rectangle.new(220, 280)) }), "Moai Rush")
-	local slamAtk = newRotatoryAttack(false, 0.5, constCooldown(0), hitbox(Circle.new(250)), "Head Slam", 25)
+	local hbs = hitboxes({ hitbox(Rectangle.new(230, 170), vec(0, 60)) })
+	local rushAtk =
+		newRollingRushAttack(false, 4.0, 20, hitboxes({ hitbox(Rectangle.new(260, 200), vec(0, 60)) }), "Moai Rush")
+	local slamAtk = newRotatoryAttack(false, 0.5, constCooldown(0), hitbox(Circle.new(250)), "Moai Slam", 25)
+	slamAtk:addAnimations(
+		newAnimSetting(9, { width = 250, height = 250 }, 0.05, false, 1),
+		newAnimSetting(1, { width = 250, height = 250 }, 0.05, false, 1)
+	)
+	-- o desenho padrão escala 3x; 2x deixa o anel (~500px) com o mesmo
+	-- tamanho do hitbox do slam (raio 250)
+	slamAtk.drawScale = 2
 	local tornadoAtk = newPebbleShotAttack(false, 2.5, randCooldown(4, 6), 520, nil, 25)
 
 	local enemy = Enemy.new(
@@ -526,7 +512,7 @@ function newAncientMoai(spawnPos, room)
 		room,
 		{}
 	)
-	
+
 	---@cast enemy Moai
 	enemy.classification = STONE
 	enemy.facing = DOWN
@@ -651,7 +637,16 @@ function newAncientMoai(spawnPos, room)
 			if not self.slamImpactDone and anim.currFrame >= SLAM_IMPACT_FRAME then
 				self.slamImpactDone = true
 				local dir = DIR_VEC[self.attackDir]
-				self.atk[SLAM_ATK]:attack(self, vec(self.pos.x, self.pos.y), math.atan2(dir.y, dir.x))
+				local spawnPos = nil
+				-- o hitbox nasce um pouco à frente do boss, na direção do slam
+				if self.attackDir == RIGHT or self.attackDir == LEFT then
+					-- o slam horizontal precisa surgir um pouco abaixo do boss para bater com a animação
+					spawnPos = addVec(self.pos, scaleVec(dir, 260))
+					spawnPos.y = spawnPos.y + 100
+				else
+					spawnPos = addVec(self.pos, scaleVec(dir, 200))
+				end
+				self.atk[SLAM_ATK]:attack(self, spawnPos, math.atan2(dir.y, dir.x))
 				applyImpulse(self, scaleVec(dir, SLAM_BURST * self.mass))
 				shakeRoomCameras(self, SHAKE_SLAM_I, SHAKE_SLAM_DUR)
 			end
@@ -700,7 +695,7 @@ function newAncientMoai(spawnPos, room)
 		globalVFXManager:playParticle(PARTICLE_WALL_HIT, self, scaleVec(DIR_VEC[self.attackDir], 70), false)
 	end
 
-	enemy.takeDamage = function (self, dmg)
+	enemy.takeDamage = function(self, dmg)
 		if not self.awakened then
 			wakeUpMoai(self)
 			return

@@ -201,12 +201,13 @@ local insertIntoGrid
 ---@param blueprint Blueprint
 ---@param rng RNG
 ---@param excludedAreas? DecorationExclusionArea[]
+---@param pillarCount? number -- quantos pilares possíveis inserir (padrão 4)
 -- insere algumas decorações gerais para facilitar nossa vida
-function RoomGeneration.insertGeneralDecorations(blueprint, rng, excludedAreas)
+function RoomGeneration.insertGeneralDecorations(blueprint, rng, excludedAreas, pillarCount)
 	-- !WARNING: essa função é uma generalização bem forte, é recomendado
 	-- fazermos uma personalização mais fina das salas depois
 	local occupancy = newDecorationOccupancy()
-	insertPossiblePillars(blueprint, 0.6, rng, excludedAreas, occupancy)
+	insertPossiblePillars(blueprint, 0.6, rng, excludedAreas, occupancy, pillarCount)
 	insertPossibleTorches(blueprint, 0.8, rng, excludedAreas, occupancy)
 	insertPossibleWallMosses(blueprint, rng, excludedAreas, occupancy)
 	insertRandomly(blueprint, MOSS_BIG, 1, rng, excludedAreas, 0.45, occupancy)
@@ -363,24 +364,39 @@ insertIntoGrid = function(blueprint, type, density, gridDim, scapeGrid, rng, exc
 	end
 end
 
+-- âncoras possíveis dos pilares (aproximadamente os 4 cantos da sala padrão)
+local PILLAR_ANCHORS = {
+	vec(-400, -700),
+	vec(580, -700),
+	vec(-400, 320),
+	vec(580, 320),
+}
+
 ---@param blueprint Blueprint
 ---@param prob number
 ---@param rng RNG
 ---@param excludedAreas? DecorationExclusionArea[]
 ---@param occupancy? DecorationOccupancy
--- insere 4 pontos com bases de pilares e talvez colunas de pilares.
--- `prob` indica a chance desses 4 pilares serem inseridos
-insertPossiblePillars = function(blueprint, prob, rng, excludedAreas, occupancy)
+---@param count? number
+-- insere pontos com bases de pilares e talvez colunas de pilares.
+-- `prob` indica a chance desses pilares serem inseridos
+insertPossiblePillars = function(blueprint, prob, rng, excludedAreas, occupancy, count)
 	occupancy = occupancy or newDecorationOccupancy()
+	count = math.min(count or #PILLAR_ANCHORS, #PILLAR_ANCHORS)
 	local r = rng:random()
-	if r < prob then
-		local pillarPositions = {
-			vec(-400, -700),
-			vec(580, -700),
-			vec(-400, 320),
-			vec(580, 320),
-		}
-		for i = 1, 4 do
+	if r < prob and count > 0 then
+		-- escolhe `count` âncoras distintas entre as disponíveis
+		local pool = {}
+		for i, anchor in ipairs(PILLAR_ANCHORS) do
+			pool[i] = anchor
+		end
+		local pillarPositions = {}
+		for i = 1, count do
+			local idx = rng:random(#pool)
+			pillarPositions[i] = pool[idx]
+			table.remove(pool, idx)
+		end
+		for i = 1, count do
 			local positions = {
 				pillarPositions[i],
 				addVec(pillarPositions[i], vec(-91, 210)),
@@ -452,3 +468,4 @@ insertPossibleTorches = function(blueprint, prob, rng, excludedAreas, occupancy)
 		end
 	end
 end
+
