@@ -428,7 +428,7 @@ insertPossiblePillars = function(blueprint, prob, rng, excludedAreas, occupancy,
 			local spPillarDecoration = SpawnPoint.new(positions[4])
 			local pillarData = SpawnData.new(PILLAR, 1.0)
 			local pillarBaseData = SpawnData.new(PILLAR_BASE, 1.0)
-			local pillarPropData = SpawnData.new(PILLAR_PROP, 1.0)
+			local pillarPropData = SpawnData.new(PILLAR_PROP, 0.1)
 			local pillarDecData1 = SpawnData.new(CANDLE, 0.2)
 			local pillarDecData2 = SpawnData.new(SKELETON, 0.3)
 			spPillar:insert(pillarData)
@@ -468,4 +468,3 @@ insertPossibleTorches = function(blueprint, prob, rng, excludedAreas, occupancy)
 		end
 	end
 end
-
