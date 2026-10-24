@@ -56,6 +56,7 @@ CONSTRUCTORS[DESTRUCTIBLE] = {
 	[BONE_PILE.name] = newBonePile,
 	[DESTRUCTIBLE_ROCK.name] = newDestructibleRock,
 	[COAL_ALTAR.name] = newCoalAltar,
+	[WOOD_BOX.name] = newWoodBox,
 	[TALL_GRASS.name] = newTallGrass,
 }
 

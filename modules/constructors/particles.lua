@@ -662,6 +662,48 @@ function newCoalBreakParticles()
 end
 
 ---@return ParticleSystem
+-- lascas de madeira voando quando uma caixa de madeira quebra
+function newWoodBreakParticles()
+	local particleImg = assetManager:getImage("assets/sprites/square.png")
+	local ps = love.graphics.newParticleSystem(particleImg, 30)
+
+	ps:setColors(
+		0.55,
+		0.36,
+		0.32,
+		1, -- madeira clara
+		0.4,
+		0.25,
+		0.19,
+		0.9, -- madeira escura
+		0.72,
+		0.5,
+		0.4,
+		0.8, -- lascas claras
+		0.45,
+		0.3,
+		0.18,
+		0 -- lascas sumindo
+	)
+	ps:setDirection(0)
+	ps:setEmissionArea("borderellipse", 22, 18, 0, false)
+	ps:setEmissionRate(0)
+	ps:setEmitterLifetime(-1)
+	ps:setLinearAcceleration(0, 450, 0, 850)
+	ps:setLinearDamping(1.5, 3)
+	ps:setParticleLifetime(0.3, 0.65)
+	ps:setSizes(0.05, 0.03, 0)
+	ps:setSizeVariation(0.5)
+	ps:setSpeed(100, 280)
+	ps:setSpread(6.2831854820251)
+	ps:setSpin(-6, 6)
+	ps:setSpinVariation(1)
+	ps:stop()
+
+	return ps
+end
+
+---@return ParticleSystem
 -- folhas soltando quando a grama alta é cortada
 function newGrassBreakParticles()
 	local particleImg = assetManager:getImage("assets/sprites/feather.png")

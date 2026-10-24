@@ -65,6 +65,9 @@ BLUEPRINTS = {
 		new2CoalSpotsResourceRoom,
 		new3CoalSpotsResourceRoom,
 		new4CoalSpotsResourceRoom,
+		new2WoodSpotsResourceRoom,
+		new3WoodSpotsResourceRoom,
+		new4WoodSpotsResourceRoom,
 	},
 	[NPC_ROOM] = {
 		newTenkarRoom,

@@ -61,6 +61,7 @@ RAINBOW_DASH = registerEntity(ARTIFACT, "Rainbow Dash", "SooOoOo CoLoRfUlL!!")
 BONE_PILE = registerEntity(DESTRUCTIBLE, "bone pile")
 DESTRUCTIBLE_ROCK = registerEntity(DESTRUCTIBLE, "destructible rock")
 COAL_ALTAR = registerEntity(DESTRUCTIBLE, "coal altar")
+WOOD_BOX = registerEntity(DESTRUCTIBLE, "wood box")
 TALL_GRASS = registerEntity(DESTRUCTIBLE, "tall grass")
 
 -------------- RECURSOS ----------------

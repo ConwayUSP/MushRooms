@@ -192,11 +192,12 @@ function new2SpotsResourceRoom(rng)
 	local sp1 = SpawnPoint.new(vec(100, 500))
 	local sp2 = SpawnPoint.new(vec(200, 0))
 
-	local bonesData = SpawnData.new(BONE_PILE, 0.333)
-	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.666)
-	local coalData = SpawnData.new(COAL_ALTAR, 1.0)
-	sp1:insert(bonesData):insert(rocksData):insert(coalData)
-	sp2:insert(bonesData):insert(rocksData):insert(coalData)
+	local bonesData = SpawnData.new(BONE_PILE, 0.25)
+	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.5)
+	local coalData = SpawnData.new(COAL_ALTAR, 0.75)
+	local woodData = SpawnData.new(WOOD_BOX, 1.0)
+	sp1:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
+	sp2:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
 	
 	bp:insert(sp1):insert(sp2)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
@@ -211,12 +212,13 @@ function new3SpotsResourceRoom(rng)
 	local sp2 = SpawnPoint.new(vec(200, 0))
 	local sp3 = SpawnPoint.new(vec(300, -200))
 
-	local bonesData = SpawnData.new(BONE_PILE, 0.333)
-	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.666)
-	local coalData = SpawnData.new(COAL_ALTAR, 1.0)
-	sp1:insert(bonesData):insert(rocksData):insert(coalData)
-	sp2:insert(bonesData):insert(rocksData):insert(coalData)
-	sp3:insert(bonesData):insert(rocksData):insert(coalData)
+	local bonesData = SpawnData.new(BONE_PILE, 0.25)
+	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.5)
+	local coalData = SpawnData.new(COAL_ALTAR, 0.75)
+	local woodData = SpawnData.new(WOOD_BOX, 1.0)
+	sp1:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
+	sp2:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
+	sp3:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
 
 	bp:insert(sp1):insert(sp2):insert(sp3)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
@@ -232,13 +234,14 @@ function new4SpotsResourceRoom(rng)
 	local sp3 = SpawnPoint.new(vec(300, -200))
 	local sp4 = SpawnPoint.new(vec(500, -200))
 
-	local bonesData = SpawnData.new(BONE_PILE, 0.333)
-	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.666)
-	local coalData = SpawnData.new(COAL_ALTAR, 1.0)
-	sp1:insert(bonesData):insert(rocksData):insert(coalData)
-	sp2:insert(bonesData):insert(rocksData):insert(coalData)
-	sp3:insert(bonesData):insert(rocksData):insert(coalData)
-	sp4:insert(bonesData):insert(rocksData):insert(coalData)
+	local bonesData = SpawnData.new(BONE_PILE, 0.25)
+	local rocksData = SpawnData.new(DESTRUCTIBLE_ROCK, 0.5)
+	local coalData = SpawnData.new(COAL_ALTAR, 0.75)
+	local woodData = SpawnData.new(WOOD_BOX, 1.0)
+	sp1:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
+	sp2:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
+	sp3:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
+	sp4:insert(bonesData):insert(rocksData):insert(coalData):insert(woodData)
 	
 	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
@@ -402,6 +405,60 @@ function new4CoalSpotsResourceRoom(rng)
 	sp3:insert(coalData)
 	sp4:insert(coalData)
 	
+	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	return bp
+end
+
+---@return Blueprint
+-- sala de recurso 13: contém 2 fontes de recurso de madeira
+function new2WoodSpotsResourceRoom(rng)
+	local bp = Blueprint.new(RESOURCE_ROOM, "Resource Room 2 Wood Boxes", rgba8(255, 248, 122, 255))
+	local sp1 = SpawnPoint.new(vec(100, 500))
+	local sp2 = SpawnPoint.new(vec(200, 0))
+
+	local woodData = SpawnData.new(WOOD_BOX, 1.0)
+	sp1:insert(woodData)
+	sp2:insert(woodData)
+
+	bp:insert(sp1):insert(sp2)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	return bp
+end
+
+---@return Blueprint
+-- sala de recurso 14: contém 3 fontes de recurso de madeira
+function new3WoodSpotsResourceRoom(rng)
+	local bp = Blueprint.new(RESOURCE_ROOM, "Resource Room 3 Wood Boxes", rgba8(255, 248, 122, 255))
+	local sp1 = SpawnPoint.new(vec(100, 500))
+	local sp2 = SpawnPoint.new(vec(200, 0))
+	local sp3 = SpawnPoint.new(vec(300, -200))
+
+	local woodData = SpawnData.new(WOOD_BOX, 1.0)
+	sp1:insert(woodData)
+	sp2:insert(woodData)
+	sp3:insert(woodData)
+
+	bp:insert(sp1):insert(sp2):insert(sp3)
+	RoomGeneration.insertGeneralDecorations(bp, rng)
+	return bp
+end
+
+---@return Blueprint
+-- sala de recurso 15: contém 4 fontes de recurso de madeira
+function new4WoodSpotsResourceRoom(rng)
+	local bp = Blueprint.new(RESOURCE_ROOM, "Resource Room 4 Wood Boxes", rgba8(255, 248, 122, 255))
+	local sp1 = SpawnPoint.new(vec(100, 500))
+	local sp2 = SpawnPoint.new(vec(200, 0))
+	local sp3 = SpawnPoint.new(vec(300, -200))
+	local sp4 = SpawnPoint.new(vec(500, -200))
+
+	local woodData = SpawnData.new(WOOD_BOX, 1.0)
+	sp1:insert(woodData)
+	sp2:insert(woodData)
+	sp3:insert(woodData)
+	sp4:insert(woodData)
+
 	bp:insert(sp1):insert(sp2):insert(sp3):insert(sp4)
 	RoomGeneration.insertGeneralDecorations(bp, rng)
 	return bp
